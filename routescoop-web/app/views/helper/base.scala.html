@@ -1,0 +1,22 @@
+@(header: Html = Html(""))(content: Html)(implicit request: RequestHeader, messages: Messages, pageMeta: PageMeta, wjAssets: WebJarAssets)
+<!DOCTYPE html>
+<html lang="@{messages.lang.code}">
+    <head>
+        <meta charset="UTF-8">
+        @pageMeta.toHtml
+        <link rel="shortcut icon" href="@routes.Assets.versioned("images/favicon.png")" type="image/png"/>
+        <link href="@routes.Assets.versioned("styles/foundation.css")" rel="stylesheet">
+        @header
+    </head>
+
+    <body>
+    @content
+
+    <script src="@routes.WebJarAssets.at(wjAssets.locate("jquery.min.js"))"></script>
+    <script src="@routes.WebJarAssets.at(wjAssets.locate("foundation.min.js"))"></script>
+    <script src="@routes.Assets.versioned("scripts/main.js")"></script>
+    <script src="@routes.Assets.versioned("scripts/hello.js")"></script>
+
+    </body>
+
+</html>

@@ -1,0 +1,16 @@
+routescoop-web:
+  build: ./routescoop-web
+  restart: always
+  stdin_open: true
+  tty: true
+  ports: 
+    - 9000
+routescoop-api:
+  build: ./routescoop-api
+  restart: always
+  stdin_open: true
+  tty: true
+  ports:
+    - 9000
+
+

@@ -1,0 +1,65 @@
+@import models.Profile
+
+@(profile: Profile)(implicit request: RequestHeader, messages: Messages, pageMeta: PageMeta, wjAssets: WebJarAssets)
+
+@helper.base {
+    @Html("")
+} {
+    <div class="title-bar" data-responsive-toggle="realEstateMenu" data-hide-for="small">
+        <button class="menu-icon" type="button" data-toggle></button>
+        <div class="title-bar-title">Menu</div>
+    </div>
+
+    <div class="top-bar" id="realEstateMenu">
+        <div class="top-bar-left">
+            <ul class="menu" data-responsive-menu="accordion">
+                <li class="menu-text">RouteScoop</li>
+                @*<li><a href="#">One</a></li>*@
+                @*<li><a href="#">Two</a></li>*@
+                @*<li><a href="#">Three</a></li>*@
+            </ul>
+        </div>
+        <div class="top-bar-right">
+            <ul class="menu">
+                <li><a href="@routes.User.profile()">Profile</a></li>
+                <li><a class="@routes.User.logout()">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="row"><p></p></div>
+
+    <div class="row">
+        <div class="small-12 columns">
+            <div class="profile">
+                <h1>Profile</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="small-9 columns">
+            <div class="small-3 columns">
+                <img class="avatar" src="@profile.picture">
+            </div>
+            <div class="small-9 columns">
+                <dl>
+                    <dt>Name</dt>
+                    <dd>@profile.name</dd>
+                    <dt><dd>&nbsp;</dd></dt>
+                    <dt>Email</dt>
+                    <dd>@profile.email</dd>
+                    <dt><dd>&nbsp;</dd></dt>
+                    <dt>Strava</dt>
+                    <dd>
+                        Strava athlete id -
+                        @profile.stravaId.getOrElse {
+                            <a href="@routes.Strava.authorize()">Connect your Strava account</a>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+        <div class="small-3 columns"></div>
+    </div>
+}

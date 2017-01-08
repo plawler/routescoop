@@ -1,0 +1,48 @@
+package repositories
+
+import anorm._
+
+import javax.inject.{Inject, Singleton}
+
+import models.User
+import modules.BlockingContext
+import play.api.db.Database
+
+import scala.concurrent.ExecutionContext
+
+
+trait UserStore {
+
+  val UsersTable = "users"
+
+  def insert(user: User): Unit
+  def select(userId: String): Option[User]
+  def destroy: Unit
+
+}
+
+@Singleton
+class UserSqlStore @Inject()(db: Database)(implicit @BlockingContext ec: ExecutionContext) extends UserStore {
+
+  override def insert(user: User): Unit = db.withTransaction { implicit conn =>
+    SQL"""
+          INSERT INTO #$UsersTable (id, name, email, picture, stravaId, stravaToken)
+          VALUES (${user.id}, ${user.name}, ${user.email}, ${user.picture}, ${user.stravaId}, ${user.stravaToken})
+      """.executeInsert()
+  }
+
+  override def destroy: Unit = db.withTransaction { implicit conn =>
+    SQL"""
+          DELETE FROM #$UsersTable
+      """.execute()
+  }
+
+  override def select(userId: String): Option[User] = db.withConnection { implicit conn =>
+    SQL"""
+          SELECT * FROM #$UsersTable WHERE id = $userId
+      """.as(User.parser.*).headOption
+  }
+
+}
+
+

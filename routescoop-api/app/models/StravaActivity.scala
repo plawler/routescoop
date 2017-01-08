@@ -28,6 +28,8 @@ case class StravaActivity(
   externalId: Option[String] = None, // file reference
   endLat: Option[Float] = None,
   endLong: Option[Float] = None,
+  mapPolyLine: Option[String] = None,
+  mapPolyLineSummary: Option[String] = None,
   averageCadence: Option[Float] = None,
   averageTemp: Option[Int] = None,
   averageWatts: Option[Float] = None,

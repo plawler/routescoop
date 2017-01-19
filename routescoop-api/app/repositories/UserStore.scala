@@ -16,8 +16,8 @@ trait UserStore {
   val UsersTable = "users"
 
   def insert(user: User): Unit
-  def select(userId: String): Option[User]
-  def destroy: Unit
+  def select(id: String): Option[User]
+  def destroy(): Unit
 
 }
 
@@ -31,15 +31,15 @@ class UserSqlStore @Inject()(db: Database)(implicit @BlockingContext ec: Executi
       """.executeInsert()
   }
 
-  override def destroy: Unit = db.withTransaction { implicit conn =>
+  override def destroy(): Unit = db.withTransaction { implicit conn =>
     SQL"""
           DELETE FROM #$UsersTable
       """.execute()
   }
 
-  override def select(userId: String): Option[User] = db.withConnection { implicit conn =>
+  override def select(id: String): Option[User] = db.withConnection { implicit conn =>
     SQL"""
-          SELECT * FROM #$UsersTable WHERE id = $userId
+          SELECT * FROM #$UsersTable WHERE id = $id
       """.as(User.parser.*).headOption
   }
 

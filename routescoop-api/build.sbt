@@ -5,7 +5,7 @@ version := "1.0-SNAPSHOT"
 lazy val scrava = RootProject(uri("git://github.com/kiambogo/scrava.git"))
 lazy val root = (project in file(".")).dependsOn(scrava).enablePlugins(PlayScala)
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
 libraryDependencies ++= Seq(
   jdbc,
@@ -15,6 +15,7 @@ libraryDependencies ++= Seq(
   "mysql" % "mysql-connector-java" % "6.0.5",
   "com.typesafe.play" %% "anorm" % "2.5.2",
   "com.fasterxml.uuid" % "java-uuid-generator" % "3.1.3",
+  "org.mockito" % "mockito-core" % "2.2.29" % Test,
   "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
 )
 

@@ -1,13 +1,14 @@
 package actors
 
-import javax.inject.{Inject, Named}
+import models.UserDataSyncRequest
 
 import akka.actor.{ActorRef, ActorSystem}
-import models.DataSyncRequest
+
+import javax.inject.{Inject, Named}
 
 
 class EventStreamRegistry @Inject()(actorSystem: ActorSystem, @Named("data-sync-processor") dataSyncActor: ActorRef) {
 
-  actorSystem.eventStream.subscribe(dataSyncActor, classOf[DataSyncRequest])
+  actorSystem.eventStream.subscribe(dataSyncActor, classOf[UserDataSyncRequest])
 
 }

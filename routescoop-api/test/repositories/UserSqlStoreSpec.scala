@@ -14,7 +14,7 @@ class UserSqlStoreSpec extends WordSpec with Matchers with UserFixture {
   "The UserStore" should {
 
     "delete all data" in {
-      userStore.destroy
+      userStore.destroy()
     }
 
     "insert a user" in {
@@ -26,11 +26,6 @@ class UserSqlStoreSpec extends WordSpec with Matchers with UserFixture {
       userStore.select(user.id).foreach(_ shouldEqual user)
     }
 
-  }
-
-  trait Fixture {
-    val user = User("theUserId", "Joe User", "joe@user.com")
-    val stravaUser = user.copy(id = "theStravaUserId", stravaId = Some(123456), stravaToken = Some("theStravaToken"))
   }
 
 }

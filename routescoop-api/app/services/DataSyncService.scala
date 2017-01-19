@@ -1,25 +1,32 @@
 package services
 
+import models.{StravaDataSyncStarted, UserDataSyncRequest}
+import modules.NonBlockingContext
+import repositories.{StoredUserDataSync, UserDataSyncStore}
+
+import akka.actor.ActorSystem
+
 import java.time.Instant
+import java.util.UUID
 import javax.inject.Inject
-
-import models.DataSyncRequest
-import repositories.DataSyncRequestStore
-
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 
 trait DataSyncService {
 
-  def syncUserData(request: DataSyncRequest): Future[Unit]
+  def startDataSync(request: UserDataSyncRequest): Future[Unit]
 
 }
 
-class StravaSyncService @Inject()(dataSyncRequestStore: DataSyncRequestStore) extends DataSyncService {
+class DataSyncServiceImpl @Inject()(store: UserDataSyncStore, actorSystem: ActorSystem)
+  (implicit @NonBlockingContext ec: ExecutionContext) extends DataSyncService {
 
-  override def syncUserData(request: DataSyncRequest): Future[Unit] = {
-    dataSyncRequestStore.insert(request.user.id, Instant.now)
-    ???
+  override def startDataSync(request: UserDataSyncRequest): Future[Unit] = Future {
+    val stored = StoredUserDataSync(UUID.randomUUID().toString, request.user.id, Instant.now)
+    store.insert(stored)
+    actorSystem.eventStream.publish(StravaDataSyncStarted(stored.id, stored.userId))
   }
-
+//  override def completeDataSync(completed: ): Future[Unit] = Future {
+//    dataSyncRequestStore.update(request., Instant.now)
+//  }
 }

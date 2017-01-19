@@ -1,6 +1,14 @@
 package models
 
 import anorm.{Macro, RowParser}
+import kiambogo.scrava.models.PersonalActivitySummary
+
+import com.fasterxml.uuid.Generators
+
+import java.time.Instant
+import java.util.UUID
+
+sealed trait Activity
 
 /**
   * distances are in meters
@@ -8,38 +16,39 @@ import anorm.{Macro, RowParser}
   */
 case class StravaActivity(
   id: String,
-  athleteId: String,
+  userId: String,
+  stravaId: Int,
+  athleteId: Int,
   name: String,
-  distance: Float,
+  distance: Double,
   movingTime: Int,
   elapsedTime: Int,
-  totalElevationGain: Float,
+  totalElevationGain: Double,
   activityType: String,
-  startDate: String,
-  startDateLocal: String,
+  startedAt: Instant,
   timezone: String,
-  startLat: Float,
-  startLong: Float,
+  startLat: Double,
+  startLong: Double,
   trainer: Boolean,
   commute: Boolean,
   manual: Boolean,
-  averageSpeed: Float,
-  maxSpeed: Float,
-  externalId: Option[String] = None, // file reference
-  endLat: Option[Float] = None,
-  endLong: Option[Float] = None,
+  averageSpeed: Double,
+  maxSpeed: Double,
+  externalId: Option[String] = None,
+  endLat: Option[Double] = None,
+  endLong: Option[Double] = None,
   mapPolyLine: Option[String] = None,
   mapPolyLineSummary: Option[String] = None,
-  averageCadence: Option[Float] = None,
+  averageCadence: Option[Double] = None,
   averageTemp: Option[Int] = None,
-  averageWatts: Option[Float] = None,
+  averageWatts: Option[Double] = None,
   weightedAverageWatts: Option[Int] = None,
-  kilojoules: Option[Float] = None,
+  kilojoules: Option[Double] = None,
   deviceWatts: Option[Boolean] = None,
-  averageHeartrate: Option[Float] = None,
-  maxHeartrate: Option[Float] = None,
+  averageHeartRate: Option[Double] = None,
+  maxHeartRate: Option[Double] = None,
   workoutType: Option[Int] = None
-)
+) extends Activity
 
 object StravaActivity {
 

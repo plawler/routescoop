@@ -12,11 +12,11 @@ class DataSyncProcessor @Inject()(service: DataSyncService) extends Actor with A
 
   override def receive: Receive = {
     case request: UserDataSyncRequest =>
-      log.debug("received the data synchronization request")
+      log.info("received the data synchronization request")
       service.startDataSync(request)
     case "DataSyncCompleted" =>
-      // service.completeDataSync(completed.id)
-      println("finished synching user data")
+      log.info("finished user data sync")
+    // service.completeDataSync(completed.id)
     case _ => log.error(s"Cannot process message")
   }
 

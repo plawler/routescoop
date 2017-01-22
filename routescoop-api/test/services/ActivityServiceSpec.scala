@@ -1,40 +1,54 @@
 package services
 
-import fixtures.UserFixture
-import repositories.StravaActivityStore
-
+import akka.actor.ActorSystem
+import akka.testkit.{TestKit, TestProbe}
+import fixtures.ActivityFixture
+import models.{StravaActivity, StravaActivityCreated}
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
-import org.scalatest.{Matchers, WordSpec}
-import play.api.Application
-import play.api.inject.bind
-import play.api.inject.guice.GuiceApplicationBuilder
+import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
+import repositories.StravaActivityStore
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class ActivityServiceSpec extends WordSpec with Matchers with MockitoSugar with UserFixture with ScalaFutures {
+class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
+  with WordSpecLike // needs to be trait instead
+  with Matchers
+  with MockitoSugar
+  with BeforeAndAfterAll
+  with ActivityServiceFixture {
 
   val mockActivityStore: StravaActivityStore = mock[StravaActivityStore]
   val mockUserService: UserService = mock[UserService]
+  val mockStravaWebService: StravaWebService = mock[StravaWebService]
+  val service = new StravaActivityService(mockUserService, mockStravaWebService, mockActivityStore, system)
 
-  val application: Application = new GuiceApplicationBuilder()
-    .overrides(bind[StravaActivityStore].toInstance(mockActivityStore))
-    .overrides(bind[UserService].toInstance(mockUserService))
-    .build
+  val listener = TestProbe()
+  system.eventStream.subscribe(listener.ref, classOf[StravaActivityCreated])
 
-  val service: ActivityService = application.injector.instanceOf(classOf[ActivityService])
+  override def afterAll() = system.terminate()
 
   "The Strava Service" should {
 
     "sync a user's activities" in {
       when(mockUserService.getUser(stravaUser.id)).thenReturn(Future.successful(Some(stravaUser)))
-      when(mockActivityStore.findByUserId(stravaUser.id)).thenReturn(Nil)
+      when(mockStravaWebService.getLatestActivities(stravaUser)).thenReturn(activities)
+      mockActivityStore.insert(mockStravaActivity)
+
       Await.result(service.syncActivities(stravaUser.id), 60 seconds)
+
+      listener.expectMsgClass(60 seconds, classOf[StravaActivityCreated])
     }
 
   }
 
+}
+
+trait ActivityServiceFixture extends ActivityFixture with MockitoSugar {
+  val mockStravaActivity = mock[StravaActivity]
+  val activities = Seq(mockStravaActivity)
 }

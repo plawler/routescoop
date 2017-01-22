@@ -13,7 +13,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 
 class User @Inject()(userService: UserService, actorSystem: ActorSystem)
-                    (implicit @NonBlockingContext ec: ExecutionContext) extends Controller {
+  (implicit @NonBlockingContext ec: ExecutionContext) extends Controller {
 
   def create = Action.async(parse.json) { implicit request =>
     request.body.validate[models.User].fold(

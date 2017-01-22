@@ -55,3 +55,5 @@ object StravaActivity {
   implicit val parser: RowParser[StravaActivity] = Macro.namedParser[StravaActivity]
 
 }
+
+case class StravaActivityCreated(activity: StravaActivity, createdAt: Instant = Instant.now)

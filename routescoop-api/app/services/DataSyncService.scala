@@ -26,7 +26,5 @@ class DataSyncServiceImpl @Inject()(store: UserDataSyncStore, actorSystem: Actor
     store.insert(stored)
     actorSystem.eventStream.publish(StravaDataSyncStarted(stored.id, stored.userId))
   }
-//  override def completeDataSync(completed: ): Future[Unit] = Future {
-//    dataSyncRequestStore.update(request., Instant.now)
-//  }
+
 }

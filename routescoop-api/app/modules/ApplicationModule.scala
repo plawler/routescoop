@@ -11,14 +11,12 @@ class ApplicationModule extends AbstractModule {
 
   override def configure(): Unit = {
     bind(classOf[UserStore]).to(classOf[UserSqlStore])
+    bind(classOf[UserDataSyncStore]).to(classOf[UserDataSyncSqlStore])
     bind(classOf[UserService]).to(classOf[UserServiceImpl])
 
     bind(classOf[StravaActivityStore]).to(classOf[StravaActivityStoreImpl])
     bind(classOf[StravaWebService]).to(classOf[ScravaWebService])
     bind(classOf[ActivityService]).to(classOf[StravaActivityService])
-
-    bind(classOf[UserDataSyncStore]).to(classOf[UserDataSyncSqlStore])
-    bind(classOf[DataSyncService]).to(classOf[DataSyncServiceImpl])
   }
 
   @Provides @NonBlockingContext

@@ -1,11 +1,12 @@
 package actors
 
+import java.time.Instant
 import java.util.UUID
 
 import akka.actor.ActorSystem
 import akka.testkit.{TestActorRef, TestKit}
 import fixtures.{ActivityFixture, UserFixture}
-import models.StravaDataSyncStarted
+import models.{StravaDataSyncStarted, UserDataSync}
 import org.mockito.Mockito._
 import org.scalatest.{Matchers, WordSpecLike}
 import org.scalatest.mock.MockitoSugar
@@ -37,5 +38,6 @@ class StravaDataProcessorSpec extends TestKit(ActorSystem("data-sync-actor-test"
 }
 
 trait StravaDataProcessorFixture extends ActivityFixture {
-  val started = StravaDataSyncStarted(UUID.randomUUID().toString, user.id)
+  val dataSync = UserDataSync(UUID.randomUUID().toString, user.id, Instant.now)
+  val started = StravaDataSyncStarted(dataSync)
 }

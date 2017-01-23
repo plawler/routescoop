@@ -1,14 +1,15 @@
 package actors
 
-import models.UserDataSyncRequest
-
-import akka.actor.{ActorRef, ActorSystem}
-
 import javax.inject.{Inject, Named}
 
+import akka.actor.{ActorRef, ActorSystem}
+import models.StravaDataSyncStarted
 
-class EventStreamRegistry @Inject()(actorSystem: ActorSystem, @Named("data-sync-processor") dataSyncActor: ActorRef) {
 
-  actorSystem.eventStream.subscribe(dataSyncActor, classOf[UserDataSyncRequest])
+class EventStreamRegistry @Inject()(
+  actorSystem: ActorSystem,
+  @Named("strava-data-processor") stravaDataActor: ActorRef) {
+
+  actorSystem.eventStream.subscribe(stravaDataActor, classOf[StravaDataSyncStarted])
 
 }

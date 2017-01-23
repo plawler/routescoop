@@ -1,14 +1,13 @@
 package controllers
 
-import models.UserDataSyncRequest
-import modules.NonBlockingContext
-import services.UserService
+import javax.inject.Inject
 
 import akka.actor.ActorSystem
+import modules.NonBlockingContext
 import play.api.libs.json.{JsError, Json}
 import play.api.mvc.{Action, Controller}
+import services.UserService
 
-import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 
@@ -30,12 +29,9 @@ class User @Inject()(userService: UserService, actorSystem: ActorSystem)
   }
 
   def sync(userId: String) = Action.async { implicit request =>
-    userService.getUser(userId) map {
-      case Some(user) =>
-        val dsr = UserDataSyncRequest(user)
-        actorSystem.eventStream.publish(dsr)
-        Ok(Json.toJson(dsr))
-      case None => NotFound(s"User not found with id $userId")
+    userService.getUser(userId) flatMap {
+      case Some(user) => userService.startDataSync(user) map (event => Ok(Json.toJson(event)))
+      case None => Future.successful(NotFound(s"User not found with id $userId"))
     }
   }
 

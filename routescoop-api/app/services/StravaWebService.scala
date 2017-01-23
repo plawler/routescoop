@@ -32,12 +32,8 @@ class ScravaWebService @Inject()(activityStore: StravaActivityStore) extends Str
 
   private def getClient(token: String) = new ScravaClient(token)
 
-  private def filterLatest(
-    userId: String,
-    activities: List[PersonalActivitySummary]
-  ): List[PersonalActivitySummary] = {
-    val filtered = activities.filterNot(a => activityStore.findByUserId(userId).exists(a.id == _.stravaId))
-    filtered
+  private def filterLatest(userId: String, activities: List[PersonalActivitySummary]) = {
+    activities.filterNot(a => activityStore.findByUserId(userId).exists(a.id == _.stravaId))
   }
 
   private def toActivity(user: User, summary: PersonalActivitySummary): StravaActivity = {

@@ -2,7 +2,6 @@ name := """routescoop-api"""
 
 version := "1.0-SNAPSHOT"
 
-//lazy val scrava = RootProject(uri("git://github.com/kiambogo/scrava.git"))
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
 scalaVersion := "2.11.8"

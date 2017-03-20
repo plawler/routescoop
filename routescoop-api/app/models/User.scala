@@ -3,9 +3,7 @@ package models
 import anorm.{Macro, RowParser}
 import play.api.libs.json.Json
 
-/**
-  * Created by paullawler on 12/27/16.
-  */
+
 case class User(
   id: String,
   name: String,

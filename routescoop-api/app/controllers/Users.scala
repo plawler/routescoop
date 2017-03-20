@@ -3,6 +3,7 @@ package controllers
 import javax.inject.Inject
 
 import akka.actor.ActorSystem
+import models.User
 import modules.NonBlockingContext
 import play.api.libs.json.{JsError, Json}
 import play.api.mvc.{Action, Controller}
@@ -11,13 +12,13 @@ import services.UserService
 import scala.concurrent.{ExecutionContext, Future}
 
 
-class User @Inject()(userService: UserService, actorSystem: ActorSystem)
-  (implicit @NonBlockingContext ec: ExecutionContext) extends Controller {
+class Users @Inject()(userService: UserService, actorSystem: ActorSystem)
+                     (implicit @NonBlockingContext ec: ExecutionContext) extends Controller {
 
   def create = Action.async(parse.json) { implicit request =>
-    request.body.validate[models.User].fold(
+    request.body.validate[User].fold(
       errors => Future.successful(BadRequest(JsError.toJson(errors))),
-      user => userService.createUser(user) map (_ => Ok)
+      user => userService.createUser(user) map (_ => Ok(Json.toJson(user)))
     )
   }
 

@@ -26,6 +26,7 @@ class StravaClientSpec extends FlatSpec with Matchers {
     val activity = client.listAthleteActivities().head
     val laps = client.listActivityLaps(activity.id)
     laps shouldNot be(empty)
+    laps.foreach(println)
   }
 
   it should "retrieve an activity stream" in new Fixture {

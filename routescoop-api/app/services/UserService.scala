@@ -42,4 +42,5 @@ class UserServiceImpl @Inject()(
     actorSystem.eventStream.publish(StravaDataSyncStarted(dataSync))
     dataSync
   }
+
 }

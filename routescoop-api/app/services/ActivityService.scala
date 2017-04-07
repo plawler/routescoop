@@ -1,38 +1,59 @@
 package services
 
 import modules.NonBlockingContext
-import repositories.StravaActivityStore
+import repositories.{StravaActivityStore, StravaLapStore}
 import akka.actor.ActorSystem
 import javax.inject.{Inject, Singleton}
 
-import models.StravaActivityCreated
+import models.{StravaActivity, StravaActivityCreated, StravaLapsCreated}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.language.postfixOps
 
 trait ActivityService {
 
   def syncActivities(userId: String): Future[Unit]
 
+  def getActivity(activityId: String): Future[Option[StravaActivity]]
+
+  def syncLaps(activityId: String): Future[Unit]
+
 }
 
 @Singleton
 class StravaActivityService @Inject()(
-  userService: UserService,
-  webService: StravaWebService,
+  stravaService: StravaWebService,
   activityStore: StravaActivityStore,
+  lapStore: StravaLapStore,
   actorSystem: ActorSystem
 )(implicit @NonBlockingContext ec: ExecutionContext) extends ActivityService {
 
   override def syncActivities(userId: String): Future[Unit] = {
-    userService.getUser(userId).map {
-      case Some(user) =>
-        webService.getLatestActivities(user).foreach { activity =>
-          activityStore.insert(activity)
-          actorSystem.eventStream.publish(StravaActivityCreated(activity))
-        }
-      case None => throw new IllegalArgumentException(s"No user found for $userId")
+    stravaService.getActivities(userId).map { activities =>
+      filterLatest(activities).foreach { activity =>
+        activityStore.insert(activity)
+        actorSystem.eventStream.publish(StravaActivityCreated(activity))
+      }
     }
+  }
+
+  override def getActivity(activityId: String): Future[Option[StravaActivity]] = Future {
+    blocking { activityStore.findById(activityId) }
+  }
+
+  override def syncLaps(activityId: String): Future[Unit] = {
+    // fetch all laps for an activity and send collection to lap store
+    getActivity(activityId).map {
+      case Some(activity) => {
+        stravaService.getLaps(activity).map(_.foreach(lapStore.insert))
+        actorSystem.eventStream.publish(StravaLapsCreated(activity))
+      }
+      case None => println(s"no activity found for id $activityId")
+    }
+  }
+
+  private def filterLatest(activities: Seq[StravaActivity]) = {
+    activities.filterNot(a => activityStore.findByUserId(a.userId).exists(a.id == _.id))
   }
 
 }

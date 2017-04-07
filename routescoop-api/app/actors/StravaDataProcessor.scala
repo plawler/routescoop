@@ -15,9 +15,9 @@ class StravaDataProcessor @Inject()(activityService: ActivityService) extends Ac
       activityService.syncActivities(started.sync.userId)
     case activityCreated: StravaActivityCreated =>
       log.info(s"Completed processing of activity ${activityCreated.activity}")
-      // lapService.syncLaps(activity)
+      activityService.syncLaps(activityCreated.activity.id)
       // streamsService.syncStreams(activity)
-    case _ => log.info("wut??? $")
+    case _ => log.info("wut???")
   }
 
 }

@@ -2,35 +2,26 @@ package services
 
 import fixtures.ActivityFixture
 import models.StravaActivity
-import repositories.StravaActivityStore
-
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{Matchers, WordSpec}
-import play.api.Application
-import play.api.inject.bind
-import play.api.inject.guice.GuiceApplicationBuilder
+
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
+import scala.language.postfixOps
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class StravaWebServiceSpec extends WordSpec with Matchers with MockitoSugar with ActivityFixture {
 
-  val mockActivityStore: StravaActivityStore = mock[StravaActivityStore]
-
-  val application: Application = new GuiceApplicationBuilder()
-    .overrides(bind[StravaActivityStore].toInstance(mockActivityStore))
-    .build
-
-  val service: StravaWebService = application.injector.instanceOf(classOf[StravaWebService])
+  val mockUserService = mock[UserService]
+  val service = new ScravaWebService(mockUserService)
 
   "The Strava Web Service" should {
 
     "get a list of activities for a user" in {
-      when(mockActivityStore.findByUserId(stravaUser.id)).thenReturn(Nil)
-      service.getLatestActivities(stravaUser) should have length 5
-    }
-
-    "get a list of latest activities for a user" in new Fixture {
-      when(mockActivityStore.findByUserId(stravaUser.id)).thenReturn(Seq(mockActivity))
-      service.getLatestActivities(stravaUser) should have length 4
+      when(mockUserService.getUser(stravaUser.id)).thenReturn(Future.successful(Some(stravaUser)))
+      val result = Await.result(service.getActivities(stravaUser.id), 3 seconds)
+      result should have length 5
     }
 
   }

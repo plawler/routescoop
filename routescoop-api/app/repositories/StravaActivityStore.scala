@@ -109,7 +109,7 @@ class StravaActivityStoreImpl @Inject()(db: Database)(implicit @BlockingContext 
   override def findById(id: String): Option[StravaActivity] = db.withConnection { implicit conn =>
     SQL"""
           SELECT * FROM #$StravaActivitiesTable WHERE id = $id
-      """.as(StravaActivity.parser.*).headOption
+      """.as(StravaActivity.parser.singleOpt)
   }
 
   override def findByUserId(userId: String): Seq[StravaActivity] = db.withConnection { implicit conn =>

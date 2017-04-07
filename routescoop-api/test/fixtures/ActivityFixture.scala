@@ -5,9 +5,11 @@ import models.StravaActivity
 import java.time.Instant
 
 trait ActivityFixture extends UserFixture {
+  val activityId = "theActivityId"
   val activityStartedAt = Instant.now
+
   val sampleActivity = StravaActivity(
-    "theActivityId",
+    activityId,
     user.id,
     stravaId = 99999999,
     athleteId = 1234567890,

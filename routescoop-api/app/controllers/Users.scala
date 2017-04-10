@@ -31,7 +31,7 @@ class Users @Inject()(userService: UserService, actorSystem: ActorSystem)
 
   def sync(userId: String) = Action.async { implicit request =>
     userService.getUser(userId) flatMap {
-      case Some(user) => userService.startDataSync(user) map (event => Ok(Json.toJson(event)))
+      case Some(user) => userService.startDataSync(user) map (sync => Ok(Json.toJson(sync)))
       case None => Future.successful(NotFound(s"User not found with id $userId"))
     }
   }

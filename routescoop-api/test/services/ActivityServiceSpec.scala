@@ -2,7 +2,7 @@ package services
 
 import akka.actor.ActorSystem
 import akka.testkit.{TestKit, TestProbe}
-import fixtures.{ActivityFixture, LapFixture}
+import fixtures.LapFixture
 import models.{StravaActivity, StravaActivityCreated, StravaLapsCreated}
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
@@ -12,7 +12,6 @@ import repositories.{StravaActivityStore, StravaLapStore}
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
   with WordSpecLike // needs to be trait instead

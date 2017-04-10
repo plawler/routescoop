@@ -53,7 +53,7 @@ class StravaActivityService @Inject()(
   }
 
   private def filterLatest(activities: Seq[StravaActivity]) = {
-    activities.filterNot(a => activityStore.findByUserId(a.userId).exists(a.id == _.id))
+    activities.filterNot(a => activityStore.findByUserId(a.userId).exists(a.stravaId == _.stravaId))
   }
 
 }

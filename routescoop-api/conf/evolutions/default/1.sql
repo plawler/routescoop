@@ -94,6 +94,27 @@ CREATE TABLE strava_laps (
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
 
+CREATE TABLE strava_streams (
+  id VARCHAR(40) NOT NULL,
+  activityId VARCHAR(40) NOT NULL,
+  timeIndexInSeconds INT NOT NULL,
+  latitude DOUBLE NULL,
+  longitude DOUBLE NULL,
+  distanceMeters DOUBLE NULL,
+  altitudeMeters DOUBLE NULL,
+  temperatureCelsius INT NULL,
+  grade DOUBLE NULL,
+  velocityMetersPerSecond DOUBLE NULL,
+  heartRate INT NULL,
+  cadence INT NULL,
+  watts INT NULL,
+  moving BOOLEAN,
+  PRIMARY KEY (id),
+  FOREIGN KEY fk_strava_activities_strava_streams(activityId) REFERENCES strava_activities(id) ON DELETE CASCADE
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
+
 
 # --- !Downs
 
@@ -101,3 +122,4 @@ DROP TABLE users;
 DROP TABLE user_data_syncs;
 DROP TABLE strava_activities;
 DROP TABLE strava_laps;
+DROP TABLE strava_streams;

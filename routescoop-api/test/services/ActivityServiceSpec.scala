@@ -1,9 +1,11 @@
 package services
 
+import java.util.UUID
+
 import akka.actor.ActorSystem
 import akka.testkit.{TestKit, TestProbe}
 import fixtures.LapFixture
-import models.{StravaActivity, StravaActivityCreated, StravaLapsCreated}
+import models.{StravaActivityCreated, StravaLapsCreated}
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
@@ -12,6 +14,7 @@ import repositories.{StravaActivityStore, StravaLapStore}
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
   with WordSpecLike // needs to be trait instead
@@ -35,23 +38,23 @@ class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
   "The Strava Service" should {
 
     "sync a user's activities" in {
-      when(mockStravaWebService.getActivities(stravaUser.id)).thenReturn(Future.successful(activities))
+      when(mockStravaWebService.getActivities(stravaUser.id)).thenReturn(Future.successful(Seq(sampleActivity)))
       when(mockActivityStore.findByUserId(stravaUser.id)).thenReturn(Nil)
 
       Await.result(service.syncActivities(stravaUser.id), 60 seconds)
 
       listener.expectMsgClass(60 seconds, classOf[StravaActivityCreated])
-
-      verify(mockActivityStore).insert(mockStravaActivity)
+      verify(mockActivityStore).insert(sampleActivity)
     }
 
     "sync only the latest activities" in {
-      when(mockStravaWebService.getActivities(stravaUser.id)).thenReturn(Future.successful(activities))
-      when(mockActivityStore.findByUserId(stravaUser.id)).thenReturn(activities)
+      when(mockStravaWebService.getActivities(stravaUser.id)).thenReturn(Future.successful(remoteActivities))
+      when(mockActivityStore.findByUserId(stravaUser.id)).thenReturn(localActivities)
 
       Await.result(service.syncActivities(stravaUser.id), 60 seconds)
 
-      listener.expectNoMsg()
+      listener.expectMsgClass(60 seconds, classOf[StravaActivityCreated])
+      verify(mockActivityStore).insert(r3)
     }
 
     "retrieve an activity" in {
@@ -75,8 +78,16 @@ class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
 }
 
 trait ActivityServiceFixture extends LapFixture with MockitoSugar {
-  val mockStravaActivity = mock[StravaActivity]
-  when(mockStravaActivity.id).thenReturn("00000000-0000-0000-1111-000000000001")
-  when(mockStravaActivity.userId).thenReturn(stravaUser.id)
-  val activities = Seq(mockStravaActivity)
+  val id1 = "00000000-0000-0000-1111-000000000001"
+  val id2 = "00000000-0000-0000-1111-000000000002"
+
+  val a1 = sampleActivity.copy(id = id1, stravaId = 1, userId = stravaUser.id)
+  val a2 = sampleActivity.copy(id = id2, stravaId = 2, userId = stravaUser.id)
+
+  val r1 = sampleActivity.copy(id = UUID.randomUUID().toString, stravaId = 1, userId = stravaUser.id)
+  val r2 = sampleActivity.copy(id = UUID.randomUUID().toString, stravaId = 2, userId = stravaUser.id)
+  val r3 = sampleActivity.copy(id = UUID.randomUUID().toString, stravaId = 3, userId = stravaUser.id)
+
+  val localActivities = Seq(a1, a2)
+  val remoteActivities = Seq(r1, r2, r3)
 }

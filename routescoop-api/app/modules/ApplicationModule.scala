@@ -14,8 +14,9 @@ class ApplicationModule extends AbstractModule {
     bind(classOf[UserDataSyncStore]).to(classOf[UserDataSyncSqlStore])
     bind(classOf[UserService]).to(classOf[UserServiceImpl])
 
-    bind(classOf[StravaLapStore]).to(classOf[StravaLapStoreImpl])
     bind(classOf[StravaActivityStore]).to(classOf[StravaActivityStoreImpl])
+    bind(classOf[StravaLapStore]).to(classOf[StravaLapStoreImpl])
+    bind(classOf[StravaStreamStore]).to(classOf[StravaStreamStoreImpl])
     bind(classOf[ActivityService]).to(classOf[StravaActivityService])
 
     bind(classOf[StravaWebService]).to(classOf[ScravaWebService])

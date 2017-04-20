@@ -2,7 +2,7 @@ package services
 
 import fixtures.UserFixture
 import kiambogo.scrava.ScravaClient
-
+import models.{StravaActivity, StravaStream}
 import org.scalatest.{FlatSpec, Matchers}
 
 /**
@@ -26,7 +26,6 @@ class StravaClientSpec extends FlatSpec with Matchers {
     val activity = client.listAthleteActivities().head
     val laps = client.listActivityLaps(activity.id)
     laps shouldNot be(empty)
-    laps.foreach(println)
   }
 
   it should "retrieve an activity stream" in new Fixture {
@@ -34,12 +33,26 @@ class StravaClientSpec extends FlatSpec with Matchers {
     val activity = activities.head
     val activity2 = client.retrieveActivity(activity.id)
     val streams = client.retrieveActivityStream(activity.id.toString)
-    // List(latlng, time, distance, altitude, heartrate, cadence, watts, temp, grade_smooth, moving, velocity_smooth)
-    //    streams.foreach(s => println(s.data.size))
-    //    println(streams(4).data.take(10))
-    //    println(streams(6).data.take(10))
     streams shouldNot be(empty)
+
+//    val types = streams.map(_.`type`)
+//    val streamData = streams map (_.data)
+//    val pivoted = streamData.transpose
+//    val hashed = pivoted.take(5) map (ss => (types zip ss).toMap)
+//
+//    val stravaStreams = hashed map (raw => StravaStream.create(StravaActivity.create(stravaUser, activity), raw))
+//
+//    val smushed = pivoted.take(5) map { s =>
+//      flatten(s)
+//    }
+//    println(smushed)
   }
+
+  def flatten(ls: List[Any]): List[Any] = ls flatMap {
+    case i: List[_] => flatten(i)
+    case e => List(e)
+  }
+
 
   trait Fixture extends UserFixture {
     val client = new ScravaClient(stravaUser.stravaToken.get)

@@ -30,7 +30,7 @@ class StravaActivityService @Inject()(
 
   override def syncActivities(userId: String): Future[Unit] = {
     stravaService.getActivities(userId).map { activities =>
-      filterLatest(activities).foreach { activity =>
+      filterLatest(userId, activities).foreach { activity =>
         activityStore.insert(activity)
         actorSystem.eventStream.publish(StravaActivityCreated(activity))
       }
@@ -52,8 +52,9 @@ class StravaActivityService @Inject()(
     }
   }
 
-  private def filterLatest(activities: Seq[StravaActivity]) = {
-    activities.filterNot(a => activityStore.findByUserId(a.userId).exists(a.stravaId == _.stravaId))
+  private def filterLatest(userId: String, stravaActivities: Seq[StravaActivity]) = {
+    val localActivities = activityStore.findByUserId(userId)
+    stravaActivities.filterNot(a => localActivities.exists(a.stravaId == _.stravaId))
   }
 
 }

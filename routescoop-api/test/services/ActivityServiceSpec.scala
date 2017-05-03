@@ -4,12 +4,12 @@ import java.util.UUID
 
 import akka.actor.ActorSystem
 import akka.testkit.{TestKit, TestProbe}
-import fixtures.LapFixture
-import models.{StravaActivityCreated, StravaLapsCreated}
+import fixtures.{LapFixture, StreamFixture}
+import models.{StravaActivityCreated, StravaLapsCreated, StravaStreamsCreated}
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
-import repositories.{StravaActivityStore, StravaLapStore}
+import repositories.{StravaActivityStore, StravaLapStore, StravaStreamStore}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -25,13 +25,21 @@ class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
 
   val mockActivityStore: StravaActivityStore = mock[StravaActivityStore]
   val mockLapStore: StravaLapStore = mock[StravaLapStore]
+  val mockStreamStore = mock[StravaStreamStore]
   val mockUserService: UserService = mock[UserService]
   val mockStravaWebService: StravaWebService = mock[StravaWebService]
-  val service = new StravaActivityService(mockStravaWebService, mockActivityStore, mockLapStore, system)
+  val service = new StravaActivityService(
+    mockStravaWebService,
+    mockActivityStore,
+    mockLapStore,
+    mockStreamStore,
+    system
+  )
 
   val listener = TestProbe()
   system.eventStream.subscribe(listener.ref, classOf[StravaActivityCreated])
   system.eventStream.subscribe(listener.ref, classOf[StravaLapsCreated])
+  system.eventStream.subscribe(listener.ref, classOf[StravaStreamsCreated])
 
   override def afterAll() = system.terminate()
 
@@ -73,11 +81,21 @@ class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
       listener.expectMsgClass(10 seconds, classOf[StravaLapsCreated])
     }
 
+    "sync an activity's streams" in {
+      when(mockActivityStore.findById(activityId)).thenReturn(Some(sampleActivity))
+      when(mockStravaWebService.getStreams(sampleActivity)).thenReturn(Future.successful(streams))
+
+      val result = Await.result(service.syncStreams(sampleActivity.id), 3 seconds)
+
+      verify(mockStreamStore).insertBatch(streams)
+      listener.expectMsgClass(10 seconds, classOf[StravaStreamsCreated])
+    }
+
   }
 
 }
 
-trait ActivityServiceFixture extends LapFixture with MockitoSugar {
+trait ActivityServiceFixture extends LapFixture with StreamFixture with MockitoSugar {
   val id1 = "00000000-0000-0000-1111-000000000001"
   val id2 = "00000000-0000-0000-1111-000000000002"
 
@@ -90,4 +108,9 @@ trait ActivityServiceFixture extends LapFixture with MockitoSugar {
 
   val localActivities = Seq(a1, a2)
   val remoteActivities = Seq(r1, r2, r3)
+
+  val stream1 = sampleStream.copy(id = "stream1", activityId = sampleActivity.id)
+  val stream2 = sampleStream.copy(id = "stream2", activityId = sampleActivity.id)
+  val streams = Seq(stream1, stream2)
+
 }

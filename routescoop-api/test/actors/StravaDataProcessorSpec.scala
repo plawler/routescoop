@@ -5,14 +5,15 @@ import java.util.UUID
 
 import akka.actor.ActorSystem
 import akka.testkit.{TestActorRef, TestKit}
-import fixtures.{ActivityFixture, UserFixture}
+import fixtures.ActivityFixture
 import models.{StravaDataSyncStarted, UserDataSync}
 import org.mockito.Mockito._
-import org.scalatest.{Matchers, WordSpecLike}
 import org.scalatest.mock.MockitoSugar
+import org.scalatest.{Matchers, WordSpecLike}
 import services.ActivityService
 
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * Created by paullawler on 1/21/17.
@@ -24,7 +25,7 @@ class StravaDataProcessorSpec extends TestKit(ActorSystem("data-sync-actor-test"
   with StravaDataProcessorFixture {
 
   val mockActivityService = mock[ActivityService]
-  val processorRef = TestActorRef(new StravaDataProcessor(mockActivityService))
+  val processorRef = TestActorRef(new StravaActivityProcessor(mockActivityService))
 
   "The StravaDataProcessor" should {
 

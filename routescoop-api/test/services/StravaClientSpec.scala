@@ -2,7 +2,6 @@ package services
 
 import fixtures.UserFixture
 import kiambogo.scrava.ScravaClient
-import models.{StravaActivity, StravaStream}
 import org.scalatest.{FlatSpec, Matchers}
 
 /**
@@ -31,6 +30,7 @@ class StravaClientSpec extends FlatSpec with Matchers {
   it should "retrieve an activity stream" in new Fixture {
     val activities = client.listAthleteActivities()
     val activity = activities.head
+//    println(activity.id)
     val activity2 = client.retrieveActivity(activity.id)
     val streams = client.retrieveActivityStream(activity.id.toString)
     streams shouldNot be(empty)

@@ -30,4 +30,5 @@ trait ActivityFixture extends UserFixture {
     maxSpeed = 36.7,
     externalId = Some("2012-12-12_21-40-32-80-29011.fit")
   )
+
 }

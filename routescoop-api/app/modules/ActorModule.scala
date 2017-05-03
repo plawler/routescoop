@@ -1,6 +1,6 @@
 package modules
 
-import actors.{EventStreamRegistry, StravaDataProcessor}
+import actors.{EventStreamRegistry, StravaActivityProcessor}
 import com.google.inject.AbstractModule
 import play.api.libs.concurrent.AkkaGuiceSupport
 
@@ -8,7 +8,7 @@ import play.api.libs.concurrent.AkkaGuiceSupport
 class ActorModule extends AbstractModule with AkkaGuiceSupport {
 
   override def configure(): Unit = {
-    bindActor[StravaDataProcessor]("strava-data-processor")
+    bindActor[StravaActivityProcessor]("strava-activity-processor")
     bind(classOf[EventStreamRegistry]).asEagerSingleton()
   }
 

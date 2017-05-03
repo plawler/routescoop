@@ -57,7 +57,7 @@ object StravaActivity {
       UUID.randomUUID().toString,
       user.id,
       stravaId = summary.id,
-      user.stravaId.get,
+      user.stravaId.get, // todo: handle this
       summary.name,
       summary.distance,
       summary.moving_time,
@@ -93,4 +93,6 @@ object StravaActivity {
 }
 
 case class StravaActivityCreated(activity: StravaActivity, createdAt: Instant = Instant.now)
+case class StravaActivitiesSynched(completedAt: Instant = Instant.now)
 case class StravaLapsCreated(activity: StravaActivity, createdAt: Instant = Instant.now)
+case class StravaStreamsCreated(activity: Activity, createdAt: Instant = Instant.now)

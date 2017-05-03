@@ -105,20 +105,20 @@ class StravaStreamStoreImpl @Inject()(db: Database)(implicit @BlockingContext ec
 
     val parameters = streams.map { s =>
       Seq[NamedParameter](
-        "id" -> s.id,
-        "activityId" -> s.activityId,
-        "timeIndexInSeconds" -> s.timeIndexInSeconds,
-        "latitude" -> s.latitude,
-        "longitude" -> s.longitude,
-        "distanceMeters" ->  s.distanceMeters,
-        "altitudeMeters" -> s.altitudeMeters,
-        "temperatureCelsius" -> s.temperatureCelsius,
-        "grade" -> s.grade,
-        "velocityMetersPerSecond" -> s.velocityMetersPerSecond,
-        "heartRate" -> s.heartRate,
-        "cadence" -> s.cadence,
-        "watts" -> s.watts,
-        "moving" -> s.moving
+        'id -> s.id,
+        'activityId -> s.activityId,
+        'timeIndexInSeconds -> s.timeIndexInSeconds,
+        'latitude -> s.latitude,
+        'longitude -> s.longitude,
+        'distanceMeters ->  s.distanceMeters,
+        'altitudeMeters -> s.altitudeMeters,
+        'temperatureCelsius -> s.temperatureCelsius,
+        'grade -> s.grade,
+        'velocityMetersPerSecond -> s.velocityMetersPerSecond,
+        'heartRate -> s.heartRate,
+        'cadence -> s.cadence,
+        'watts -> s.watts,
+        'moving -> s.moving
       )
     }
 

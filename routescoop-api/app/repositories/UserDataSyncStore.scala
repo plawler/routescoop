@@ -5,7 +5,6 @@ import java.time.Instant
 import javax.inject.{Inject, Singleton}
 
 import anorm._
-import com.fasterxml.uuid.Generators
 import play.api.db.Database
 
 

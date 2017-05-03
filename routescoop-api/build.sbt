@@ -11,10 +11,11 @@ libraryDependencies ++= Seq(
   evolutions,
   cache,
   ws,
+  "ch.qos.logback" % "logback-classic" % "1.1.7",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
   "com.github.kiambogo" %% "scrava" % "1.2.2",
   "mysql" % "mysql-connector-java" % "6.0.5",
   "com.typesafe.play" %% "anorm" % "2.5.2",
-  "com.fasterxml.uuid" % "java-uuid-generator" % "3.1.3",
   "org.mockito" % "mockito-core" % "2.2.29" % Test,
   "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test,
   "com.typesafe.akka" %% "akka-testkit" % "2.4.16" % Test

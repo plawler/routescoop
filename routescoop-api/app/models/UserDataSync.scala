@@ -16,6 +16,7 @@ object UserDataSync {
 }
 
 case class StravaDataSyncStarted(sync: UserDataSync)
+case class StravaDataSyncCompleted(syncId: String, completedAt: Instant = Instant.now)
 
 
 

@@ -1,11 +1,12 @@
 package services
 
+import java.time.Instant
 import java.util.UUID
 
 import akka.actor.ActorSystem
 import akka.testkit.{TestKit, TestProbe}
 import fixtures.{LapFixture, StreamFixture}
-import models.{StravaActivityCreated, StravaLapsCreated, StravaStreamsCreated}
+import models._
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
@@ -40,6 +41,8 @@ class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
   system.eventStream.subscribe(listener.ref, classOf[StravaActivityCreated])
   system.eventStream.subscribe(listener.ref, classOf[StravaLapsCreated])
   system.eventStream.subscribe(listener.ref, classOf[StravaStreamsCreated])
+  system.eventStream.subscribe(listener.ref, classOf[StravaActivitySyncCompleted])
+
 
   override def afterAll() = system.terminate()
 
@@ -49,7 +52,8 @@ class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
       when(mockStravaWebService.getActivities(stravaUser.id)).thenReturn(Future.successful(Seq(sampleActivity)))
       when(mockActivityStore.findByUserId(stravaUser.id)).thenReturn(Nil)
 
-      Await.result(service.syncActivities(stravaUser.id), 60 seconds)
+      val result = Await.result(service.syncActivities(userDataSync), 60 seconds)
+      result shouldEqual 1
 
       listener.expectMsgClass(60 seconds, classOf[StravaActivityCreated])
       verify(mockActivityStore).insert(sampleActivity)
@@ -59,7 +63,7 @@ class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
       when(mockStravaWebService.getActivities(stravaUser.id)).thenReturn(Future.successful(remoteActivities))
       when(mockActivityStore.findByUserId(stravaUser.id)).thenReturn(localActivities)
 
-      Await.result(service.syncActivities(stravaUser.id), 60 seconds)
+      Await.result(service.syncActivities(userDataSync), 60 seconds)
 
       listener.expectMsgClass(60 seconds, classOf[StravaActivityCreated])
       verify(mockActivityStore).insert(r3)
@@ -91,13 +95,34 @@ class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
       listener.expectMsgClass(10 seconds, classOf[StravaStreamsCreated])
     }
 
+    "sync an activity's data" in {
+      // have to reset the mocks used in previous verifications
+      reset(mockLapStore)
+      reset(mockStreamStore)
+
+      when(mockStravaWebService.getLaps(sampleActivity)).thenReturn(Future.successful(Seq(sampleLap)))
+      when(mockStravaWebService.getStreams(sampleActivity)).thenReturn(Future.successful(streams))
+
+      val result = Await.result(service.syncActivity(sampleActivity), 3 seconds)
+
+      verify(mockLapStore).insert(sampleLap)
+      verify(mockStreamStore).insertBatch(streams)
+
+      listener.expectMsgClass(10 seconds, classOf[StravaLapsCreated])
+      listener.expectMsgClass(10 seconds, classOf[StravaStreamsCreated])
+      listener.expectMsgClass(10 seconds, classOf[StravaActivitySyncCompleted])
+    }
+
   }
 
 }
 
 trait ActivityServiceFixture extends LapFixture with StreamFixture with MockitoSugar {
+  val dataSyncId = "00000000-0000-0000-0000-000000000001"
   val id1 = "00000000-0000-0000-1111-000000000001"
   val id2 = "00000000-0000-0000-1111-000000000002"
+
+  val userDataSync = UserDataSync(dataSyncId, stravaUser.id, Instant.now)
 
   val a1 = sampleActivity.copy(id = id1, stravaId = 1, userId = stravaUser.id)
   val a2 = sampleActivity.copy(id = id2, stravaId = 2, userId = stravaUser.id)

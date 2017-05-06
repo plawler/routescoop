@@ -5,19 +5,19 @@ import repositories.{StravaActivityStore, StravaLapStore, StravaStreamStore}
 import akka.actor.ActorSystem
 import javax.inject.{Inject, Singleton}
 
-import akka.actor.Status.Success
 import com.typesafe.scalalogging.LazyLogging
 import models._
 
 import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.language.postfixOps
-import scala.util.Failure
 
 trait ActivityService {
 
-  def syncActivities(userId: String): Future[Unit]
+  def syncActivities(userId: String): Future[Int]
+  def syncActivities(userDataSync: UserDataSync): Future[Int]
 
-  def syncActivityData(activityId: String): Future[Unit]
+  def syncActivity(activityId: String): Future[Unit]
+  def syncActivity(activity: StravaActivity): Future[Unit]
 
   def syncLaps(activityId: String): Future[Unit]
 
@@ -36,12 +36,25 @@ class StravaActivityService @Inject()(
   actorSystem: ActorSystem
 )(implicit @NonBlockingContext ec: ExecutionContext) extends ActivityService with LazyLogging {
 
-  override def syncActivities(userId: String): Future[Unit] = {
-    stravaService.getActivities(userId).map { activities =>
+  override def syncActivities(userId: String): Future[Int] = {
+    stravaService.getActivities(userId) map { activities =>
       filterLatest(userId, activities).foreach { activity =>
         activityStore.insert(activity)
         actorSystem.eventStream.publish(StravaActivityCreated(activity))
       }
+      activities.size
+    }
+  }
+
+  override def syncActivities(userDataSync: UserDataSync): Future[Int] = {
+    val userId = userDataSync.userId
+    stravaService.getActivities(userId) map { activities =>
+      filterLatest(userId, activities).foreach { activity =>
+        val activityToSync = activity.copy(dataSyncId = Some(userDataSync.id))
+        activityStore.insert(activity) // todo: add the dataSyncId as a foreign key??
+        actorSystem.eventStream.publish(StravaActivityCreated(activityToSync))
+      }
+      activities.size
     }
   }
 
@@ -49,37 +62,49 @@ class StravaActivityService @Inject()(
     blocking { activityStore.findById(activityId) }
   }
 
-  override def syncActivityData(activityId: String): Future[Unit] = {
-    val f1 = syncLaps(activityId)
-    val f2 = syncStreams(activityId)
+  override def syncActivity(activityId: String): Future[Unit] = {
+    getActivity(activityId) map {
+      case Some(activity) => syncActivity(activity)
+      case None => Future.successful(logger.info(s"No activity found for id $activityId"))
+    }
+  }
+
+  override def syncActivity(activity: StravaActivity): Future[Unit] = {
+    val f1 = syncLaps(activity)
+    val f2 = syncStreams(activity)
     for {
       _ <- f1
       _ <- f2
-    } yield actorSystem.eventStream.publish(StravaActivitiesSynched)
+    } yield actorSystem.eventStream.publish(StravaActivitySyncCompleted(activity))
   }
 
   override def syncLaps(activityId: String): Future[Unit] = {
     // fetch all laps for an activity and send collection to lap store
     getActivity(activityId) flatMap {
-      case Some(activity) => {
-        stravaService.getLaps(activity) map { laps =>
-          laps.foreach(lapStore.insert)
-          actorSystem.eventStream.publish(StravaLapsCreated(activity))
-        }
-      }
+      case Some(activity) => syncLaps(activity)
       case None => Future.successful(logger.info(s"No activity found for id $activityId"))
     }
   }
 
   override def syncStreams(activityId: String): Future[Unit] = {
     getActivity(activityId) flatMap {
-      case Some(activity) => {
-        stravaService.getStreams(activity) map { streams =>
-          streamStore.insertBatch(streams)
-          actorSystem.eventStream.publish(StravaStreamsCreated(activity))
-        }
-      }
+      case Some(activity) => syncStreams(activity)
       case None => Future.successful(logger.info(s"No activity found with id $activityId"))
+    }
+  }
+
+  private def syncLaps(activity: StravaActivity): Future[Unit] = {
+    // fetch all laps for an activity and send collection to lap store
+    stravaService.getLaps(activity) map { laps =>
+      laps.foreach(lapStore.insert) // todo: insertBatch
+      actorSystem.eventStream.publish(StravaLapsCreated(activity))
+    }
+  }
+
+  private def syncStreams(activity: StravaActivity): Future[Unit] = {
+    stravaService.getStreams(activity) map { streams =>
+      streamStore.insertBatch(streams)
+      actorSystem.eventStream.publish(StravaStreamsCreated(activity))
     }
   }
 

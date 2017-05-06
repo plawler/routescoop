@@ -15,8 +15,12 @@ import scala.concurrent.{ExecutionContext, Future, blocking}
 trait UserService {
 
   def createUser(user: User): Future[Unit]
+
   def getUser(userId: String): Future[Option[User]]
-  def startDataSync(user: User): Future[UserDataSync] // DataSyncStarted
+
+  def startDataSync(user: User): Future[UserDataSync]
+
+  def completeDataSync(syncId: String, completedAt: Instant): Future[Unit]
 
 }
 
@@ -36,11 +40,15 @@ class UserServiceImpl @Inject()(
   }
 
   override def startDataSync(user: User): Future[UserDataSync] = Future {
-    val stored = StoredUserDataSync(UUID.randomUUID().toString, user.id, Instant.now)
+    val stored = StoredUserDataSync.create(user.id)
     dataSyncStore.insert(stored)
     val dataSync = UserDataSync(stored.id, stored.userId, stored.startedAt)
     actorSystem.eventStream.publish(StravaDataSyncStarted(dataSync))
     dataSync
+  }
+
+  override def completeDataSync(syncId: String, completedAt: Instant): Future[Unit] = Future {
+    blocking { dataSyncStore.update(syncId, completedAt) }
   }
 
 }

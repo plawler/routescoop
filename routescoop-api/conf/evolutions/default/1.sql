@@ -59,8 +59,10 @@ CREATE TABLE strava_activities (
   averageHeartRate DOUBLE NULL,
   maxHeartRate DOUBLE NULL,
   workoutType INT NULL,
+  dataSyncId VARCHAR(40) NULL,
   PRIMARY KEY (id),
-  FOREIGN KEY fk_users_strava_activities(userId) REFERENCES users(id) ON DELETE CASCADE
+  FOREIGN KEY fk_users_strava_activities(userId) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY fk_user_data_syncs_strava_activities(dataSyncId) REFERENCES user_data_syncs(id)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;

@@ -45,7 +45,8 @@ case class StravaActivity(
   deviceWatts: Option[Boolean] = None,
   averageHeartRate: Option[Double] = None,
   maxHeartRate: Option[Double] = None,
-  workoutType: Option[Int] = None
+  workoutType: Option[Int] = None,
+  dataSyncId: Option[String] = None
 ) extends Activity
 
 object StravaActivity {
@@ -90,9 +91,19 @@ object StravaActivity {
     )
   }
 
+  def create2(user: User, summary: PersonalActivitySummary, syncId: String): StravaActivity = {
+    create(user, summary).copy(dataSyncId = Some(syncId))
+  }
+
+}
+
+sealed trait StravaActivityEvent {
+  def activity: StravaActivity
+  def createdAt: Instant = Instant.now
 }
 
 case class StravaActivityCreated(activity: StravaActivity, createdAt: Instant = Instant.now)
-case class StravaActivitiesSynched(completedAt: Instant = Instant.now)
 case class StravaLapsCreated(activity: StravaActivity, createdAt: Instant = Instant.now)
-case class StravaStreamsCreated(activity: Activity, createdAt: Instant = Instant.now)
+case class StravaStreamsCreated(activity: StravaActivity, createdAt: Instant = Instant.now)
+case class StravaActivitySyncCompleted(activity: StravaActivity, createdAt: Instant = Instant.now)
+

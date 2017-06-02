@@ -2,7 +2,7 @@ package actors
 
 import javax.inject.Inject
 
-import akka.actor.{Actor, ActorLogging, Props}
+import akka.actor.{Actor, ActorLogging, PoisonPill, Props}
 import models.{StravaActivityCreated, StravaActivitySyncCompleted, StravaDataSyncCompleted, StravaDataSyncStarted}
 import modules.NonBlockingContext
 import services.ActivityService
@@ -28,6 +28,8 @@ class ActivityCountMonitor(totalCount: Int) extends Actor with ActorLogging {
     case _ => log.error("encountered an unknown message")
   }
 
+  override def postStop(): Unit = log.info("my work is done here. goodbye.")
+
 }
 
 
@@ -50,6 +52,7 @@ class StravaActivityProcessor @Inject()(activityService: ActivityService)
     case completed: ActivityProcessingCompleted =>
       log.info(s"Finished processing all activities for user data sync ${completed.syncId}")
       context.system.eventStream.publish(StravaDataSyncCompleted(completed.syncId))
+      context.child(completed.syncId) foreach context.stop
     case _ => log.info("unable to process message")
   }
 

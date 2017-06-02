@@ -4,16 +4,18 @@ import java.time.Instant
 import java.util.UUID
 
 import akka.actor.ActorSystem
-import akka.testkit.{TestActorRef, TestKit}
+import akka.testkit.{TestActorRef, TestKit, TestProbe}
 import fixtures.ActivityFixture
-import models.{StravaActivityCreated, StravaActivitySyncCompleted, StravaDataSyncStarted, UserDataSync}
+import models._
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import services.ActivityService
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 /**
   * Created by paullawler on 1/21/17.
@@ -22,10 +24,16 @@ class StravaActivityProcessorSpec extends TestKit(ActorSystem("data-sync-actor-t
   with WordSpecLike
   with Matchers
   with MockitoSugar
+  with BeforeAndAfterAll
   with StravaActivityProcessorFixture {
 
   val mockActivityService = mock[ActivityService]
   val processorRef = TestActorRef(new StravaActivityProcessor(mockActivityService))
+
+  val listener = TestProbe()
+  system.eventStream.subscribe(listener.ref, classOf[StravaDataSyncCompleted])
+
+  override def afterAll() = system.terminate()
 
   "The StravaDataProcessor" should {
 
@@ -41,6 +49,7 @@ class StravaActivityProcessorSpec extends TestKit(ActorSystem("data-sync-actor-t
 
     "monitor the completion of activity syncs" in {
       processorRef ! activitySyncCompleted
+      listener.expectMsgClass(10 seconds, classOf[StravaDataSyncCompleted])
     }
 
   }

@@ -75,26 +75,6 @@ class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
       result shouldEqual Some(sampleActivity)
     }
 
-    "sync an activity's laps" in {
-      when(mockActivityStore.findById(activityId)).thenReturn(Some(sampleActivity))
-      when(mockStravaWebService.getLaps(sampleActivity)).thenReturn(Future.successful(Seq(sampleLap)))
-
-      val result = Await.result(service.syncLaps(activityId), 3 seconds)
-
-      verify(mockLapStore).insert(sampleLap)
-      listener.expectMsgClass(10 seconds, classOf[StravaLapsCreated])
-    }
-
-    "sync an activity's streams" in {
-      when(mockActivityStore.findById(activityId)).thenReturn(Some(sampleActivity))
-      when(mockStravaWebService.getStreams(sampleActivity)).thenReturn(Future.successful(streams))
-
-      val result = Await.result(service.syncStreams(sampleActivity.id), 3 seconds)
-
-      verify(mockStreamStore).insertBatch(streams)
-      listener.expectMsgClass(10 seconds, classOf[StravaStreamsCreated])
-    }
-
     "sync an activity's data" in {
       // have to reset the mocks used in previous verifications
       reset(mockLapStore)
@@ -103,7 +83,7 @@ class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
       when(mockStravaWebService.getLaps(sampleActivity)).thenReturn(Future.successful(Seq(sampleLap)))
       when(mockStravaWebService.getStreams(sampleActivity)).thenReturn(Future.successful(streams))
 
-      val result = Await.result(service.syncActivity(sampleActivity), 3 seconds)
+      val result = Await.result(service.syncActivityDetails(sampleActivity), 3 seconds)
 
       verify(mockLapStore).insert(sampleLap)
       verify(mockStreamStore).insertBatch(streams)

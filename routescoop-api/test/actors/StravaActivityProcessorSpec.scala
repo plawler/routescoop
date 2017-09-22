@@ -35,7 +35,13 @@ class StravaActivityProcessorSpec extends TestKit(ActorSystem("data-sync-actor-t
 
   override def afterAll() = system.terminate()
 
-  "The StravaDataProcessor" should {
+  "The StravaActivityProcessor" should {
+
+    "complete if no activities to process" in {
+      when(mockActivityService.syncActivities(dataSync)).thenReturn(Future.successful(0))
+      processorRef ! started
+      listener.expectMsgClass(10 seconds, classOf[StravaDataSyncCompleted])
+    }
 
     "begin fetching activities" in {
       when(mockActivityService.syncActivities(dataSync)).thenReturn(Future.successful(1))
@@ -44,11 +50,11 @@ class StravaActivityProcessorSpec extends TestKit(ActorSystem("data-sync-actor-t
 
     "fetch activity data" in {
       processorRef ! activityCreated
-      verify(mockActivityService).syncActivity(activityCreated.activity)
+      verify(mockActivityService).syncActivityDetails(activityCreated.activity)
     }
 
     "monitor the completion of activity syncs" in {
-      processorRef ! activitySyncCompleted
+      processorRef ! activitiesCompleted
       listener.expectMsgClass(10 seconds, classOf[StravaDataSyncCompleted])
     }
 
@@ -61,5 +67,6 @@ trait StravaActivityProcessorFixture extends ActivityFixture {
   val started = StravaDataSyncStarted(dataSync)
   val activity = sampleActivity.copy(dataSyncId = Some(dataSync.id))
   val activityCreated = StravaActivityCreated(activity)
-  val activitySyncCompleted = StravaActivitySyncCompleted(activity)
+  val activityCompleted = StravaActivitySyncCompleted(activity)
+  val activitiesCompleted = ActivityProcessingCompleted(dataSync.id)
 }

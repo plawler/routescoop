@@ -13,15 +13,9 @@ import scala.language.postfixOps
 
 trait ActivityService {
 
-  def syncActivities(userId: String): Future[Int]
   def syncActivities(userDataSync: UserDataSync): Future[Int]
 
-  def syncActivity(activityId: String): Future[Unit]
-  def syncActivity(activity: StravaActivity): Future[Unit]
-
-  def syncLaps(activityId: String): Future[Unit]
-
-  def syncStreams(activityId: String): Future[Unit]
+  def syncActivityDetails(activity: StravaActivity): Future[Unit]
 
   def getActivity(activityId: String): Future[Option[StravaActivity]]
 
@@ -36,25 +30,16 @@ class StravaActivityService @Inject()(
   actorSystem: ActorSystem
 )(implicit @NonBlockingContext ec: ExecutionContext) extends ActivityService with LazyLogging {
 
-  override def syncActivities(userId: String): Future[Int] = {
-    stravaService.getActivities(userId) map { activities =>
-      filterLatest(userId, activities).foreach { activity =>
-        activityStore.insert(activity)
-        actorSystem.eventStream.publish(StravaActivityCreated(activity))
-      }
-      activities.size
-    }
-  }
-
   override def syncActivities(userDataSync: UserDataSync): Future[Int] = {
     val userId = userDataSync.userId
-    stravaService.getActivities(userId) map { activities =>
-      filterLatest(userId, activities).foreach { activity =>
+    stravaService.getActivities(userId) map { stravaActivities =>
+      val unprocessedActivities = filterLatest(userId, stravaActivities)
+      unprocessedActivities.foreach { activity =>
         val activityToSync = activity.copy(dataSyncId = Some(userDataSync.id))
         activityStore.insert(activity) // todo: add the dataSyncId as a foreign key??
         actorSystem.eventStream.publish(StravaActivityCreated(activityToSync))
       }
-      activities.size
+      unprocessedActivities.size
     }
   }
 
@@ -62,35 +47,13 @@ class StravaActivityService @Inject()(
     blocking { activityStore.findById(activityId) }
   }
 
-  override def syncActivity(activityId: String): Future[Unit] = {
-    getActivity(activityId) map {
-      case Some(activity) => syncActivity(activity)
-      case None => Future.successful(logger.info(s"No activity found for id $activityId"))
-    }
-  }
-
-  override def syncActivity(activity: StravaActivity): Future[Unit] = {
+  override def syncActivityDetails(activity: StravaActivity): Future[Unit] = {
     val f1 = syncLaps(activity)
     val f2 = syncStreams(activity)
     for {
       _ <- f1
       _ <- f2
     } yield actorSystem.eventStream.publish(StravaActivitySyncCompleted(activity))
-  }
-
-  override def syncLaps(activityId: String): Future[Unit] = {
-    // fetch all laps for an activity and send collection to lap store
-    getActivity(activityId) flatMap {
-      case Some(activity) => syncLaps(activity)
-      case None => Future.successful(logger.info(s"No activity found for id $activityId"))
-    }
-  }
-
-  override def syncStreams(activityId: String): Future[Unit] = {
-    getActivity(activityId) flatMap {
-      case Some(activity) => syncStreams(activity)
-      case None => Future.successful(logger.info(s"No activity found with id $activityId"))
-    }
   }
 
   private def syncLaps(activity: StravaActivity): Future[Unit] = {

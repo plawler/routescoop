@@ -8,7 +8,7 @@ import akka.testkit.{TestKit, TestProbe}
 import fixtures.{LapFixture, StreamFixture}
 import models._
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import repositories.{StravaActivityStore, StravaLapStore, StravaStreamStore}
 

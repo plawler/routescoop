@@ -23,7 +23,7 @@ trait ActivityService {
 
 @Singleton
 class StravaActivityService @Inject()(
-  stravaService: StravaWebService,
+  stravaWebService: StravaWebService,
   activityStore: StravaActivityStore,
   lapStore: StravaLapStore,
   streamStore: StravaStreamStore,
@@ -32,7 +32,7 @@ class StravaActivityService @Inject()(
 
   override def syncActivities(userDataSync: UserDataSync): Future[Int] = {
     val userId = userDataSync.userId
-    stravaService.getActivities(userId) map { stravaActivities =>
+    stravaWebService.getActivities(userId) map { stravaActivities =>
       val unprocessedActivities = filterLatest(userId, stravaActivities)
       unprocessedActivities.foreach { activity =>
         val activityToSync = activity.copy(dataSyncId = Some(userDataSync.id))
@@ -58,14 +58,14 @@ class StravaActivityService @Inject()(
 
   private def syncLaps(activity: StravaActivity): Future[Unit] = {
     // fetch all laps for an activity and send collection to lap store
-    stravaService.getLaps(activity) map { laps =>
+    stravaWebService.getLaps(activity) map { laps =>
       laps.foreach(lapStore.insert) // todo: insertBatch
       actorSystem.eventStream.publish(StravaLapsCreated(activity))
     }
   }
 
   private def syncStreams(activity: StravaActivity): Future[Unit] = {
-    stravaService.getStreams(activity) map { streams =>
+    stravaWebService.getStreams(activity) map { streams =>
       streamStore.insertBatch(streams)
       actorSystem.eventStream.publish(StravaStreamsCreated(activity))
     }

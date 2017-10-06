@@ -2,7 +2,7 @@ package services
 
 import fixtures.ActivityFixture
 import models.StravaActivity
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{Matchers, WordSpec}
 import org.mockito.Mockito._
 

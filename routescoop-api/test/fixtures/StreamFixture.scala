@@ -11,17 +11,19 @@ trait StreamFixture extends ActivityFixture {
     "theSampleStream",
     sampleActivity.id,
     0,
-    Some(34.076626f),
-    Some(-84.27327f),
-    Some(0.0f),
-    Some(227.4f),
+    Some(34.076626),
+    Some(-84.27327),
+    Some(0.0),
+    Some(227.4),
     Some(21),
-    Some(0.0f),
-    Some(0.0f),
+    Some(0.0),
+    Some(0.0),
     Some(87),
     Some(77),
     Some(193),
     Some(false)
   )
+
+
 
 }

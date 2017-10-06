@@ -4,7 +4,7 @@ version := "1.0-SNAPSHOT"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.11.11"
 
 libraryDependencies ++= Seq(
   jdbc,
@@ -17,7 +17,7 @@ libraryDependencies ++= Seq(
   "mysql" % "mysql-connector-java" % "6.0.5",
   "com.typesafe.play" %% "anorm" % "2.5.2",
   "org.mockito" % "mockito-core" % "2.2.29" % Test,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test,
+  "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % Test,
   "com.typesafe.akka" %% "akka-testkit" % "2.4.16" % Test
 )
 

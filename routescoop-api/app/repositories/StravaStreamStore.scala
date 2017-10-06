@@ -20,6 +20,8 @@ trait StravaStreamStore {
 
   def insertBatch(streams: Seq[StravaStream]): Unit
 
+  def findByActivityId(activityId: String): Seq[StravaStream]
+
 }
 
 class StravaStreamStoreImpl @Inject()(db: Database)(implicit @BlockingContext ec: ExecutionContext)
@@ -123,6 +125,12 @@ class StravaStreamStoreImpl @Inject()(db: Database)(implicit @BlockingContext ec
     }
 
     BatchSql(sql, parameters.head, parameters.tail: _*).execute()
+  }
+
+  override def findByActivityId(activityId: String) = db.withConnection { implicit conn =>
+    SQL"""
+          SELECT * FROM #$StravaStreamsTable WHERE activityId = $activityId
+      """.as(StravaStream.parser.*)
   }
 
   private def fastBatch(streams: Seq[StravaStream]) = ??? // https://stackoverflow.com/questions/24573242/batch-insert-with-table-that-has-many-columns-using-anorm

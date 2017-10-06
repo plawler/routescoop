@@ -37,6 +37,11 @@ class StravaStreamStoreSpec extends WordSpec with Matchers with StreamStoreFixtu
       streamStore.insertBatch(batchOfStreams)
     }
 
+    "fetch a list of streams by activity" in {
+      val stravaStreams = streamStore.findByActivityId(testActivity.id)
+      stravaStreams.size shouldEqual 2
+    }
+
   }
 
 }

@@ -6,7 +6,10 @@ import kiambogo.scrava.models.PersonalActivitySummary
 import java.time.Instant
 import java.util.UUID
 
-sealed trait Activity
+sealed trait Activity {
+  val id: String
+  val startedAt: Instant
+}
 
 /**
   * distances are in meters

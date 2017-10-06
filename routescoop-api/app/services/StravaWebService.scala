@@ -48,7 +48,7 @@ class ScravaWebService @Inject()(userService: UserService)(implicit @NonBlocking
     getWebClient(activity.userId) map {
       case Some(client) =>
         val streams = client.retrieveActivityStream(activity.stravaId.toString) // todo: handle exception if record not found
-        pivotAndHash(streams) map (raw => StravaStream.create(activity, raw))
+        pivotThenMap(streams) map (raw => StravaStream.createFromScrava(activity, raw))
       case None => Nil
     }
   }
@@ -76,7 +76,7 @@ class ScravaWebService @Inject()(userService: UserService)(implicit @NonBlocking
 
   private def getUser(userId: String) = userService.getUser(userId)
 
-  private def pivotAndHash(streams: List[Streams]): List[Map[String, Any]] = {
+  private def pivotThenMap(streams: List[Streams]): List[Map[String, Any]] = { // todo break up into 2 functions
     val types = streams map (_.`type`)
     val data = streams map (_.data)
     val pivoted = data.transpose

@@ -1,8 +1,8 @@
 package metrics
 
-case class Result(startIndex: Int, value: Int)
+case class Result(index: Int, value: Int)
 
-object AnalysisUtils {
+object PowerMetricsUtils {
 
   // inspired by https://stackoverflow.com/questions/1319891/calculating-the-moving-average-of-a-list
 
@@ -12,7 +12,7 @@ object AnalysisUtils {
     *
     * @param values
     * @param interval
-    * @return the value of the maximum power effort for the interval
+    * @return the maximum average value for the interval
     */
   def maxAverage(values: Seq[Int], interval: Int): Int = {
     rollingAverage(values, interval).max
@@ -24,15 +24,10 @@ object AnalysisUtils {
     *
     * @param values
     * @param interval
-    * @return a tuple containing the max power effort indexed by the interval
+    * @return a tuple containing the maximum average value with its index
     */
   def maxAverageWithIndex(values: Seq[Int], interval: Int): (Int, Int) = {
-    rollingAverageIncludeIndex(values, interval).maxBy(_._2)
-  }
-
-  def maxAverageResult(values: Seq[Int], interval: Int): Result = {
-    val (startIdx, value) = maxAverageWithIndex(values, interval)
-    Result(startIdx, value)
+    rollingAverage(values, interval).zipWithIndex.maxBy(_._1)
   }
 
   /**
@@ -47,11 +42,15 @@ object AnalysisUtils {
     * @param values
     * @return
     */
-  def normalizedPower(values: Seq[Int]): Double = {
-    val thirties = rollingAverage(values, 30)
-    val raised = thirties.map(n => scala.math.pow(n, 4))
-    val avg = raised.sum / raised.size
-    scala.math.pow(avg, 1.0/4)
+  def normalizedPower(values: Seq[Int]): Option[Int] = {
+    if (values.length < 30) {
+      None
+    } else {
+      val thirties = rollingAverage(values, 30)
+      val raised = thirties.map(n => scala.math.pow(n, 4))
+      val avg = raised.sum / raised.size
+      Some(scala.math.pow(avg, 1.0 / 4).toInt)
+    }
   }
 
   def rollingAverage(values: Seq[Int], interval: Int): Seq[Int] = {
@@ -66,25 +65,16 @@ object AnalysisUtils {
     }.reverse
   }
 
-  // can this be made sexier with typeclass implicits?
-  def rollingAverageIncludeIndex(values: Seq[Int], interval: Int): Seq[(Int, Int)] = {
-    for {
-      (watts, idx) <- rollingAverage(values, interval).zipWithIndex
-    } yield {
-      (idx+1, watts)
-    }
-  }
-
-//  def rollingAveragePadded(values: Seq[Int], interval: Int): Seq[Int] = {
-//    val first = (values take interval).sum / interval
-//    val subtract = values map (_ / interval)
-//    val add = subtract drop interval
-//    val addAndSubtract = add zip subtract map (as => as._1 - as._2)
-//
-//    addAndSubtract.foldLeft(first :: List.fill(interval - 1)(0)) { (acc, add) =>
-//      (add + acc.head) +: acc
-//    }.reverse
-//  }
+  //  def rollingAveragePadded(values: Seq[Int], interval: Int): Seq[Int] = {
+  //    val first = (values take interval).sum / interval
+  //    val subtract = values map (_ / interval)
+  //    val add = subtract drop interval
+  //    val addAndSubtract = add zip subtract map (as => as._1 - as._2)
+  //
+  //    addAndSubtract.foldLeft(first :: List.fill(interval - 1)(0)) { (acc, add) =>
+  //      (add + acc.head) +: acc
+  //    }.reverse
+  //  }
 
 
 }

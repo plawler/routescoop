@@ -3,7 +3,7 @@ package services
 import java.util.UUID
 
 import fixtures.StreamFixture
-import models.StravaStream
+import models.{PowerEffort, StravaStream}
 import org.scalatest.{Matchers, WordSpec}
 import org.mockito.Mockito._
 import org.mockito.ArgumentMatchers.any
@@ -31,7 +31,7 @@ class PowerAnalysisServiceSpec extends WordSpec with Matchers with MockitoSugar 
 
       val largestEffort = efforts.head // 1 second interval is the largest
       largestEffort.criticalPower shouldEqual 240
-      // start time for largest effort in this case should be (activity start time) + (max interval seconds)
+      // start time for largest effort in this case should be (activity start time) + (index of largest interval)
       largestEffort.startedAt shouldEqual sampleActivity.startedAt.plusSeconds(streamData.last.timeIndexInSeconds)
 
       val smallestEffort = efforts.last // 40 second interval is the smallest
@@ -46,15 +46,9 @@ class PowerAnalysisServiceSpec extends WordSpec with Matchers with MockitoSugar 
       verify(mockPowerEffortStore, times(40)).insert(any(classOf[PowerEffort]))
     }
 
-    "fetch the power efforts" in new Fixture {
-      //      when(mockPowerEffortStore.findByActivityId(sampleActivity.id)).thenReturn()
-      //      service.getEffortsByActivityId(sampleActivity.id)
-    }
-
-
   }
 
-  trait Fixture extends StreamFixture {
+  trait Fixture extends StreamFixture { // todo move to EffortFixture
     val mockStreamStore = mock[StravaStreamStore]
     val mockPowerEffortStore = mock[PowerEffortStore]
     val service = new PowerAnalysisService(mockStreamStore, mockPowerEffortStore)

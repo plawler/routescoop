@@ -1,11 +1,9 @@
 package services
 
-import java.time.Instant
 import javax.inject.{Inject, Singleton}
 
-import metrics.AnalysisUtils._
-import metrics.Result
-import models.Activity
+import metrics.PowerMetricsUtils._
+import models.{Activity, PowerEffort}
 import repositories.{PowerEffortStore, StravaStreamStore}
 
 
@@ -21,64 +19,41 @@ class PowerAnalysisService @Inject()(streamStore: StravaStreamStore, effortStore
 
   def saveEfforts(efforts: Seq[PowerEffort]): Unit = efforts foreach effortStore.insert
 
-  private def calculatePowerEffort(activity: Activity, interval: Int, powerData: Seq[Int], hrData: Seq[Int]): PowerEffort = {
-    val cpResult = maxAverageResult(powerData, interval)
-    val avgHr = avgHeartRate(interval, hrData, cpResult)
-    if (interval >= 30) {
-      val np = normalizedPower(powerData).toInt
-      PowerEffort(activity, interval, cpResult.startIndex, avgHr, cpResult.value, np)
-    } else PowerEffort(activity, interval, cpResult.startIndex, avgHr, cpResult.value)
+  def getEffortsByActivityId(activityId: String): Seq[PowerEffort] = {
+    effortStore.findByActivityId(activityId)
   }
 
-  private def avgHeartRate(interval: Int, hrData: Seq[Int], maxAvg: Result): Int = {
-    val from = maxAvg.startIndex - 1
-    val to = from + interval
-    hrData.slice(from, to).sum / interval
+  private def calculatePowerEffort(activity: Activity, length: Int, powerData: Seq[Int], hrData: Seq[Int]): PowerEffort = {
+    val interval = Interval(length, powerData, hrData)
+    PowerEffort(
+      activity,
+      interval.lengthInSeconds,
+      interval.startSecond,
+      interval.avgHeartRate,
+      interval.criticalPower,
+      interval.normalizedPower
+    )
   }
 
 }
 
-case class PowerEffort(
-  activityId: String,
-  intervalLengthInSeconds: Int,
-  startedAt: Instant,
-  avgHeartRate: Int,
+case class Interval(
+  lengthInSeconds: Int,
+  startSecond: Int, // the second in the stream that calculated maximum effort was found
   criticalPower: Int,
-  normalizedPower: Option[Int] = None // np is not valuable in lower time ranges
+  avgHeartRate: Int,
+  normalizedPower: Option[Int]
 )
 
-object PowerEffort {
-
-  def apply(
-    activity: Activity,
-    intervalLengthInSeconds: Int,
-    startAtSecond: Int,
-    avgHeartRate: Int,
-    criticalPower: Int
-  ): PowerEffort =
-    new PowerEffort(
-      activity.id,
-      intervalLengthInSeconds,
-      activity.startedAt.plusSeconds(startAtSecond),
-      avgHeartRate,
-      criticalPower
-    )
-
-  def apply(
-    activity: Activity,
-    intervalLengthInSeconds: Int,
-    startAtSecond: Int,
-    avgHeartRate: Int,
-    criticalPower: Int,
-    normalizedPower: Int
-  ): PowerEffort =
-    new PowerEffort(
-      activity.id,
-      intervalLengthInSeconds,
-      activity.startedAt.plusSeconds(startAtSecond),
-      avgHeartRate,
-      criticalPower,
-      Some(normalizedPower)
-    )
-
+object Interval {
+  def apply(length: Int, powerData: Seq[Int], hrData: Seq[Int]): Interval = {
+    val result = maxAverageWithIndex(powerData, length)
+    val from = result._2
+    val to = from + length
+    val start = result._2 + 1 // index is zero based but we don't do zero length intervals, right?
+    val cp = result._1
+    val hr = hrData.slice(from, to).sum / length
+    val np = normalizedPower(powerData.slice(from, to))
+    new Interval(length, start, cp, hr, np)
+  }
 }

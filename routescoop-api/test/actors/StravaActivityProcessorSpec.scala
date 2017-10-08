@@ -8,7 +8,7 @@ import akka.testkit.{TestActorRef, TestKit, TestProbe}
 import fixtures.ActivityFixture
 import models._
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import services.ActivityService
 

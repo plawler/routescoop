@@ -1,9 +1,9 @@
 package metrics
 
 import org.scalatest.{FlatSpec, Matchers}
-import AnalysisUtils._
+import PowerMetricsUtils._
 
-class AnalysisUtilsSpec extends FlatSpec with Matchers {
+class PowerMetricsUtilsSpec extends FlatSpec with Matchers with Fixture {
 
   "Power metrics" should "calculate mean max power" in {
     for {
@@ -20,16 +20,23 @@ class AnalysisUtilsSpec extends FlatSpec with Matchers {
   }
 
   it should "calculate a rolling average" in {
-    val data = Seq(100, 150, 200, 100, 150, 150, 150, 200, 100, 200)
-    val rolled = rollingAverage(data, 3)
+    val rolled = rollingAverage(data, interval)
     rolled shouldBe Seq(150, 150, 150, 134, 151, 167, 150, 166)
+  }
+
+  it should "calculate the max value with index in a rolling average" in {
+    val data = Seq(100, 150, 200, 100, 150, 150, 150, 200, 100, 200)
+    maxAverageWithIndex(data, interval) shouldEqual (167, 5)
   }
 
   it should "calculate normalized power" in {
     val data = 1 to 1000 map (n => 200)
-    normalizedPower(data) shouldEqual 200
+    normalizedPower(data) shouldEqual Some(200)
+    normalizedPower(data.take(29)) shouldBe None
   }
-
 }
 
-case class IndexedWatts(startingAtSecond: Int, watts: Int)
+trait Fixture {
+  val data = Seq(100, 150, 200, 100, 150, 150, 150, 200, 100, 200)
+  val interval = 3
+}

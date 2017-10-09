@@ -25,7 +25,7 @@ class PowerAnalysisService @Inject()(streamStore: StravaStreamStore, effortStore
 
   private def calculatePowerEffort(activity: Activity, length: Int, powerData: Seq[Int], hrData: Seq[Int]): PowerEffort = {
     val interval = Interval(length, powerData, hrData)
-    PowerEffort(
+    PowerEffort.create(
       activity,
       interval.lengthInSeconds,
       interval.startSecond,

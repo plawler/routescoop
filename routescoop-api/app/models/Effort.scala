@@ -2,6 +2,8 @@ package models
 
 import java.time.Instant
 
+import anorm.{Macro, RowParser}
+
 sealed trait Effort
 
 case class PowerEffort(
@@ -14,7 +16,10 @@ case class PowerEffort(
 ) extends Effort
 
 object PowerEffort {
-  def apply(
+
+  implicit val parser: RowParser[PowerEffort] = Macro.namedParser[PowerEffort]
+
+  def create(
     activity: Activity,
     intervalLengthInSeconds: Int,
     startAtSecond: Int,
@@ -30,4 +35,5 @@ object PowerEffort {
       criticalPower,
       normalizedPower
     )
+
 }

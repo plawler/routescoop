@@ -2,7 +2,7 @@ package controllers
 
 import fixtures.UserFixture
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.http.{HeaderNames, MimeTypes}
 import play.api.libs.json.Json

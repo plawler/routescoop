@@ -19,6 +19,7 @@ class StravaActivityStoreSpec extends WordSpec with Matchers with ActivityStoreF
 
     "delete all data" in {
       activityStore.destroy()
+      userStore.destroy()
     }
 
     "insert a new activity" in {

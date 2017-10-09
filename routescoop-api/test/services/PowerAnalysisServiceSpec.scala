@@ -2,7 +2,7 @@ package services
 
 import java.util.UUID
 
-import fixtures.StreamFixture
+import fixtures.{PowerEffortFixture, StreamFixture}
 import models.{PowerEffort, StravaStream}
 import org.scalatest.{Matchers, WordSpec}
 import org.mockito.Mockito._
@@ -48,22 +48,10 @@ class PowerAnalysisServiceSpec extends WordSpec with Matchers with MockitoSugar 
 
   }
 
-  trait Fixture extends StreamFixture { // todo move to EffortFixture
+  trait Fixture extends PowerEffortFixture { // todo move to EffortFixture
     val mockStreamStore = mock[StravaStreamStore]
     val mockPowerEffortStore = mock[PowerEffortStore]
     val service = new PowerAnalysisService(mockStreamStore, mockPowerEffortStore)
-
-    val streams = for {
-      second <- 1 to 40
-    } yield {
-      StravaStream(
-        UUID.randomUUID().toString,
-        sampleActivity.id,
-        second,
-        heartRate = Some(140),
-        watts = Some(200)
-      )
-    }
   }
 
 }

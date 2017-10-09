@@ -44,7 +44,7 @@ class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
   system.eventStream.subscribe(listener.ref, classOf[StravaActivitySyncCompleted])
 
 
-  override def afterAll() = system.terminate()
+  override def afterAll() = TestKit.shutdownActorSystem(system)
 
   "The Strava Service" should {
 

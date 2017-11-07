@@ -94,15 +94,6 @@ object StravaActivity {
     )
   }
 
-  def create2(user: User, summary: PersonalActivitySummary, syncId: String): StravaActivity = {
-    create(user, summary).copy(dataSyncId = Some(syncId))
-  }
-
-}
-
-sealed trait StravaActivityEvent {
-  def activity: StravaActivity
-  def createdAt: Instant = Instant.now
 }
 
 case class StravaActivityCreated(activity: StravaActivity, createdAt: Instant = Instant.now)

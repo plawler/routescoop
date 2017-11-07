@@ -3,6 +3,8 @@ package metrics
 import org.scalatest.{FlatSpec, Matchers}
 import PowerMetricsUtils._
 
+import scala.io.Source
+
 class PowerMetricsUtilsSpec extends FlatSpec with Matchers with Fixture {
 
   "Power metrics" should "calculate mean max power" in {
@@ -20,13 +22,14 @@ class PowerMetricsUtilsSpec extends FlatSpec with Matchers with Fixture {
   }
 
   it should "calculate a rolling average" in {
-    val rolled = rollingAverage(data, interval)
-    rolled shouldBe Seq(150, 150, 150, 134, 151, 167, 150, 166)
+    val rolled = rollingAverage(data, interval) map (_.toInt)
+    rolled shouldBe Seq(150, 150, 150, 133, 149, 166, 149, 166)
+
   }
 
   it should "calculate the max value with index in a rolling average" in {
     val data = Seq(100, 150, 200, 100, 150, 150, 150, 200, 100, 200)
-    maxAverageWithIndex(data, interval) shouldEqual (167, 5)
+    maxAverageWithIndex(data, interval) shouldEqual (166, 5)
   }
 
   it should "calculate normalized power" in {
@@ -34,6 +37,15 @@ class PowerMetricsUtilsSpec extends FlatSpec with Matchers with Fixture {
     normalizedPower(data) shouldEqual Some(200)
     normalizedPower(data.take(29)) shouldBe None
   }
+
+  it should "calculate power metrics with real data" in {
+    val watts = Thread.currentThread.getContextClassLoader.getResourceAsStream("watts.txt")
+    val line = Source.fromInputStream(watts).getLines()
+    val data = line.mkString.split(",").toList
+    println(movingAverage(data.map(_.toDouble), 60 * 30).max)
+    println(rollingAverage(data.map(_.toInt), 60 * 30).max)
+  }
+
 }
 
 trait Fixture {

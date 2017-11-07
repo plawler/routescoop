@@ -129,7 +129,7 @@ class StravaStreamStoreImpl @Inject()(db: Database)(implicit @BlockingContext ec
 
   override def findByActivityId(activityId: String) = db.withConnection { implicit conn =>
     SQL"""
-          SELECT * FROM #$StravaStreamsTable WHERE activityId = $activityId
+          SELECT * FROM #$StravaStreamsTable WHERE activityId = $activityId order by timeIndexInSeconds
       """.as(StravaStream.parser.*)
   }
 

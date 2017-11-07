@@ -15,7 +15,8 @@ object PowerMetricsUtils {
     * @return the maximum average value for the interval
     */
   def maxAverage(values: Seq[Int], interval: Int): Int = {
-    rollingAverage(values, interval).max
+//    rollingAverage(values, interval).max
+    rollingAverage(values, interval).max.toInt
   }
 
   /**
@@ -24,10 +25,11 @@ object PowerMetricsUtils {
     *
     * @param values
     * @param interval
-    * @return a tuple containing the maximum average value with its index
+    * @return a tuple containing the maximum average value with its index (zero-based)
     */
   def maxAverageWithIndex(values: Seq[Int], interval: Int): (Int, Int) = {
-    rollingAverage(values, interval).zipWithIndex.maxBy(_._1)
+    val (max, idx) = rollingAverage(values, interval).zipWithIndex.maxBy(_._1) // zipWithIndex is zero-based
+    (max.toInt, idx)
   }
 
   /**
@@ -53,10 +55,10 @@ object PowerMetricsUtils {
     }
   }
 
-  def rollingAverage(values: Seq[Int], interval: Int): Seq[Int] = {
+  def rollingAverage(values: Seq[Int], interval: Int): Seq[Double] = {
     if (interval == 0) throw new IllegalArgumentException("Cannot calculate with zero interval")
-    val first = (values take interval).sum / interval
-    val subtract = values map (_ / interval)
+    val first = (values take interval).sum.toDouble / interval
+    val subtract = values map (_.toDouble / interval)
     val add = subtract drop interval
     val addAndSubtract = add zip subtract map (as => as._1 - as._2)
 
@@ -65,16 +67,15 @@ object PowerMetricsUtils {
     }.reverse
   }
 
-  //  def rollingAveragePadded(values: Seq[Int], interval: Int): Seq[Int] = {
-  //    val first = (values take interval).sum / interval
-  //    val subtract = values map (_ / interval)
-  //    val add = subtract drop interval
-  //    val addAndSubtract = add zip subtract map (as => as._1 - as._2)
-  //
-  //    addAndSubtract.foldLeft(first :: List.fill(interval - 1)(0)) { (acc, add) =>
-  //      (add + acc.head) +: acc
-  //    }.reverse
-  //  }
-
+  def movingAverage(values: List[Double], period: Int): List[Double] = {
+    val first = (values take period).sum / period
+    val subtract = values map (_ / period)
+    val add = subtract drop period
+    val addAndSubtract = add zip subtract map Function.tupled(_ - _)
+    val res = addAndSubtract.foldLeft(first :: List.fill(period - 1)(0.0)) { (acc, add) =>
+      (add + acc.head) :: acc
+    }.reverse
+    res
+  }
 
 }

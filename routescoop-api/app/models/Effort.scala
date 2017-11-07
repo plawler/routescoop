@@ -37,3 +37,5 @@ object PowerEffort {
     )
 
 }
+
+case class PowerEffortsCreated(activity: Activity, createdAt: Instant = Instant.now)

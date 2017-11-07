@@ -20,6 +20,7 @@ class ApplicationModule extends AbstractModule {
     bind(classOf[ActivityService]).to(classOf[StravaActivityService])
 
     bind(classOf[PowerEffortStore]).to(classOf[PowerEffortStoreImpl])
+    bind(classOf[PowerAnalysisService])
 
     bind(classOf[StravaWebService]).to(classOf[ScravaWebService])
   }

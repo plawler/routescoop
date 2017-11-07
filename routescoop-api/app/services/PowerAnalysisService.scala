@@ -2,19 +2,21 @@ package services
 
 import javax.inject.{Inject, Singleton}
 
+import akka.actor.ActorSystem
 import metrics.PowerMetricsUtils._
-import models.{Activity, PowerEffort}
+import models.{Activity, PowerEffort, PowerEffortsCreated}
 import repositories.{PowerEffortStore, StravaStreamStore}
 
 
 @Singleton
 class PowerAnalysisService @Inject()(streamStore: StravaStreamStore, effortStore: PowerEffortStore) {
-
+  
   def createEfforts(activity: Activity): Seq[PowerEffort] = {
-    val (intervals, wattsData, hrData) = streamStore.findByActivityId(activity.id).map { stream =>
+    val (times, wattsData, hrData) = streamStore.findByActivityId(activity.id).map { stream =>
       (stream.timeIndexInSeconds, stream.watts.getOrElse(0), stream.heartRate.getOrElse(0))
     }.unzip3
-    intervals map (interval => calculatePowerEffort(activity, interval, wattsData, hrData))
+
+    for (interval <- 1 to times.last) yield calculatePowerEffort(activity, interval, wattsData, hrData)
   }
 
   def saveEfforts(efforts: Seq[PowerEffort]): Unit = efforts foreach effortStore.insert

@@ -3,7 +3,7 @@ package controllers
 import javax.inject.Inject
 
 import akka.actor.ActorSystem
-import models.User
+import models.{CreateUserSettings, UserSettings, User}
 import modules.NonBlockingContext
 import play.api.libs.json.{JsError, Json}
 import play.api.mvc.{Action, Controller}
@@ -34,6 +34,16 @@ class Users @Inject()(userService: UserService, actorSystem: ActorSystem)
       case Some(user) => userService.startDataSync(user) map (sync => Ok(Json.toJson(sync)))
       case None => Future.successful(NotFound(s"User not found with id $userId"))
     }
+  }
+
+  def createSettings(id: String) = Action.async(parse.json) { implicit request =>
+    request.body.validate[CreateUserSettings].fold(
+      errors => Future.successful(BadRequest(JsError.toJson(errors))),
+      createSettings => {
+        val userSettings = UserSettings.of(createSettings)
+        userService.createSettings(userSettings) map (_ => Ok(Json.toJson(userSettings)))
+      }
+    )
   }
 
 }

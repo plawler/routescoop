@@ -130,6 +130,19 @@ CREATE TABLE power_efforts (
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
 
+CREATE TABLE user_settings (
+  id VARCHAR(40) NOT NULL,
+  userId VARCHAR(40) NOT NULL,
+  createdAt TIMESTAMP NOT NULL,
+  weight INT NULL,
+  ftp INT NULL,
+  maxHeartRate INT NULL,
+  PRIMARY KEY (id),
+  FOREIGN KEY fk_user_user_settings(userId) REFERENCES users(id) ON DELETE CASCADE
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
+
 
 
 # --- !Downs
@@ -140,5 +153,6 @@ DROP TABLE strava_streams;
 DROP TABLE strava_laps;
 DROP TABLE strava_activities;
 
+DROP TABLE user_settings;
 DROP TABLE user_data_syncs;
 DROP TABLE users;

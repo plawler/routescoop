@@ -12,6 +12,7 @@ class ApplicationModule extends AbstractModule {
   override def configure(): Unit = {
     bind(classOf[UserStore]).to(classOf[UserSqlStore])
     bind(classOf[UserDataSyncStore]).to(classOf[UserDataSyncSqlStore])
+    bind(classOf[UserSettingsStore]).to(classOf[UserSettingsSqlStore])
     bind(classOf[UserService]).to(classOf[UserServiceImpl])
 
     bind(classOf[StravaActivityStore]).to(classOf[StravaActivityStoreImpl])

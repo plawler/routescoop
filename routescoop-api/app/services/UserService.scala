@@ -1,13 +1,12 @@
 package services
 
 import java.time.Instant
-import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.ActorSystem
-import models.{StravaDataSyncStarted, User, UserDataSync}
+import models._
 import modules.NonBlockingContext
-import repositories.{StoredUserDataSync, UserDataSyncStore, UserStore}
+import repositories.{StoredUserDataSync, UserDataSyncStore, UserSettingsStore, UserStore}
 
 import scala.concurrent.{ExecutionContext, Future, blocking}
 
@@ -22,12 +21,15 @@ trait UserService {
 
   def completeDataSync(syncId: String, completedAt: Instant): Future[Unit]
 
+  def createSettings(settings: UserSettings): Future[Unit]
+
 }
 
 @Singleton
 class UserServiceImpl @Inject()(
   userStore: UserStore,
   dataSyncStore: UserDataSyncStore,
+  settingsStore: UserSettingsStore,
   actorSystem: ActorSystem
 )(implicit @NonBlockingContext ec: ExecutionContext) extends UserService {
 
@@ -49,6 +51,10 @@ class UserServiceImpl @Inject()(
 
   override def completeDataSync(syncId: String, completedAt: Instant): Future[Unit] = Future {
     blocking { dataSyncStore.update(syncId, completedAt) }
+  }
+
+  override def createSettings(settings: UserSettings): Future[Unit] = Future {
+    blocking { settingsStore.insert(settings) }
   }
 
 }

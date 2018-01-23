@@ -36,7 +36,7 @@ class Users @Inject()(userService: UserService, actorSystem: ActorSystem)
     }
   }
 
-  def createSettings(id: String) = Action.async(parse.json) { implicit request =>
+  def createSettings(userId: String) = Action.async(parse.json) { implicit request =>
     request.body.validate[CreateUserSettings].fold(
       errors => Future.successful(BadRequest(JsError.toJson(errors))),
       createSettings => {
@@ -44,6 +44,12 @@ class Users @Inject()(userService: UserService, actorSystem: ActorSystem)
         userService.createSettings(userSettings) map (_ => Ok(Json.toJson(userSettings)))
       }
     )
+  }
+
+  def getAllSettings(userId: String) = Action.async { implicit request =>
+    userService.getAllSettings(userId) map { settingsList =>
+      Ok(Json.toJson(settingsList))
+    }
   }
 
 }

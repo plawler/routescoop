@@ -23,6 +23,8 @@ trait UserService {
 
   def createSettings(settings: UserSettings): Future[Unit]
 
+  def getAllSettings(userId: String): Future[Seq[UserSettings]]
+
 }
 
 @Singleton
@@ -57,4 +59,7 @@ class UserServiceImpl @Inject()(
     blocking { settingsStore.insert(settings) }
   }
 
+  override def getAllSettings(userId: String) = Future {
+    blocking { settingsStore.findByUserId(userId)}
+  }
 }

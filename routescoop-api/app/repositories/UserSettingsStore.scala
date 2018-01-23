@@ -16,6 +16,9 @@ trait UserSettingsStore {
 
   def insert(settings: UserSettings): Unit
   def destroy(): Unit
+  def findById(id: String): Option[UserSettings]
+  def findByUserId(userId: String): Seq[UserSettings]
+  def delete(id: String): Unit
 
 }
 
@@ -44,4 +47,21 @@ class UserSettingsSqlStore @Inject()(db: Database)(implicit @BlockingContext ec:
       """.execute()
   }
 
+  override def findById(id: String): Option[UserSettings] = db.withConnection { implicit conn =>
+    SQL"""
+          SELECT * from #$UserSettingsTable WHERE id = $id
+      """.as(UserSettings.parser.singleOpt)
+  }
+
+  override def delete(id: String): Unit = db.withTransaction { implicit conn =>
+    SQL"""
+          DELETE FROM #$UserSettingsTable WHERE id = $id
+      """.execute()
+  }
+
+  override def findByUserId(userId: String): Seq[UserSettings] = db.withConnection { implicit conn =>
+    SQL"""
+          SELECT * FROM #$UserSettingsTable WHERE userId = $userId ORDER BY createdAt
+      """.as(UserSettings.parser.*)
+  }
 }

@@ -14,12 +14,27 @@ class UserSettingsStoreSpec extends WordSpec with Matchers with UserFixture {
   "The UserSettingsStore" should {
 
     "delete all data" in {
+      userStore.destroy()
       userSettingsStore.destroy()
     }
 
     "insert a user settings" in new UserSettingsFixture {
       userStore.insert(user)
       userSettingsStore.insert(settings)
+    }
+
+    "retrieve a user settings" in new UserSettingsFixture {
+      userSettingsStore.findById(settings.id) foreach(_ shouldEqual settings)
+    }
+
+    "retrieve all user settings for a user" in new UserSettingsFixture {
+      val settingsList = userSettingsStore.findByUserId(user.id)
+      settingsList shouldEqual Seq(settings)
+    }
+
+    "delete a user settings" in new UserSettingsFixture {
+      userSettingsStore.delete(settings.id)
+      userSettingsStore.findById(settings.id) foreach(_ shouldBe None)
     }
 
   }

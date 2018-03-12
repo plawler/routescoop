@@ -56,7 +56,8 @@ class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
       result shouldEqual 1
 
       listener.expectMsgClass(60 seconds, classOf[StravaActivityCreated])
-      verify(mockActivityStore).insert(sampleActivity)
+      val synchedActivity = sampleActivity.copy(dataSyncId = Some(dataSyncId))
+      verify(mockActivityStore).insert(synchedActivity)
     }
 
     "sync only the latest activities" in {
@@ -66,7 +67,8 @@ class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
       Await.result(service.syncActivities(userDataSync), 60 seconds)
 
       listener.expectMsgClass(60 seconds, classOf[StravaActivityCreated])
-      verify(mockActivityStore).insert(r3)
+      val latestActivitySynched = r3.copy(dataSyncId = Some(dataSyncId))
+      verify(mockActivityStore).insert(latestActivitySynched)
     }
 
     "retrieve an activity" in {
@@ -117,5 +119,4 @@ trait ActivityServiceFixture extends LapFixture with StreamFixture with MockitoS
   val stream1 = sampleStream.copy(id = "stream1", activityId = sampleActivity.id)
   val stream2 = sampleStream.copy(id = "stream2", activityId = sampleActivity.id)
   val streams = Seq(stream1, stream2)
-
 }

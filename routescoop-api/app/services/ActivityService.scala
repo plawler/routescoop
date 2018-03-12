@@ -36,7 +36,7 @@ class StravaActivityService @Inject()(
       val unprocessedActivities = filterLatest(userId, stravaActivities)
       unprocessedActivities.foreach { activity =>
         val activityToSync = activity.copy(dataSyncId = Some(userDataSync.id))
-        activityStore.insert(activity) // todo: add the dataSyncId as a foreign key??
+        activityStore.insert(activityToSync)
         actorSystem.eventStream.publish(StravaActivityCreated(activityToSync))
       }
       unprocessedActivities.size

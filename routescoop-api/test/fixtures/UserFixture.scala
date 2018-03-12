@@ -1,6 +1,6 @@
 package fixtures
 
-import models.User
+import models.{User, UserSettings}
 
 /**
   * Created by paullawler on 1/5/17.
@@ -17,5 +17,7 @@ trait UserFixture {
     Some("2887c991b898b497bff9d9c180a3a66ea579624b"),
     Some(18629225)
   )
+
+  val userSettings = UserSettings("theSettingsId", user.id, 155, 285, 200)
 
 }

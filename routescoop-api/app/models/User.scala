@@ -2,9 +2,11 @@ package models
 
 import java.time.Instant
 import java.util.UUID
-
 import anorm.{Macro, RowParser}
+
 import play.api.libs.json.Json
+
+import java.time.temporal.ChronoUnit
 
 
 case class User(
@@ -17,11 +19,8 @@ case class User(
 )
 
 object User {
-
   implicit val userFormat = Json.format[User]
-
   implicit val parser: RowParser[User] = Macro.namedParser[User]
-
 }
 
 case class CreateUserSettings(
@@ -41,13 +40,12 @@ case class UserSettings(
   weight: Int,
   ftp: Int,
   maxHeartRate: Int,
-  createdAt: Instant = Instant.now
+  createdAt: Instant = Instant.now.truncatedTo(ChronoUnit.SECONDS) // https://stackoverflow.com/questions/47198806/how-to-store-a-java-instant-in-a-mysql-database
 )
 
 object UserSettings {
 
   implicit val settingsFormat = Json.format[UserSettings]
-
   implicit val parser: RowParser[UserSettings] = Macro.namedParser[UserSettings]
 
   def of(create: CreateUserSettings): UserSettings =
@@ -58,4 +56,5 @@ object UserSettings {
       create.ftp,
       create.maxHeartRate
     )
+
 }

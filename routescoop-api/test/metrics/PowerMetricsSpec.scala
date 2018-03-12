@@ -1,11 +1,11 @@
 package metrics
 
 import org.scalatest.{FlatSpec, Matchers}
-import PowerMetricsUtils._
+import PowerMetrics._
 
 import scala.io.Source
 
-class PowerMetricsUtilsSpec extends FlatSpec with Matchers with Fixture {
+class PowerMetricsSpec extends FlatSpec with Matchers with Fixture {
 
   "Power metrics" should "calculate mean max power" in {
     for {

@@ -1,13 +1,15 @@
 package repositories
 
 import javax.inject.{Inject, Singleton}
-
 import anorm._
+
 import com.typesafe.scalalogging.LazyLogging
 import models.UserSettings
 import modules.BlockingContext
+
 import play.api.db.Database
 
+import java.time.Instant
 import scala.concurrent.ExecutionContext
 
 trait UserSettingsStore {
@@ -18,6 +20,7 @@ trait UserSettingsStore {
   def destroy(): Unit
   def findById(id: String): Option[UserSettings]
   def findByUserId(userId: String): Seq[UserSettings]
+  def findLatestFor(date: Instant): Option[UserSettings]
   def delete(id: String): Unit
 
 }
@@ -27,7 +30,6 @@ class UserSettingsSqlStore @Inject()(db: Database)(implicit @BlockingContext ec:
   extends UserSettingsStore with LazyLogging {
 
   override def insert(settings: UserSettings): Unit = db.withTransaction { implicit conn =>
-    logger.info(s"Inserting the settings: $settings")
     SQL"""
           INSERT INTO #$UserSettingsTable (id, userId, weight, ftp, maxHeartRate, createdAt)
           VALUES (
@@ -63,5 +65,15 @@ class UserSettingsSqlStore @Inject()(db: Database)(implicit @BlockingContext ec:
     SQL"""
           SELECT * FROM #$UserSettingsTable WHERE userId = $userId ORDER BY createdAt
       """.as(UserSettings.parser.*)
+  }
+
+  override def findLatestFor(date: Instant): Option[UserSettings] = db.withConnection { implicit conn =>
+    SQL"""
+          SELECT *
+          FROM #$UserSettingsTable us1
+          WHERE us1.createdAt = ( SELECT max(createdAt)
+                                  FROM user_settings us2
+                                  WHERE us2.createdAt <= $date)
+      """.as(UserSettings.parser.singleOpt)
   }
 }

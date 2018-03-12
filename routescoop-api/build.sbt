@@ -14,8 +14,8 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
   "com.github.kiambogo" %% "scrava" % "1.3.0",
-  "mysql" % "mysql-connector-java" % "6.0.5",
-  "com.typesafe.play" %% "anorm" % "2.5.2",
+  "mysql" % "mysql-connector-java" % "6.0.6",
+  "org.playframework.anorm" %% "anorm" % "2.6.0",
   "org.mockito" % "mockito-core" % "2.2.29" % Test,
   "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % Test,
   "com.typesafe.akka" %% "akka-testkit" % "2.4.16" % Test

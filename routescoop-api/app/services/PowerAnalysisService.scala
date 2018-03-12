@@ -1,17 +1,26 @@
 package services
 
-import javax.inject.{Inject, Singleton}
+import metrics.PowerMetrics
+import metrics.PowerMetrics._
+import models.{Activity, ActivityStats, PowerEffort, UserSettings}
+import modules.NonBlockingContext
+import repositories.{ActivityStatsStore, PowerEffortStore, StravaStreamStore}
 
-import akka.actor.ActorSystem
-import metrics.PowerMetricsUtils._
-import models.{Activity, PowerEffort, PowerEffortsCreated}
-import repositories.{PowerEffortStore, StravaStreamStore}
+import com.typesafe.scalalogging.LazyLogging
+
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 
 @Singleton
-class PowerAnalysisService @Inject()(streamStore: StravaStreamStore, effortStore: PowerEffortStore) {
-  
-  def createEfforts(activity: Activity): Seq[PowerEffort] = {
+class PowerAnalysisService @Inject()(
+  userService: UserService,
+  streamStore: StravaStreamStore,
+  effortStore: PowerEffortStore,
+  activityStatsStore: ActivityStatsStore
+)(implicit @NonBlockingContext ec: ExecutionContext) extends LazyLogging {
+
+  def calculatePowerEfforts(activity: Activity): Seq[PowerEffort] = {
     val (times, wattsData, hrData) = streamStore.findByActivityId(activity.id).map { stream =>
       (stream.timeIndexInSeconds, stream.watts.getOrElse(0), stream.heartRate.getOrElse(0))
     }.unzip3
@@ -19,13 +28,35 @@ class PowerAnalysisService @Inject()(streamStore: StravaStreamStore, effortStore
     for (interval <- 1 to times.last) yield calculatePowerEffort(activity, interval, wattsData, hrData)
   }
 
-  def saveEfforts(efforts: Seq[PowerEffort]): Unit = efforts foreach effortStore.insert
+  def savePowerEfforts(efforts: Seq[PowerEffort]): Unit = efforts foreach effortStore.insert
 
   def getEffortsByActivityId(activityId: String): Seq[PowerEffort] = {
     effortStore.findByActivityId(activityId)
   }
 
-  private def calculatePowerEffort(activity: Activity, length: Int, powerData: Seq[Int], hrData: Seq[Int]): PowerEffort = {
+  def createActivityStats(activity: Activity): Future[Option[ActivityStats]] = {
+    userService.getSettingsFor(activity.startedAt) map {
+      case Some(settings) =>
+        Some(calculateActivityStats(activity, settings))
+      case None =>
+        logger.warn(s"No user settings found to support power stats for activity ${activity.id}")
+        None
+    }
+  }
+
+  def saveActivityStats(stats: ActivityStats): Unit = activityStatsStore.insert(stats)
+
+  def longestEffort(activity: Activity): PowerEffort = {
+    val efforts = getEffortsByActivityId(activity.id)
+    efforts.sortWith(_.intervalLengthInSeconds > _.intervalLengthInSeconds).head
+  }
+
+  private def calculatePowerEffort(
+    activity: Activity,
+    length: Int,
+    powerData: Seq[Int],
+    hrData: Seq[Int]
+  ): PowerEffort = {
     val interval = Interval(length, powerData, hrData)
     PowerEffort.create(
       activity,
@@ -35,6 +66,15 @@ class PowerAnalysisService @Inject()(streamStore: StravaStreamStore, effortStore
       interval.criticalPower,
       interval.normalizedPower
     )
+  }
+
+  private def calculateActivityStats(activity: Activity, settings: UserSettings): ActivityStats = {
+    val effort = longestEffort(activity) // the entire activity
+    val np = effort.normalizedPower.getOrElse(0)
+    val intensity = PowerMetrics.intensityFactor(np, settings.ftp)
+    val tss = PowerMetrics.stressScore(effort.intervalLengthInSeconds, np, settings.ftp, intensity)
+    val vi = PowerMetrics.variabilityIndex(np, effort.criticalPower)
+    ActivityStats(effort.activityId, settings.id, effort.criticalPower, np, tss, intensity, vi)
   }
 
 }

@@ -32,9 +32,9 @@ class AnalyticsProcessorSpec extends TestKit(ActorSystem("analytics-actor-test")
   "The Analytics Processor" should {
 
     "create power efforts after strava stream data has been processed" in {
-      when(service.createEfforts(sampleActivity)).thenReturn(efforts)
+      when(service.calculatePowerEfforts(sampleActivity)).thenReturn(efforts)
       processorRef ! stravaStreamsCreated
-      verify(service).saveEfforts(efforts)
+      verify(service).savePowerEfforts(efforts)
       listener.expectMsgClass(10 seconds, classOf[PowerEffortsCreated])
     }
 

@@ -1,8 +1,14 @@
 package metrics
 
+import models.PowerEffort
+
+import java.text.DecimalFormat
+
 case class Result(index: Int, value: Int)
 
-object PowerMetricsUtils {
+object PowerMetrics {
+
+  val formatter = new DecimalFormat("#.##")
 
   // inspired by https://stackoverflow.com/questions/1319891/calculating-the-moving-average-of-a-list
 
@@ -42,7 +48,7 @@ object PowerMetricsUtils {
     * 4. Take the fourth root of the result
     *
     * @param values
-    * @return
+    * @return Optional integer value of np for values of 30 (seconds) or more
     */
   def normalizedPower(values: Seq[Int]): Option[Int] = {
     if (values.length < 30) {
@@ -53,6 +59,49 @@ object PowerMetricsUtils {
       val avg = raised.sum / raised.size
       Some(scala.math.pow(avg, 1.0 / 4).toInt)
     }
+  }
+
+  /**
+    * Calculates the ratio of normalized power to ftp
+    *
+    * @param normalizedPower
+    * @param ftp
+    * @return double value of IF
+    */
+  def intensityFactor(normalizedPower: Int, ftp: Int): Double = {
+    val intensity = normalizedPower.toDouble / ftp.toDouble
+    formatter.format(intensity).toDouble
+  }
+
+  /**
+    * Stress score is a calculation of how hard an activity is
+    *
+    * ((s x NP x IF) / (FTP x 3,600)) x 100 where s = duration in seconds
+    * Intensity Factor must be computed first
+    *
+    * @param durationInSeconds
+    * @param np
+    * @param ftp
+    * @param intensity
+    * @return the stress score (also known as TSS)
+    */
+  def stressScore(durationInSeconds: Int, np: Int, ftp: Int, intensity: Double): Int = {
+    (((durationInSeconds * np * intensity) / (ftp * 3600)) * 100).toInt
+  }
+
+  /**
+    * Calculation of evenly paced an athletes power output was during activity
+    *
+    * Calculated by dividing Normalized Power by Average Power
+    * A properly paced time trial should have a VI value of 1.05 or less while a road race or criterium may have a VI as high as 1.1 or more.
+    *
+    * @param normalizedPower
+    * @param avgPower
+    * @return double value of variability index
+    */
+  def variabilityIndex(normalizedPower: Int, avgPower: Int): Double = {
+    val vi = normalizedPower.toDouble / avgPower.toDouble
+    formatter.format(vi).toDouble
   }
 
   def rollingAverage(values: Seq[Int], interval: Int): Seq[Double] = {

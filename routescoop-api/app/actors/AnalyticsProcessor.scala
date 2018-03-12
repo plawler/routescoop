@@ -13,12 +13,14 @@ class AnalyticsProcessor @Inject()(service: PowerAnalysisService)(implicit @NonB
   extends Actor with ActorLogging {
 
   override def receive = {
-    case msg: StravaStreamsCreated => {
+    case msg: StravaStreamsCreated =>
       log.info(s"Creating power efforts for activity ${msg.activity.id}")
-      val efforts = service.createEfforts(msg.activity)
-      service.saveEfforts(efforts)
+      val efforts = service.calculatePowerEfforts(msg.activity)
+      service.savePowerEfforts(efforts)
       context.system.eventStream.publish(PowerEffortsCreated(msg.activity))
-    }
+    case msg: PowerEffortsCreated =>
+      log.info(s"Creating activity stats for activity ${msg.activity.id}")
+      service.createActivityStats(msg.activity)
     case msg => log.error(s"Cannot process message $msg")
   }
 

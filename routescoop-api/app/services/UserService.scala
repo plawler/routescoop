@@ -14,16 +14,14 @@ import scala.concurrent.{ExecutionContext, Future, blocking}
 trait UserService {
 
   def createUser(user: User): Future[Unit]
-
   def getUser(userId: String): Future[Option[User]]
 
   def startDataSync(user: User): Future[UserDataSync]
-
   def completeDataSync(syncId: String, completedAt: Instant): Future[Unit]
 
   def createSettings(settings: UserSettings): Future[Unit]
-
   def getAllSettings(userId: String): Future[Seq[UserSettings]]
+  def getSettingsFor(date: Instant): Future[Option[UserSettings]]
 
 }
 
@@ -62,4 +60,16 @@ class UserServiceImpl @Inject()(
   override def getAllSettings(userId: String) = Future {
     blocking { settingsStore.findByUserId(userId)}
   }
+
+  override def getSettingsFor(date: Instant): Future[Option[UserSettings]] = Future {
+    blocking { settingsStore.findLatestFor(date) }
+  }
+
+  private def getLatest(userId: String): Future[Option[UserSettings]] = {
+    getAllSettings(userId) map { all =>
+      if (all.isEmpty) None
+      else all.sortWith((s1,s2) => s1.createdAt.isAfter(s2.createdAt)).headOption
+    }
+  }
+
 }

@@ -8,6 +8,7 @@ import java.util.UUID
 
 sealed trait Activity {
   val id: String
+  val userId: String
   val startedAt: Instant
 }
 

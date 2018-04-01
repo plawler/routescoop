@@ -35,7 +35,6 @@ object PowerEffort {
       criticalPower,
       normalizedPower
     )
-
 }
 
 case class PowerEffortsCreated(activity: Activity, createdAt: Instant = Instant.now)

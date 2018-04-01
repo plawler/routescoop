@@ -21,11 +21,17 @@ class PowerAnalysisService @Inject()(
 )(implicit @NonBlockingContext ec: ExecutionContext) extends LazyLogging {
 
   def calculatePowerEfforts(activity: Activity): Seq[PowerEffort] = {
-    val (times, wattsData, hrData) = streamStore.findByActivityId(activity.id).map { stream =>
+    val (times, watts, heartRates) = streamStore.findByActivityId(activity.id).map { stream =>
       (stream.timeIndexInSeconds, stream.watts.getOrElse(0), stream.heartRate.getOrElse(0))
     }.unzip3
 
-    for (interval <- 1 to times.last) yield calculatePowerEffort(activity, interval, wattsData, hrData)
+    // todo: the timeIndexInSeconds is not consecutive due to activity pauses
+    // however i still need to capture the timeIndexInSeconds to get the overall stats correct
+    for {
+      intervalLength <- 1 to times.size
+    } yield {
+      calculatePowerEffort(activity, intervalLength, times, watts, heartRates)
+    }
   }
 
   def savePowerEfforts(efforts: Seq[PowerEffort]): Unit = efforts foreach effortStore.insert
@@ -44,7 +50,10 @@ class PowerAnalysisService @Inject()(
     }
   }
 
-  def saveActivityStats(stats: ActivityStats): Unit = activityStatsStore.insert(stats)
+  def saveActivityStats(stats: ActivityStats): Unit = {
+    logger.info(s"Saving the activity stats $stats")
+    activityStatsStore.insert(stats)
+  }
 
   def longestEffort(activity: Activity): PowerEffort = {
     val efforts = getEffortsByActivityId(activity.id)
@@ -53,14 +62,15 @@ class PowerAnalysisService @Inject()(
 
   private def calculatePowerEffort(
     activity: Activity,
-    length: Int,
+    length: Int, // the index of the value in the stream
+    times: Seq[Int], // the second of the ride recorded to the stream
     powerData: Seq[Int],
     hrData: Seq[Int]
   ): PowerEffort = {
-    val interval = Interval(length, powerData, hrData)
+    val interval = calculateInterval(length, times, powerData, hrData)
     PowerEffort.create(
       activity,
-      interval.lengthInSeconds,
+      length,
       interval.startSecond,
       interval.avgHeartRate,
       interval.criticalPower,
@@ -68,12 +78,23 @@ class PowerAnalysisService @Inject()(
     )
   }
 
+  private def calculateInterval(length: Int, times: Seq[Int], powerData: Seq[Int], hrData: Seq[Int]): Interval = {
+    val result = maxAverageWithIndex(powerData, length)
+    val from = result._2
+    val to = from + length
+    val start = times(from)
+    val cp = result._1
+    val hr = hrData.slice(from, to).sum / length
+    val np = normalizedPower(powerData.slice(from, to))
+    new Interval(length, start, cp, hr, np)
+  }
+
   private def calculateActivityStats(activity: Activity, settings: UserSettings): ActivityStats = {
     val effort = longestEffort(activity) // the entire activity
     val np = effort.normalizedPower.getOrElse(0)
-    val intensity = PowerMetrics.intensityFactor(np, settings.ftp)
-    val tss = PowerMetrics.stressScore(effort.intervalLengthInSeconds, np, settings.ftp, intensity)
-    val vi = PowerMetrics.variabilityIndex(np, effort.criticalPower)
+    val intensity = intensityFactor(np, settings.ftp)
+    val tss = stressScore(effort.intervalLengthInSeconds, np, settings.ftp, intensity)
+    val vi = variabilityIndex(np, effort.criticalPower)
     ActivityStats(effort.activityId, settings.id, effort.criticalPower, np, tss, intensity, vi)
   }
 
@@ -87,15 +108,4 @@ case class Interval(
   normalizedPower: Option[Int]
 )
 
-object Interval {
-  def apply(length: Int, powerData: Seq[Int], hrData: Seq[Int]): Interval = {
-    val result = maxAverageWithIndex(powerData, length)
-    val from = result._2
-    val to = from + length
-    val start = result._2 + 1 // index is zero based but we don't do zero length intervals, right?
-    val cp = result._1
-    val hr = hrData.slice(from, to).sum / length
-    val np = normalizedPower(powerData.slice(from, to))
-    new Interval(length, start, cp, hr, np)
-  }
-}
+

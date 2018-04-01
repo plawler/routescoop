@@ -18,7 +18,7 @@ class StravaClientSpec extends FlatSpec with Matchers {
 
   it should "retrieve an athlete's activities" in new Fixture {
     val activities = client.listAthleteActivities()
-    activities.size shouldEqual 5
+    activities should not be empty
   }
 
   it should "retrieve the laps for an activity" in new Fixture {

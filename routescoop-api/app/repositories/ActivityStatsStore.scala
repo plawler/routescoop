@@ -3,17 +3,18 @@ package repositories
 import models.ActivityStats
 import modules.BlockingContext
 import anorm._
-
 import play.api.db.Database
-
 import javax.inject.{Inject, Singleton}
+
+import com.typesafe.scalalogging.LazyLogging
+
 import scala.concurrent.ExecutionContext
 
 trait ActivityStatsStore {
 
   val ActivityStatsTable = "activity_stats"
 
-  def insert(activityStats: ActivityStats)
+  def insert(activityStats: ActivityStats): Unit
   def destroy(): Unit
   def findByActivityId(activityId: String): Option[ActivityStats]
   def findByUserId(userId: String): Seq[ActivityStats]
@@ -22,9 +23,10 @@ trait ActivityStatsStore {
 
 @Singleton
 class ActivityStatsStoreSql @Inject()(db: Database)
-  (implicit @BlockingContext ec: ExecutionContext) extends ActivityStatsStore {
+  (implicit @BlockingContext ec: ExecutionContext) extends ActivityStatsStore with LazyLogging {
 
   override def insert(stats: ActivityStats): Unit = db.withTransaction { implicit conn =>
+    logger.info("Inserting stats...")
     SQL"""
           INSERT INTO activity_stats(
             activityId,

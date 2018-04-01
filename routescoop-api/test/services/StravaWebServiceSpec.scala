@@ -3,8 +3,8 @@ package services
 import fixtures.ActivityFixture
 import models.StravaActivity
 import org.scalatest.mockito.MockitoSugar
-import org.scalatest.{Matchers, WordSpec}
 import org.mockito.Mockito._
+import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
@@ -17,12 +17,12 @@ class StravaWebServiceSpec extends WordSpec with Matchers with MockitoSugar {
 
     "get a list of activities for a user" in new StravaWebServiceFixture {
       val result = Await.result(service.getActivities(stravaUser.id), 3 seconds)
-      result should have length 5
+      result should not be empty
     }
 
     "get streams for an activity" in new StravaWebServiceFixture {
       val result = Await.result(service.getStreams(mockStravaActivity), 5 seconds)
-      result shouldNot be(empty)
+      result should not be empty
       result.head.timeIndexInSeconds shouldBe 0
     }
 

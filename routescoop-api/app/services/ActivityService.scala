@@ -8,7 +8,7 @@ import javax.inject.{Inject, Singleton}
 import com.typesafe.scalalogging.LazyLogging
 import models._
 
-import scala.concurrent.{ExecutionContext, Future, blocking}
+import scala.concurrent.{Await, ExecutionContext, Future, blocking}
 import scala.language.postfixOps
 
 trait ActivityService {
@@ -31,20 +31,25 @@ class StravaActivityService @Inject()(
 )(implicit @NonBlockingContext ec: ExecutionContext) extends ActivityService with LazyLogging {
 
   override def syncActivities(userDataSync: UserDataSync): Future[Int] = {
+    logger.info(s"Synching activities for user $userDataSync")
     val userId = userDataSync.userId
+
     stravaWebService.getActivities(userId) map { stravaActivities =>
+      logger.info(s"Available activities count is ${stravaActivities.size}")
       val unprocessedActivities = filterLatest(userId, stravaActivities)
+      logger.info(s"Unprocessed activities count is ${unprocessedActivities.size}")
       unprocessedActivities.foreach { activity =>
         val activityToSync = activity.copy(dataSyncId = Some(userDataSync.id))
-        activityStore.insert(activityToSync)
-        actorSystem.eventStream.publish(StravaActivityCreated(activityToSync))
+        saveActivity(activityToSync)
       }
       unprocessedActivities.size
     }
   }
 
   override def getActivity(activityId: String): Future[Option[StravaActivity]] = Future {
-    blocking { activityStore.findById(activityId) }
+    blocking {
+      activityStore.findById(activityId)
+    }
   }
 
   override def syncActivityDetails(activity: StravaActivity): Future[Unit] = {
@@ -54,6 +59,11 @@ class StravaActivityService @Inject()(
       _ <- f1
       _ <- f2
     } yield actorSystem.eventStream.publish(StravaActivitySyncCompleted(activity))
+  }
+
+  private def saveActivity(activity: StravaActivity) = {
+    activityStore.insert(activity)
+    actorSystem.eventStream.publish(StravaActivityCreated(activity))
   }
 
   private def syncLaps(activity: StravaActivity): Future[Unit] = {

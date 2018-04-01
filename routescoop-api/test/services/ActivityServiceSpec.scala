@@ -106,12 +106,12 @@ trait ActivityServiceFixture extends LapFixture with StreamFixture with MockitoS
 
   val userDataSync = UserDataSync(dataSyncId, stravaUser.id, Instant.now)
 
-  val a1 = sampleActivity.copy(id = id1, stravaId = 1, userId = stravaUser.id)
-  val a2 = sampleActivity.copy(id = id2, stravaId = 2, userId = stravaUser.id)
+  val a1 = sampleActivity.copy(id = id1, userId = stravaUser.id, stravaId = 1)
+  val a2 = sampleActivity.copy(id = id2, userId = stravaUser.id, stravaId = 2)
 
-  val r1 = sampleActivity.copy(id = UUID.randomUUID().toString, stravaId = 1, userId = stravaUser.id)
-  val r2 = sampleActivity.copy(id = UUID.randomUUID().toString, stravaId = 2, userId = stravaUser.id)
-  val r3 = sampleActivity.copy(id = UUID.randomUUID().toString, stravaId = 3, userId = stravaUser.id)
+  val r1 = sampleActivity.copy(id = UUID.randomUUID().toString, userId = stravaUser.id, stravaId = 1)
+  val r2 = sampleActivity.copy(id = UUID.randomUUID().toString, userId = stravaUser.id, stravaId = 2)
+  val r3 = sampleActivity.copy(id = UUID.randomUUID().toString, userId = stravaUser.id, stravaId = 3)
 
   val localActivities = Seq(a1, a2)
   val remoteActivities = Seq(r1, r2, r3)

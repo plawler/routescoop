@@ -58,6 +58,11 @@ object StravaActivity {
   implicit val parser: RowParser[StravaActivity] = Macro.namedParser[StravaActivity]
 
   def create(user: User, summary: PersonalActivitySummary): StravaActivity = {
+    val startLat = if (summary.start_latlng.nonEmpty) summary.start_latlng.head.toDouble else -999.0
+    val startLong = if (summary.start_latlng.nonEmpty) summary.start_latlng(1).toDouble else -999.0
+    val endLat = summary.end_latlng map (ll => if (ll.nonEmpty) ll.head.toDouble else -999.0)
+    val endLong = summary.end_latlng map (ll => if (ll.nonEmpty) ll(1).toDouble else -999.0)
+
     StravaActivity(
       UUID.randomUUID().toString,
       user.id,
@@ -71,16 +76,16 @@ object StravaActivity {
       summary.`type`,
       Instant.parse(summary.start_date),
       summary.timezone,
-      summary.start_latlng.head,
-      summary.start_latlng(1),
+      startLat,
+      startLong,
       summary.trainer,
       summary.commute,
       summary.manual,
       summary.average_speed,
       summary.max_speed,
       summary.external_id,
-      summary.end_latlng.map(_.head.toDouble),
-      summary.end_latlng.map(_ (1).toDouble),
+      endLat,
+      endLong,
       summary.map.summary_polyline,
       summary.map.polyline,
       summary.average_cadence.map(_.toDouble),

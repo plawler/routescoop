@@ -44,6 +44,7 @@ class StravaActivityProcessor @Inject()(activityService: ActivityService)
     case started: StravaDataSyncStarted =>
       log.info(s"User data sync initiated for ${started.sync.userId}. Getting strava activities...")
       activityService.syncActivities(started.sync) map { count =>
+        log.info("Creating activity count monitor actors...")
         context.actorOf(Props(new ActivityCountMonitor(count)), started.sync.id) // name the actor with sync id
       }
     case created: StravaActivityCreated =>

@@ -3,6 +3,7 @@ package services
 import javax.inject.Inject
 
 import com.google.inject.Singleton
+import com.typesafe.scalalogging.LazyLogging
 import kiambogo.scrava.ScravaClient
 import kiambogo.scrava.models.Streams
 import models.{StravaActivity, StravaLap, StravaStream, User}
@@ -23,11 +24,13 @@ trait StravaWebService {
 
 @Singleton
 class ScravaWebService @Inject()(userService: UserService)(implicit @NonBlockingContext ec: ExecutionContext)
-  extends StravaWebService {
+  extends StravaWebService with LazyLogging {
 
   override def getActivities(userId: String): Future[Seq[StravaActivity]] = {
     userService.getUser(userId).map {
-      case Some(user) => getUserActivities(user)
+      case Some(user) =>
+        logger.info("User exists. Fetching activities from Strava...")
+        getUserActivities(user)
       case None => Nil
     }
   }
@@ -56,7 +59,9 @@ class ScravaWebService @Inject()(userService: UserService)(implicit @NonBlocking
   private def getUserActivities(user: User): Seq[StravaActivity] = {
     user.stravaToken match {
       case Some(token) =>
-        createClient(token).listAthleteActivities().map(summary => StravaActivity.create(user, summary))
+        val things = createClient(token).listAthleteActivities()
+        logger.info(s"Found ${things.size} athlete activities")
+        things.map(summary => StravaActivity.create(user, summary))
       case None => Nil
     }
   }

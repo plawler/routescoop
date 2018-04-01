@@ -20,7 +20,11 @@ class AnalyticsProcessor @Inject()(service: PowerAnalysisService)(implicit @NonB
       context.system.eventStream.publish(PowerEffortsCreated(msg.activity))
     case msg: PowerEffortsCreated =>
       log.info(s"Creating activity stats for activity ${msg.activity.id}")
-      service.createActivityStats(msg.activity)
+      service.createActivityStats(msg.activity) map {
+        case Some(stats) => service.saveActivityStats(stats)
+        case None => log.info(s"Activity stats not saved for ${msg.activity.id}")
+      }
+//      service.createActivityStats(msg.activity) map (_ foreach service.saveActivityStats)
     case msg => log.error(s"Cannot process message $msg")
   }
 

@@ -46,4 +46,23 @@ object StravaStream {
     )
   }
 
+  def create(activity: Activity, rawStream: Map[String,Any]): StravaStream = {
+    StravaStream(
+      UUID.randomUUID().toString,
+      activity.id,
+      rawStream("time").asInstanceOf[Int],
+      rawStream.get("latLng") map (_.asInstanceOf[List[Double]].head),
+      rawStream.get("latLng") map (_.asInstanceOf[List[Double]].last),
+      rawStream.get("distance")map (_.asInstanceOf[Double]),
+      rawStream.get("altitude") map (_.asInstanceOf[Double]),
+      rawStream.get("temp") map (_.asInstanceOf[Int]),
+      rawStream.get("grade") map (_.asInstanceOf[Double]),
+      rawStream.get("velocity") map (_.asInstanceOf[Double]),
+      rawStream.get("heartRate")map (_.asInstanceOf[Int]),
+      rawStream.get("cadence") map (_.asInstanceOf[Int]),
+      rawStream.get("watts") map (_.asInstanceOf[Int]),
+      rawStream.get("moving") map (_.asInstanceOf[Boolean])
+    )
+  }
+
 }

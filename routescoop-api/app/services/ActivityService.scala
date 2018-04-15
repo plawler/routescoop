@@ -53,11 +53,9 @@ class StravaActivityService @Inject()(
   }
 
   override def syncActivityDetails(activity: StravaActivity): Future[Unit] = {
-    val f1 = syncLaps(activity)
-    val f2 = syncStreams(activity)
     for {
-      _ <- f1
-      _ <- f2
+      _ <- syncLaps(activity)
+      _ <- syncStreams(activity)
     } yield actorSystem.eventStream.publish(StravaActivitySyncCompleted(activity))
   }
 

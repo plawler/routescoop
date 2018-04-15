@@ -48,6 +48,13 @@ class StravaClientSpec extends FlatSpec with Matchers {
 //    println(smushed)
   }
 
+  it should "get streams for activitiy 1450653770" in new Fixture {
+    val streams = client.retrieveActivityStream("1450653770")
+    val types = streams.map(_.`type`)
+    val watts = streams.filter(_.`type` == "watts").flatMap(_.data)
+    println(watts.size)
+  }
+
   def flatten(ls: List[Any]): List[Any] = ls flatMap {
     case i: List[_] => flatten(i)
     case e => List(e)

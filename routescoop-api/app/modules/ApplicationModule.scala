@@ -24,7 +24,7 @@ class ApplicationModule extends AbstractModule {
     bind(classOf[ActivityStatsStore]).to(classOf[ActivityStatsStoreSql])
     bind(classOf[PowerAnalysisService])
 
-    bind(classOf[StravaWebService]).to(classOf[ScravaWebService])
+    bind(classOf[StravaWebService]).to(classOf[StravaWebServiceImpl])
   }
 
   @Provides @NonBlockingContext

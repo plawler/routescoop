@@ -120,6 +120,11 @@ sealed trait Stream {
   val data: Seq[Any]
 }
 
+case class EmptyStream(
+  original_size: Int = 0,
+  data: Seq[Any] = Seq.empty[Any]
+) extends Stream
+
 case class TimeStream(
   original_size: Int,
   data: Seq[Int] = Seq.empty
@@ -157,7 +162,7 @@ case class CadenceStream(
 
 case class WattsStream(
   original_size: Int,
-  data: Seq[Int] = Seq.empty
+  data: Seq[Any] = Seq.empty
 ) extends Stream
 
 case class TempStream(
@@ -176,6 +181,21 @@ case class GradeStream(
 ) extends Stream
 
 object Stream {
+
+  val intReader: Reads[Int] = Reads[Int](value => JsSuccess(value match {
+    case n: JsNumber => n.value.toInt
+    case JsNull => 0
+    case _ => 0
+  }))
+
+  val seqOfIntReader = Reads.seq[Int](intReader)
+
+  implicit val wattsReads: Reads[WattsStream] = (
+    (JsPath \ "original_size").read[Int] and
+      (JsPath \ "data").read(seqOfIntReader) // dang strava api sometimes puts 'null' in for value
+    ) (WattsStream.apply _)
+
+
   implicit val timeFormat = Json.format[TimeStream]
   implicit val latLngFormat = Json.format[LatLngStream]
   implicit val distanceFormat = Json.format[DistanceStream]
@@ -183,7 +203,6 @@ object Stream {
   implicit val velocityFormat = Json.format[VelocityStream]
   implicit val heartRateFormat = Json.format[HeartRateStream]
   implicit val cadenceFormat = Json.format[CadenceStream]
-  implicit val wattsFormat = Json.format[WattsStream]
   implicit val tempFormat = Json.format[TempStream]
   implicit val movingFormat = Json.format[MovingStream]
   implicit val gradeFormat = Json.format[GradeStream]
@@ -210,7 +229,7 @@ case class ActivityStream(
   }
 
   def pivot = { // turns a list of stream "columns" into a list of stream "rows"
-    val streamMap = this.asMap
+    val streamMap = this.asMap filter(_._2.nonEmpty) // remove any empty streams or else transpose will fail
     val streamTypes = streamMap.keys.toList
     val transposed = streamMap.values.toList.transpose
     transposed map (each => (streamTypes zip each).toMap)
@@ -222,16 +241,16 @@ object ActivityStream {
 
   implicit val activityStreamReads: Reads[ActivityStream] = (
     (JsPath \ "time").read[TimeStream] and
-      (JsPath \ "latlng").read[LatLngStream] and
-      (JsPath \ "distance").read[DistanceStream] and
-      (JsPath \ "altitude").read[AltitudeStream] and
-      (JsPath \ "velocity_smooth").read[VelocityStream] and
-      (JsPath \ "heartrate").read[HeartRateStream] and
-      (JsPath \ "cadence").read[CadenceStream] and
-      (JsPath \ "watts").read[WattsStream] and
-      (JsPath \ "temp").read[TempStream] and
-      (JsPath \ "moving").read[MovingStream] and
-      (JsPath \ "grade_smooth").read[GradeStream]
+      (JsPath \ "latlng").read[LatLngStream].orElse(Reads.pure(LatLngStream(0))) and
+      (JsPath \ "distance").read[DistanceStream].orElse(Reads.pure(DistanceStream(0))) and
+      (JsPath \ "altitude").read[AltitudeStream].orElse(Reads.pure(AltitudeStream(0))) and
+      (JsPath \ "velocity_smooth").read[VelocityStream].orElse(Reads.pure(VelocityStream(0))) and
+      (JsPath \ "heartrate").read[HeartRateStream].orElse(Reads.pure(HeartRateStream(0))) and
+      (JsPath \ "cadence").read[CadenceStream].orElse(Reads.pure(CadenceStream(0))) and
+      (JsPath \ "watts").read[WattsStream].orElse(Reads.pure(WattsStream(0))) and
+      (JsPath \ "temp").read[TempStream].orElse(Reads.pure(TempStream(0))) and
+      (JsPath \ "moving").read[MovingStream].orElse(Reads.pure(MovingStream(0))) and
+      (JsPath \ "grade_smooth").read[GradeStream].orElse(Reads.pure(GradeStream(0)))
     ) (ActivityStream.apply _)
 
 }

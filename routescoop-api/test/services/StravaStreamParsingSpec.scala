@@ -26,6 +26,23 @@ class StravaStreamParsingSpec extends WordSpec with Matchers with MockitoSugar w
       latLng.last shouldEqual -84.273291
     }
 
+    "map strava stream with missing heartrate data" in {
+      val noHeartRateStream = Json.parse(stravaStreamJsonNoHeartRate).as[ActivityStream]
+      noHeartRateStream.heartRate.data.size shouldEqual 0
+      noHeartRateStream.pivot.head.get("heartRate") shouldBe None
+    }
+
+    "map strava stream with missing watts data" in {
+      val noWattsStream = Json.parse(stravaStreamJsonNoWatts).as[ActivityStream]
+      noWattsStream.watts.data.size shouldEqual 0
+      noWattsStream.pivot.head.get("watts") shouldBe None
+    }
+
+    "handle null string value for watts in stream" in {
+      val nullWattsStream = Json.parse(stravaStreamJsonNullWatts).as[ActivityStream]
+      println(nullWattsStream.watts.data)
+    }
+
   }
 
 }

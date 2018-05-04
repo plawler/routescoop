@@ -12,7 +12,7 @@ import scala.concurrent.ExecutionContext
 class AnalyticsProcessor @Inject()(service: PowerAnalysisService)(implicit @NonBlockingContext ec: ExecutionContext)
   extends Actor with ActorLogging {
 
-  override def receive = {
+  override def receive= {
     case msg: StravaStreamsCreated =>
       log.info(s"Creating power efforts for activity ${msg.activity.id}")
       val efforts = service.calculatePowerEfforts(msg.activity)
@@ -24,7 +24,6 @@ class AnalyticsProcessor @Inject()(service: PowerAnalysisService)(implicit @NonB
         case Some(stats) => service.saveActivityStats(stats)
         case None => log.info(s"Activity stats not saved for ${msg.activity.id}")
       }
-//      service.createActivityStats(msg.activity) map (_ foreach service.saveActivityStats)
     case msg => log.error(s"Cannot process message $msg")
   }
 

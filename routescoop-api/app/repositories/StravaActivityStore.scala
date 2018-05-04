@@ -61,7 +61,8 @@ class StravaActivityStoreImpl @Inject()(db: Database)(implicit @BlockingContext 
           deviceWatts,
           averageHeartRate,
           maxHeartRate,
-          workoutType
+          workoutType,
+          dataSyncId
         ) VALUES (
           ${activity.id},
           ${activity.userId},
@@ -95,7 +96,8 @@ class StravaActivityStoreImpl @Inject()(db: Database)(implicit @BlockingContext 
           ${activity.deviceWatts},
           ${activity.averageHeartRate},
           ${activity.maxHeartRate},
-          ${activity.workoutType}
+          ${activity.workoutType},
+          ${activity.dataSyncId}
         )
       """.executeInsert()
   }

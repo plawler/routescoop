@@ -1,27 +1,29 @@
-routescoop-web:
-  image: pelawler/activator
-  volumes:
-    - ./routescoop-web:/app
-    - $HOME/.ivy2:/root/.ivy2
-  ports:
-    - 9000:9000
-  env_file:
-    - routescoop.env
-routescoop-api:
-  image: pelawler/activator
-  volumes:
-    - ./routescoop-api:/app
-    - $HOME/.ivy2:/root/.ivy2
-  ports:
-    - 9001:9000
-  env_file:
-    - routescoop.env
-  links:
-    - mysqldb:mysqldb.local
-mysqldb:
-  image: mysql:5.7.16
-  ports:
-    - 3306:3306
-  environment:
-    - MYSQL_ROOT_PASSWORD=root
-    - MYSQL_DATABASE=routescoop
+version: '3'
+services:
+    routescoop-web:
+        volumes:
+            - ./routescoop-web:/app
+            - $HOME/.ivy2:/root/.ivy2
+        ports:
+            - 9000:9000
+        env_file:
+            - routescoop.env
+    routescoop-api:
+        depends_on:
+            - mysqldb
+        volumes:
+            - ./routescoop-api:/app
+            - $HOME/.ivy2:/root/.ivy2
+        ports:
+            - 9001:9000
+        env_file:
+            - routescoop.env
+        links:
+            - mysqldb:mysqldb.local
+    mysqldb:
+        image: mysql:5.7.16
+        ports:
+            - 3306:3306
+        environment:
+            - MYSQL_ROOT_PASSWORD=root
+            - MYSQL_DATABASE=routescoop

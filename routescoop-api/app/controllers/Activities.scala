@@ -14,7 +14,7 @@ class Activities @Inject()(stravaWebService: StravaWebService)(implicit @NonBloc
 
   def list(userId: String) = Action.async { implicit request =>
     stravaWebService.getActivities(userId) map { activities =>
-      Ok(s"Did you see the list of $activities")
+      Ok(s"Did you see the list of $activities") // todo: use local activity service
     }
   }
 

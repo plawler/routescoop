@@ -1,0 +1,6 @@
+version: '3'
+services:
+    routescoop-api:
+        image: pelawler/activator
+        command: activator test
+

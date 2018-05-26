@@ -5,9 +5,9 @@ routescoop-api-test:
     dockerfile_path: Dockerfile-test
   depends_on:
     - mysqldb
-  encrypted_env_file: routescoop.env.encrypted
   environment:
-    - DB_URL=jdbc:mysql://mysqldb/routescoop?useSSL=false
+    - DB_URL=jdbc:mysql://mysqldb/routescoop?useSSL=false  
+  encrypted_env_file: routescoop.env.encrypted
 routescoop-api-build:
   build:
     image: pelawler/routescoop-api

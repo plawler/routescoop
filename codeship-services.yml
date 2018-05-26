@@ -3,8 +3,8 @@ routescoop-web-test:
     image: pelawler/routescoop-web-test
     context: routescoop-web
     dockerfile_path: Dockerfile-test
-  depends_on:
-    - mysqldb
+  # depends_on:
+  #   - mysqldb
   encrypted_env_file: routescoop.env.encrypted
 routescoop-web-build:
   build:

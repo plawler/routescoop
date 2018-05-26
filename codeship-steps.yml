@@ -17,6 +17,7 @@
   registry: https://index.docker.io/v1/
   encrypted_dockercfg_path: dockercfg.encrypted
 - name: web-dockerhub-push
+  image_name: pelawler/routescoop-web
   service: routescoop-web-build
   type: push
   registry: https://index.docker.io/v1/

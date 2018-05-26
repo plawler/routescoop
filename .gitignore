@@ -110,3 +110,6 @@ fabric.properties
 run-play.sh
 *.env
 
+### Codeship ###
+codeship.aes
+dockercfg

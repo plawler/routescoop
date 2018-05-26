@@ -1,17 +1,25 @@
 version: '3'
 services:
   routescoop-web:
-    build: ./routescoop-web
-    restart: always  
+    image: pelawler/activator
+    command: activator test
+    restart: "no"
+    volumes:
+      - ./routescoop-web:/app
+      - $HOME/.ivy2:/root/.ivy2
     ports:
       - 9000:9000
     env_file:
       - routescoop.env
   routescoop-api:
-    build: ./routescoop-api
-    restart: always
+    image: pelawler/activator
+    command: activator test
     depends_on:
       - mysqldb
+    restart: "no"
+    volumes:
+      - ./routescoop-api:/app
+      - $HOME/.ivy2:/root/.ivy2
     ports:
       - 9001:9000
     env_file:

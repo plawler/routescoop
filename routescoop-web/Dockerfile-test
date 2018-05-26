@@ -1,4 +1,4 @@
-FROM        pelawler/activator as build
+FROM        pelawler/activator
 
 COPY        ["build.sbt", "/tmp/build/"]
 COPY        ["project/plugins.sbt", "project/build.properties", "/tmp/build/project/"]
@@ -9,10 +9,5 @@ RUN         cd /tmp/build && \
 # copy code
 COPY        . /routescoop-web
 WORKDIR     /routescoop-web
-RUN         activator stage
+RUN         activator compile && activator test:compile
 CMD         ["activator"]
-
-FROM        pelawler/openjdk-8-jre
-COPY        --from=build routescoop-web/target/universal/stage /opt/app
-EXPOSE      9000
-CMD         /opt/app/bin/routescoop-web

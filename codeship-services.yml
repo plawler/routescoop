@@ -6,7 +6,7 @@ routescoop-api-test:
   depends_on:
     - mysqldb
   environment:
-    - DB_URL=jdbc:mysql://mysqldb/routescoop?useSSL=false  
+    - DB_URL=jdbc:mysql://mysqldb/routescoop?useSSL=false
   encrypted_env_file: routescoop.env.encrypted
 routescoop-api-build:
   build:
@@ -25,7 +25,7 @@ routescoop-web-build:
     context: routescoop-web
     dockerfile_path: Dockerfile
 mysqldb:
-  image: mysql:5.7.16
+  image: healthcheck/mysql
   environment:
     - MYSQL_ROOT_PASSWORD=root
     - MYSQL_DATABASE=routescoop

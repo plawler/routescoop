@@ -1,22 +1,19 @@
 package controllers
 
-import akka.actor.ActorSystem
-import config.StravaAccessConfig
-import models.{StravaDataSyncRequest, Profile}
-import modules.NonBlockingContext
-
 import com.netaporter.uri.dsl._
-import play.api.Logger
+import config.StravaConfig
+import javax.inject.{Inject, Singleton}
+import models.Profile
+import modules.NonBlockingContext
 import play.api.cache.CacheApi
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.mvc.{Action, Controller}
 
-import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class Strava @Inject() (config: StravaAccessConfig, ws: WSClient, cache: CacheApi, actorSystem: ActorSystem)
+class Strava @Inject() (config: StravaConfig, ws: WSClient, cache: CacheApi)
   (implicit @NonBlockingContext ec: ExecutionContext) extends Controller {
 
   def authorize = Action { implicit request =>
@@ -40,7 +37,6 @@ class Strava @Inject() (config: StravaAccessConfig, ws: WSClient, cache: CacheAp
   }
 
   def synchData(userId: String) = Action { implicit request =>
-    actorSystem.eventStream.publish(StravaDataSyncRequest("userToken", userId.toInt))
     Ok("gimme an athlete to synch")
   }
 

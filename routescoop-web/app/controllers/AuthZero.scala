@@ -24,7 +24,7 @@ class AuthZero @Inject()(config: AuthConfig, ws: WSClient, cache: CacheApi)
     } yield {
       getToken(code).flatMap {
         case (idToken, accessToken) =>
-          getUser(accessToken).map { userJson =>
+          getAuthUser(accessToken).map { userJson =>
             cache.set(idToken + "profile", userJson.as[models.Profile])
             Redirect(routes.Home.index()).withCookies(
               Cookie("idToken", idToken, Some(36000)),
@@ -56,7 +56,7 @@ class AuthZero @Inject()(config: AuthConfig, ws: WSClient, cache: CacheApi)
     }
   }
 
-  private def getUser(accessToken: String): Future[JsValue] = {
+  private def getAuthUser(accessToken: String): Future[JsValue] = {
     val response = ws.url(config.fetchUserUrl).withQueryString("access_token" -> accessToken).get()
     response.flatMap(response => Future.successful(response.json))
   }

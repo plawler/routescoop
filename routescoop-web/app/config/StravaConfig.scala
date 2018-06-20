@@ -4,7 +4,7 @@ import javax.inject.{Inject, Provider}
 
 import play.api.Configuration
 
-case class StravaAccessConfig(
+case class StravaConfig(
   clientId: String,
   clientSecret: String,
   authorizationUrl: String,
@@ -15,9 +15,9 @@ case class StravaAccessConfig(
    Map("client_id" -> Seq(clientId), "client_secret" -> Seq(clientSecret), "code" -> Seq(code))
 }
 
-object StravaAccessConfig {
-  def apply(configuration: Configuration): StravaAccessConfig = {
-    StravaAccessConfig(
+object StravaConfig {
+  def apply(configuration: Configuration): StravaConfig = {
+    StravaConfig(
       configuration.getString("strava.clientId").get,
       configuration.getString("strava.clientSecret").get,
       configuration.getString("strava.authorizationUrl").get,
@@ -27,6 +27,6 @@ object StravaAccessConfig {
   }
 }
 
-class StravaAccessConfigProvider @Inject()(configuration: Configuration) extends Provider[StravaAccessConfig] {
-  override def get(): StravaAccessConfig = StravaAccessConfig(configuration)
+class StravaConfigProvider @Inject()(configuration: Configuration) extends Provider[StravaConfig] {
+  override def get(): StravaConfig = StravaConfig(configuration)
 }

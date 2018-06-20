@@ -1,4 +1,4 @@
-app = routescoop-api
+app = routescoop
 doc = docker-compose -f docker-compose.yml
 doctest = $(doc) -f docker-compose.test.yml run --rm
 
@@ -15,4 +15,5 @@ test:
 down:
 	$(doc) down --rmi local
 
-up: $(doc) up -d
+up:
+	$(doc) up -d

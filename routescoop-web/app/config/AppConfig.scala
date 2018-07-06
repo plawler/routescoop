@@ -3,7 +3,10 @@ package config
 import javax.inject.{Inject, Provider}
 import play.api.Configuration
 
-case class AppConfig(apiHost: String, apiPath: String)
+case class AppConfig(apiHost: String, apiPath: String) {
+  val baseApiUrl = s"$apiHost$apiPath"
+  val pingUrl = s"$apiHost/ping"
+}
 
 object AppConfig {
 

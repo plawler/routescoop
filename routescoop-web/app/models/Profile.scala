@@ -24,4 +24,6 @@ object Profile {
       (JsPath \ "stravaId").readNullable[Int]
     ) (Profile.apply _)
 
+  implicit val profileWrites: Writes[Profile] = Json.writes[Profile]
+
 }

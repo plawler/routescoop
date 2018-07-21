@@ -15,7 +15,7 @@ libraryDependencies ++= Seq(
   cache,
   "com.ejisan" %% "play-pagemeta" % "2.0.1",
   "com.ejisan" %% "play-form" % "3.0.1",
-  "com.netaporter" %% "scala-uri" % "0.4.16",
+  "io.lemonlabs" %% "scala-uri" % "1.1.2",
   "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
 )
 

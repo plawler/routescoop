@@ -1,18 +1,18 @@
 - name: build-db
   command: echo building database
   service: mysqldb
-- name: web-test
-  command: activator test
-  service: routescoop-web-test
-- name: web-build
-  command: echo web-build
-  service: routescoop-web-build
 - name: api-test
   command: activator test
   service: routescoop-api-test
+- name: web-test
+  command: activator test
+  service: routescoop-web-test
 - name: api-build
   command: echo api-build
   service: routescoop-api-build
+- name: web-build
+  command: echo web-build
+  service: routescoop-web-build
 - name: api-dockerhub-push
   service: routescoop-api-build
   type: push

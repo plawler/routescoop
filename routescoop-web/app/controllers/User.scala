@@ -1,7 +1,7 @@
 package controllers
 
 import javax.inject.{Inject, Singleton}
-import com.netaporter.uri.dsl._
+import io.lemonlabs.uri.dsl._
 import config.AuthConfig
 import ejisan.play.libs.{PageMetaApi, PageMetaSupport}
 import models.Profile
@@ -20,6 +20,11 @@ class User @Inject()(AuthenticatedAction: AuthenticatedAction,
                      val pageMetaApi: PageMetaApi,
                      implicit val wja: WebJarAssets) extends Controller with I18nSupport with PageMetaSupport {
 
+  val loginUrl = config.domain / "authorize" ?
+    ("client_id" -> config.clientId) &
+    ("redirect_uri" -> config.callbackUrl) &
+    ("response_type" -> "code")
+
   def profile = AuthenticatedAction { implicit request =>
     val cookie = request.cookies.get("idToken").get
     val profile = cache.get[Profile](cookie.value + "profile").get
@@ -34,7 +39,7 @@ class User @Inject()(AuthenticatedAction: AuthenticatedAction,
         Logger.debug("authenticated")
         Redirect(routes.Home.index())
       }
-    } getOrElse Ok(views.html.login(config))
+    } getOrElse Redirect(loginUrl)
   }
 
   def logout = Action { implicit request =>

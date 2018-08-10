@@ -25,7 +25,7 @@ routescoop-api-build:
     context: routescoop-api
     dockerfile_path: Dockerfile
 mysqldb:
-  image: mysql:5.7
+  image: pelawler/mysql-healthcheck
   environment:
     - MYSQL_ROOT_PASSWORD=root
     - MYSQL_DATABASE=routescoop

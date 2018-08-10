@@ -1,6 +1,6 @@
-- name: build-db
-  command: echo building database
-  service: mysqldb
+# - name: build-db
+#   command: echo building database
+#   service: mysqldb
 - name: api-test
   command: activator test
   service: routescoop-api-test

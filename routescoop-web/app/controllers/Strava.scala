@@ -1,6 +1,6 @@
 package controllers
 
-import com.netaporter.uri.dsl._
+import io.lemonlabs.uri.dsl._
 import config.StravaConfig
 import javax.inject.{Inject, Singleton}
 import models.Profile

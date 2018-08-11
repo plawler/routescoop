@@ -3,12 +3,10 @@ routescoop-web-test:
     image: pelawler/routescoop-web-test
     context: routescoop-web
     dockerfile_path: Dockerfile-test
-  # depends_on:
-  #   - mysqldb
   encrypted_env_file: routescoop.env.encrypted
 routescoop-web-build:
   build:
-    image: plawler/routescoop-web
+    image: pelawler/routescoop-web
     context: routescoop-web
     dockerfile_path: Dockerfile
 routescoop-api-test:
@@ -27,7 +25,8 @@ routescoop-api-build:
     context: routescoop-api
     dockerfile_path: Dockerfile
 mysqldb:
-  image: mysql:5.7.16
+  image: pelawler/mysql-healthcheck
   environment:
     - MYSQL_ROOT_PASSWORD=root
     - MYSQL_DATABASE=routescoop
+  cached: true

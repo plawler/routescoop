@@ -3,6 +3,7 @@
 # ~~~~
 
 GET     /ping                           controllers.Application.ping
+GET     /health                         controllers.Application.health
 
 POST    /api/v1/users                   controllers.Users.create
 GET     /api/v1/users/:id               controllers.Users.get(id: String)

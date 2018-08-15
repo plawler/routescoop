@@ -29,4 +29,3 @@ mysqldb:
   environment:
     - MYSQL_ROOT_PASSWORD=root
     - MYSQL_DATABASE=routescoop
-  cached: true

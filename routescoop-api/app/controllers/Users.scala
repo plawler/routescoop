@@ -18,7 +18,7 @@ class Users @Inject()(userService: UserService, actorSystem: ActorSystem)
   def create = Action.async(parse.json) { implicit request =>
     request.body.validate[User].fold(
       errors => Future.successful(BadRequest(JsError.toJson(errors))),
-      user => userService.createUser(user) map (_ => Ok(Json.toJson(user)))
+      user => userService.createUser(user) map (_ => Created(Json.toJson(user)))
     )
   }
 

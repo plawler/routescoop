@@ -9,8 +9,8 @@ case class Profile(
   name: String,
   email: String,
   picture: String,
-  stravaToken: Option[String],
-  stravaId: Option[Int]
+  stravaToken: Option[String] = None,
+  stravaId: Option[Int] = None
 )
 
 object Profile {

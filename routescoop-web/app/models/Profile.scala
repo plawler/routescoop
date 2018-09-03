@@ -5,13 +5,15 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 case class Profile(
-  userId: String,
+  id: String,
   name: String,
   email: String,
   picture: String,
   stravaToken: Option[String] = None,
   stravaId: Option[Int] = None
-)
+) {
+  def toUser = User(id, name, email, picture, stravaToken, stravaId)
+}
 
 object Profile {
 

@@ -12,8 +12,11 @@ case class AuthConfig(
   callbackUrl: String,
   tokenUrl: String,
   fetchUserUrl: String,
-  logoutUrl: String
-)
+  logoutUrl: String,
+  audience: Option[String] = None
+) {
+  val getAudience = audience.getOrElse(fetchUserUrl)
+}
 
 object AuthConfig {
   def apply(configuration: Configuration): AuthConfig = {
@@ -24,7 +27,8 @@ object AuthConfig {
       configuration.getString("auth.callbackUrl").get,
       configuration.getString("auth.tokenUrl").get,
       configuration.getString("auth.fetchUserUrl").get,
-      configuration.getString("auth.logoutUrl").get
+      configuration.getString("auth.logoutUrl").get,
+      configuration.getString("auth.audience")
     )
   }
 }

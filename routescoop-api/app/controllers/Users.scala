@@ -22,6 +22,13 @@ class Users @Inject()(userService: UserService, actorSystem: ActorSystem)
     )
   }
 
+  def update = Action.async(parse.json) { implicit request =>
+    request.body.validate[User].fold(
+      errors => Future.successful(BadRequest(JsError.toJson(errors))),
+      user => userService.updateUser(user) map (_ => NoContent)
+    )
+  }
+
   def get(id: String) = Action.async { implicit request =>
     userService.getUser(id).map { user =>
       if (user.isEmpty) NotFound

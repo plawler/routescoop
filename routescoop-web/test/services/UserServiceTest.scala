@@ -1,7 +1,7 @@
 package services
 
 import config.AppConfig
-import models.{Profile, UserCreated, UserResultError}
+import models.{Profile, UserResultError, UserResultSuccess}
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json._
@@ -28,8 +28,8 @@ class UserServiceTest extends WordSpec with Matchers {
       } { implicit port =>
         WsTestClient.withClient { client =>
           val service = new UserService(client, config)
-          val result = Await.result(service.createUser(profile), 1 second)
-          result shouldEqual UserCreated
+          val result = Await.result(service.saveOrUpdate(profile), 1 second)
+          result shouldEqual UserResultSuccess("user created", profile)
         }
       }
     }
@@ -42,8 +42,23 @@ class UserServiceTest extends WordSpec with Matchers {
       } { implicit port =>
         WsTestClient.withClient { client =>
           val service = new UserService(client, config)
-          val result = Await.result(service.createUser(profile.copy(userId = "")), 1 second)
+          val result = Await.result(service.saveOrUpdate(profile.copy(id = "")), 1 second)
           result shouldBe a [UserResultError]
+        }
+      }
+    }
+
+    "update user with new profile attributes" in new ProfileFixture {
+      Server.withRouter() {
+        case PUT(p"/api/v1/users") => Action {
+          NoContent
+        }
+      } { implicit port =>
+        WsTestClient.withClient { client =>
+          val service = new UserService(client, config)
+          val updated = profile.copy(stravaId = Some(1234567890), stravaToken = Some("theStravaToken"))
+          val result = Await.result(service.update(updated), 1 second)
+          result shouldEqual UserResultSuccess("user updated", updated)
         }
       }
     }

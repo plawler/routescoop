@@ -7,14 +7,14 @@ GET         /                         controllers.Home.index
 GET         /ping                     controllers.Application.ping
 GET         /health                   controllers.Application.health
 
-GET         /authzero/callback        controllers.AuthZero.callback(code: Option[String])
+GET         /authzero/callback        controllers.Auth.callback(code: Option[String])
 
 GET         /strava/callback          controllers.Strava.callback(code: Option[String])
 GET         /strava/authorize         controllers.Strava.authorize
 POST        /strava/sync              controllers.Strava.synchData(userId: String)
 
-GET         /login                    controllers.User.login
-GET         /logout                   controllers.User.logout
+GET         /login                    controllers.Auth.login
+GET         /logout                   controllers.Auth.logout
 GET         /profile                  controllers.User.profile
 
 

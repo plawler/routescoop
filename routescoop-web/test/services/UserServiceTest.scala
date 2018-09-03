@@ -29,7 +29,7 @@ class UserServiceTest extends WordSpec with Matchers {
         WsTestClient.withClient { client =>
           val service = new UserService(client, config)
           val result = Await.result(service.saveOrUpdate(profile), 1 second)
-          result shouldEqual UserResultSuccess("user created", profile)
+          result shouldEqual UserResultSuccess(profile.toUser)
         }
       }
     }
@@ -56,9 +56,9 @@ class UserServiceTest extends WordSpec with Matchers {
       } { implicit port =>
         WsTestClient.withClient { client =>
           val service = new UserService(client, config)
-          val updated = profile.copy(stravaId = Some(1234567890), stravaToken = Some("theStravaToken"))
+          val updated = profile.copy(stravaId = Some(1234567890), stravaToken = Some("theStravaToken")).toUser
           val result = Await.result(service.update(updated), 1 second)
-          result shouldEqual UserResultSuccess("user updated", updated)
+          result shouldEqual UserResultSuccess(updated)
         }
       }
     }

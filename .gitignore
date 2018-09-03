@@ -113,3 +113,8 @@ run-play.sh
 ### Codeship ###
 codeship.aes
 dockercfg
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

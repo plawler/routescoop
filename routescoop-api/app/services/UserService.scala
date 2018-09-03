@@ -14,6 +14,7 @@ import scala.concurrent.{ExecutionContext, Future, blocking}
 trait UserService {
 
   def createUser(user: User): Future[Unit]
+  def updateUser(user: User): Future[Unit]
   def getUser(userId: String): Future[Option[User]]
 
   def startDataSync(user: User): Future[UserDataSync]
@@ -36,6 +37,11 @@ class UserServiceImpl @Inject()(
   override def createUser(user: User): Future[Unit] = Future {
     blocking { userStore.insert(user) }
   }
+
+  override def updateUser(user: User) = Future {
+    blocking { userStore.update(user) }
+  }
+
 
   override def getUser(userId: String): Future[Option[User]] = Future {
     blocking { userStore.select(userId) }

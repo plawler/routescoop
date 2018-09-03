@@ -15,15 +15,13 @@ import scala.concurrent.Future
 class AuthenticatedAction @Inject()(cache: CacheApi) extends ActionBuilder[Request] {
 
   override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] = {
-    request.cookies.get("idToken").flatMap { cookie =>
-      val profileKey = cookie.value + "profile" // todo: check for validity of jwt
-      cache.get[Profile](profileKey).map { profile =>
-        Logger.debug("action authenticated")
+    request.session.get("idToken") flatMap { id =>
+      val profileKey = id + "profile" // todo: check for validity of jwt
+      cache.get[Profile](profileKey) map { profile =>
         block(request)
       }
-    }.getOrElse {
-      Logger.debug("action unauthenticated")
-      Future.successful(Redirect(routes.User.login()))
+    } getOrElse {
+      Future.successful(Redirect(routes.Auth.login()))
     }
   }
 

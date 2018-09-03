@@ -28,7 +28,7 @@ class UserSpec extends WordSpec
 
     "create a user" in {
       val result = route(app, FakeRequest(POST, usersApi, JsonHeader, userJson)).get
-      status(result) shouldEqual OK
+      status(result) shouldEqual CREATED
     }
 
   }

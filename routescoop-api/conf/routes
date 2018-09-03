@@ -6,6 +6,7 @@ GET     /ping                           controllers.Application.ping
 GET     /health                         controllers.Application.health
 
 POST    /api/v1/users                   controllers.Users.create
+PUT     /api/v1/users                   controllers.Users.update
 GET     /api/v1/users/:id               controllers.Users.get(id: String)
 POST    /api/v1/users/:id/syncs         controllers.Users.sync(id: String)
 POST    /api/v1/users/:id/settings      controllers.Users.createSettings(id: String)

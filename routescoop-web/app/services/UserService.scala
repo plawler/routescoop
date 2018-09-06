@@ -17,10 +17,11 @@ class UserService @Inject()(ws: WSClient, config: AppConfig)(implicit @NonBlocki
   lazy val url = s"${config.baseApiUrl}/users"
 
   def saveOrUpdate(profile: Profile): Future[UserResult] = {
-    val user = profile.toUser
-    get(user.id) flatMap {
-      case UserResultSuccess(_) => update(user)
-      case UserResultNotFound => create(user)
+    get(profile.id) flatMap {
+      case UserResultSuccess(user) =>
+        val updated = user.copy(name = profile.name, email = profile.email, picture = profile.picture)
+        update(updated)
+      case UserResultNotFound => create(profile.toUser)
       case error: UserResultError => Future.successful(error)
     }
   }
@@ -38,7 +39,9 @@ class UserService @Inject()(ws: WSClient, config: AppConfig)(implicit @NonBlocki
   def update(user: User): Future[UserResult] = {
     ws.url(url).put(Json.toJson(user)) map { response =>
       response.status match {
-        case Status.NO_CONTENT => UserResultSuccess(user)
+        case Status.NO_CONTENT =>
+          Logger.info(s"updated user: $user")
+          UserResultSuccess(user)
         case _ => UserResultError(s"${response.status}: ${response.body}")
       }
     }

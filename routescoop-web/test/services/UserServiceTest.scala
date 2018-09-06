@@ -48,7 +48,7 @@ class UserServiceTest extends WordSpec with Matchers {
       }
     }
 
-    "update user with new profile attributes" in new ProfileFixture {
+    "update a user" in new ProfileFixture {
       Server.withRouter() {
         case PUT(p"/api/v1/users") => Action {
           NoContent
@@ -56,9 +56,27 @@ class UserServiceTest extends WordSpec with Matchers {
       } { implicit port =>
         WsTestClient.withClient { client =>
           val service = new UserService(client, config)
-          val updated = profile.copy(stravaId = Some(1234567890), stravaToken = Some("theStravaToken")).toUser
+          val updated = profileWithStrava.toUser
           val result = Await.result(service.update(updated), 1 second)
           result shouldEqual UserResultSuccess(updated)
+        }
+      }
+    }
+
+    "update an existing user with new profile attributes" in new ProfileFixture {
+      Server.withRouter() {
+        case GET(p"/api/v1/users/${profile.id}") => Action {
+          Ok(Json.toJson(profileWithStrava))
+        }
+        case PUT(p"/api/v1/users") => Action {
+          NoContent
+        }
+      } { implicit port =>
+        WsTestClient.withClient { client =>
+          val service = new UserService(client, config)
+          val updatedProfile = profileWithStrava.copy(email = "bob@auth0.com")
+          val result = Await.result(service.saveOrUpdate(updatedProfile), 1 second)
+          result shouldEqual UserResultSuccess(updatedProfile.toUser)
         }
       }
     }
@@ -71,6 +89,7 @@ class UserServiceTest extends WordSpec with Matchers {
     val email = "bob@strava.com"
     val pic = ""
     val profile = Profile(id, name, email, pic)
+    val profileWithStrava = profile.copy(stravaId = Some(1234567890), stravaToken = Some("theStravaToken"))
   }
 
 }

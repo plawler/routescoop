@@ -1,14 +1,15 @@
 package controllers
 
-import io.lemonlabs.uri.dsl._
 import config.StravaConfig
+import io.lemonlabs.uri.dsl._
 import javax.inject.{Inject, Singleton}
-import models.{Profile, UserResultError, UserResultSuccess}
+import models.{Profile, UserResultSuccess}
 import modules.NonBlockingContext
+import play.api.Logger
 import play.api.cache.CacheApi
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{Action, Controller, Request}
 import services.UserService
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -25,34 +26,44 @@ class Strava @Inject()(userService: UserService, config: StravaConfig, ws: WSCli
     Redirect(url) // redirect user to authorize page on strava
   }
 
-  def callback(code: Option[String]) = Action.async { implicit request =>
-    code.map { c =>
-      // each user must authorize the app
-      // once token is granted, it remains unless app is unauthorized
-      ws.url(config.oauthUrl).post(config.forTokenExchange(c)) map { response =>
-        val (token, stravaId) = extractStravaBits(response)
-        request.session.get("idToken").foreach(idToken => updateUser(idToken, token, stravaId))
-        Redirect(routes.User.profile())
-      }
-    }.getOrElse(Future.successful(Ok("failed to get code back from strava")))
+  def callback(maybeCode: Option[String]) = Action.async { implicit request =>
+    getProfile(request) match {
+      case Some(profile) =>
+        maybeCode match {
+          case Some(code) =>
+            ws.url(config.oauthUrl).post(config.forTokenExchange(code)) flatMap { response =>
+              val (token, id) = extractStravaBits(response)
+              val withStrava = profile.copy(stravaId = Some(id), stravaToken = Some(token)).toUser
+              userService.update(withStrava) map {
+                case UserResultSuccess(user) =>
+                  request.session.get("idToken") foreach (id => cache.set(id + "profile", user.toProfile))
+                  Redirect(routes.User.profile()).flashing("success" -> "Connected to Strava")
+                case _ =>
+                  Logger.error(s"Update failed for user: $withStrava")
+                  Redirect(routes.User.profile()).flashing("error" -> "Profile update failed")
+              }
+            }
+          case None =>
+            Logger.error("Strava did not callback with a code...redirecting with error")
+            Future.successful(Redirect(routes.User.profile()).flashing("error" -> "Strava update failed"))
+        }
+      case None =>
+        Logger.error("A profile wasn't found in cache for the user...logging out")
+        Future.successful(Redirect(routes.Auth.logout()))
+    }
   }
 
   def synchData(userId: String) = Action { implicit request =>
     Ok("gimme an athlete to synch")
   }
 
-  private def updateUser[A](idToken: String, stravaToken: String, stravaId: Int): Unit = {
-    val key = idToken + "profile"
-    val maybeProfile = cache.get[models.Profile](key)
-
-    maybeProfile map { profile =>
-      val withStrava = profile.copy(stravaToken = Some(stravaToken), stravaId = Some(stravaId))
-      userService.update(withStrava.toUser) map {
-        case success: UserResultSuccess => cache.set(key, withStrava)
-        case UserResultError(message) => throw new IllegalStateException(message)
-      }
-    } getOrElse(throw new IllegalStateException(s"no profile found in cache for id $idToken"))
-
+  private def getProfile(request: Request[Any]): Option[Profile] = {
+    for {
+      sessionId <- request.session.get("idToken")
+      profile <- cache.get[Profile](sessionId + "profile")
+    } yield {
+      profile
+    }
   }
 
   private def extractStravaBits(response: WSResponse) = {
@@ -63,3 +74,4 @@ class Strava @Inject()(userService: UserService, config: StravaConfig, ws: WSCli
   }
 
 }
+

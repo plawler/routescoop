@@ -17,10 +17,12 @@ class User @Inject()(AuthenticatedAction: AuthenticatedAction,
                      implicit val wja: WebJarAssets) extends Controller with I18nSupport with PageMetaSupport {
 
   def profile = AuthenticatedAction { implicit request =>
-    val id = request.session.get("idToken").get
-    val profile = cache.get[Profile](id + "profile").get
-    Logger.debug(s"User profile is: $profile")
-    Ok(views.html.user.profile(profile))
+    request.session.get("idToken") flatMap { id =>
+      cache.get[Profile](id + "profile") map { profile =>
+        Logger.debug(s"User profile is: $profile")
+        Ok(views.html.user.profile(profile))
+      }
+    } getOrElse Redirect(routes.Auth.login())
   }
 
 }

@@ -54,8 +54,8 @@ class Auth @Inject()(config: AuthConfig, ws: WSClient, cache: CacheApi, userServ
           result <- userService.saveOrUpdate(profile)
         } yield {
           result match {
-            case success: UserResultSuccess =>
-              cache.set(idToken + "profile", profile)
+            case UserResultSuccess(user) =>
+              cache.set(idToken + "profile", user.toProfile)
               Redirect(routes.Home.index()).withSession("idToken" -> idToken, "accessToken" -> accessToken)
             case UserResultError(message) =>
               Logger.error(message)

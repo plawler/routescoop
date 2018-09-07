@@ -31,7 +31,7 @@ class Strava @Inject()(userService: UserService, config: StravaConfig, ws: WSCli
       case Some(profile) =>
         maybeCode match {
           case Some(code) =>
-            ws.url(config.oauthUrl).post(config.forTokenExchange(code)) flatMap { response =>
+            ws.url(config.oauthUrl).post(forTokenExchange(code)) flatMap { response =>
               val (token, id) = extractStravaBits(response)
               val withStrava = profile.copy(stravaId = Some(id), stravaToken = Some(token)).toUser
               userService.update(withStrava) map {
@@ -64,6 +64,10 @@ class Strava @Inject()(userService: UserService, config: StravaConfig, ws: WSCli
     } yield {
       profile
     }
+  }
+
+  private def forTokenExchange(code: String): Map[String, Seq[String]] = {
+    Map("client_id" -> Seq(config.clientId), "client_secret" -> Seq(config.clientSecret), "code" -> Seq(code))
   }
 
   private def extractStravaBits(response: WSResponse) = {

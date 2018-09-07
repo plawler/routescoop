@@ -10,10 +10,7 @@ case class StravaConfig(
   authorizationUrl: String,
   redirectUri: String,
   oauthUrl: String
-) {
-  def forTokenExchange(code: String): Map[String, Seq[String]] =
-   Map("client_id" -> Seq(clientId), "client_secret" -> Seq(clientSecret), "code" -> Seq(code))
-}
+)
 
 object StravaConfig {
   def apply(configuration: Configuration): StravaConfig = {

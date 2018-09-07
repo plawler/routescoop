@@ -16,6 +16,7 @@ libraryDependencies ++= Seq(
   "com.ejisan" %% "play-pagemeta" % "2.0.1",
   "com.ejisan" %% "play-form" % "3.0.1",
   "io.lemonlabs" %% "scala-uri" % "1.1.2",
+  "org.mockito" % "mockito-core" % "2.2.29" % Test,
   "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
 )
 

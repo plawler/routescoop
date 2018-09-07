@@ -14,7 +14,7 @@ import play.core.server.Server
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class UserServiceTest extends WordSpec with Matchers {
+class UserServiceSpec extends WordSpec with Matchers {
 
   val config = new AppConfig("", "/api/v1")
 

@@ -3,22 +3,24 @@
 # ~~~~
 
 # An example controller showing a sample home page
-GET         /                         controllers.Home.index
-GET         /ping                     controllers.Application.ping
-GET         /health                   controllers.Application.health
+GET         /                           controllers.Home.index
+GET         /ping                       controllers.Application.ping
+GET         /health                     controllers.Application.health
 
-GET         /authzero/callback        controllers.Auth.callback(code: Option[String])
+GET         /authzero/callback          controllers.Auth.callback(code: Option[String])
 
-GET         /strava/callback          controllers.Strava.callback(code: Option[String])
-GET         /strava/authorize         controllers.Strava.authorize
-POST        /strava/sync              controllers.Strava.synchData(userId: String)
+GET         /strava/callback            controllers.Strava.callback(code: Option[String])
+GET         /strava/authorize           controllers.Strava.authorize
 
-GET         /login                    controllers.Auth.login
-GET         /logout                   controllers.Auth.logout
-GET         /profile                  controllers.User.profile
+GET         /rides                      controllers.Rides.index
+POST        /rides/sync                 controllers.Rides.sync
+
+GET         /login                      controllers.Auth.login
+GET         /logout                     controllers.Auth.logout
+GET         /profile                    controllers.User.profile
 
 
 # Map static resources from the web jars to the /assets/lib URL path
-GET         /assets/lib/*file         controllers.WebJarAssets.at(file)
+GET         /assets/lib/*file           controllers.WebJarAssets.at(file)
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file             controllers.Assets.versioned(path="/public", file: Asset)
+GET         /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

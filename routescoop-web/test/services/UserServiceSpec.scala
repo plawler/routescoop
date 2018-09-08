@@ -1,7 +1,8 @@
 package services
 
 import config.AppConfig
-import models.{Profile, UserResultError, UserResultSuccess}
+import fixtures.ProfileFixture
+import models.{UserResultError, UserResultSuccess}
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json._
@@ -81,15 +82,6 @@ class UserServiceSpec extends WordSpec with Matchers {
       }
     }
 
-  }
-
-  trait ProfileFixture {
-    val id = "e6ef344c-3220-4522-9210-f76c1a8e0b49"
-    val name = "Bob"
-    val email = "bob@strava.com"
-    val pic = ""
-    val profile = Profile(id, name, email, pic)
-    val profileWithStrava = profile.copy(stravaId = Some(1234567890), stravaToken = Some("theStravaToken"))
   }
 
 }

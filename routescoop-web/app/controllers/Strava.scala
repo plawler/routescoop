@@ -3,20 +3,23 @@ package controllers
 import config.StravaConfig
 import io.lemonlabs.uri.dsl._
 import javax.inject.{Inject, Singleton}
-import models.{Profile, UserResultSuccess}
+import models.{Profile, RideSyncResultError, RideSyncResultStarted, UserResultSuccess}
 import modules.NonBlockingContext
 import play.api.Logger
 import play.api.cache.CacheApi
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.mvc.{Action, Controller, Request}
-import services.UserService
+import services.{RideService, UserService}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class Strava @Inject()(userService: UserService, config: StravaConfig, ws: WSClient, cache: CacheApi)
-  (implicit @NonBlockingContext ec: ExecutionContext) extends Controller {
+class Strava @Inject()(
+  userService: UserService,
+  config: StravaConfig,
+  ws: WSClient,
+  cache: CacheApi) (implicit @NonBlockingContext ec: ExecutionContext) extends Controller {
 
   def authorize = Action { implicit request =>
     val url = config.authorizationUrl ?
@@ -51,10 +54,6 @@ class Strava @Inject()(userService: UserService, config: StravaConfig, ws: WSCli
         Logger.error("A profile wasn't found in cache for the user...logging out")
         Future.successful(Redirect(routes.Auth.logout()))
     }
-  }
-
-  def synchData(userId: String) = Action { implicit request =>
-    Ok("gimme an athlete to synch")
   }
 
   private def getProfile(request: Request[Any]): Option[Profile] = {

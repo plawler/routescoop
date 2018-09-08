@@ -1,0 +1,29 @@
+@()(implicit request: RequestHeader, messages: Messages, pageMeta: PageMeta, wjAssets: WebJarAssets)
+@helper.base {
+    @Html("")
+} {
+    <div class="row">
+        <div class="small-8 columns">
+            <div class="home">
+                <h1>Rides</h1>
+
+                <form action="@routes.Rides.sync()" method="post">
+                    <div class="row">
+                        <div class="small-12 columns">
+                            @*<label>Number of Moons*@
+                                @*<input type="number" placeholder="Moons required">*@
+                            @*</label>*@
+                            <button type="submit" class="button">Synch Now!</button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+        <div class="small-4 columns">
+            <div class="sidebar"></div>
+        </div>
+    </div>
+
+}

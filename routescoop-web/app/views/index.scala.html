@@ -1,14 +1,7 @@
-@()(implicit request: RequestHeader, messages: Messages, pageMeta: PageMeta, wjAssets: WebJarAssets)
-@helper.base(){
-    <div class="row">
-        <div class="small-8 columns">
-            <div class="home">
-                <h1>Dashboard</h1>
-            </div>
-        </div>
-        <div class="small-4 columns">
-            <div class="sidebar"></div>
-        </div>
-    </div>
+@()(implicit request: RequestHeader, messages: Messages)
 
+@helper.base() {
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Dashboard</h1>
+    </div>
 }

@@ -36,5 +36,5 @@ class Application @Inject()(appConfig: AppConfig, authConfig: AuthConfig, ws: WS
       }
     }
   }
-
+  
 }

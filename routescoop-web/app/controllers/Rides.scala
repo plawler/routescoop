@@ -1,6 +1,5 @@
 package controllers
 
-import ejisan.play.libs.{PageMetaApi, PageMetaSupport}
 import javax.inject.Inject
 import models.{Profile, RideSyncResultStarted}
 import modules.NonBlockingContext
@@ -18,10 +17,8 @@ class Rides @Inject()(
   rideService: RideService,
   ws: WSClient,
   cache: CacheApi,
-  val messagesApi: MessagesApi,
-  val pageMetaApi: PageMetaApi,
-  implicit val wja: WebJarAssets)
-  (implicit @NonBlockingContext ec: ExecutionContext) extends Controller with I18nSupport with PageMetaSupport {
+  val messagesApi: MessagesApi)
+  (implicit @NonBlockingContext ec: ExecutionContext) extends Controller with I18nSupport {
 
   def sync = authenticated.async { implicit request =>
     getProfile(request) match {

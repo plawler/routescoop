@@ -1,16 +1,12 @@
 @import models.Profile
 
-@(profile: Profile)(implicit request: RequestHeader, messages: Messages, pageMeta: PageMeta, wjAssets: WebJarAssets)
+@(profile: Profile)(implicit request: RequestHeader, messages: Messages)
 
 @helper.base {
     @Html("")
 } {
-    <div class="row">
-        <div class="small-12 columns">
-            <div class="profile">
-                <h1>Profile</h1>
-            </div>
-        </div>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Profile</h1>
     </div>
 
     <div class="row">

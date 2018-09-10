@@ -1,45 +1,92 @@
-@(header: Html = Html(""))(content: Html)(implicit request: RequestHeader, messages: Messages, pageMeta: PageMeta, wjAssets: WebJarAssets)
+@(header: Html = Html(""))(content: Html)(implicit request: RequestHeader, messages: Messages)
 <!DOCTYPE html>
 <html lang="@{messages.lang.code}">
     <head>
-        <meta charset="UTF-8">
-        @pageMeta.toHtml
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
         <link rel="shortcut icon" href="@routes.Assets.versioned("images/favicon.png")" type="image/png"/>
-        <link href="@routes.Assets.versioned("styles/foundation.css")" rel="stylesheet">
+        <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("lib/bootstrap/css/bootstrap.min.css")">
+        <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("lib/font-awesome/css/font-awesome.min.css")">
+        <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("lib/bootstrap-datepicker/css/bootstrap-datepicker3.css")">
+        @*<link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">*@
+        @*<link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/docs.min.css")">*@
+
+        <!-- Custom styles for this template -->
+        <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("styles/dashboard.css")">
+
         @header
     </head>
 
     <body>
-
-    <div class="title-bar" data-responsive-toggle="realEstateMenu" data-hide-for="small">
-        <button class="menu-icon" type="button" data-toggle></button>
-        <div class="title-bar-title">Menu</div>
-    </div>
-
-    <div class="top-bar" id="realEstateMenu">
-        <div class="top-bar-left">
-            <ul class="menu" data-responsive-menu="accordion">
-                <li class="menu-text">RouteScoop</li>
-                @*<li><a href="#">One</a></li>*@
-                @*<li><a href="#">Two</a></li>*@
-                @*<li><a href="#">Three</a></li>*@
+        <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+            <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Routescoop</a>
+            @*<input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">*@
+            <ul class="navbar-nav px-3">
+                <ul class="navbar-nav px-3">
+                    <li class="nav-item text-nowrap">
+                        <a class="nav-link" href="@routes.Auth.logout()">Logout</a>
+                    </li>
+                </ul>
+                @*<li class="nav-item text-nowrap">*@
+                    @*<a class="nav-link" href="@routes.User.profile()">Profile</a>*@
+                @*</li>*@
+                @*<li class="nav-item text-nowrap">*@
+                    @*<a class="nav-link" href="@routes.Auth.logout()">Logout</a>*@
+                @*</li>*@
             </ul>
-        </div>
-        <div class="top-bar-right">
-            <ul class="menu">
-                <li><a href="@routes.User.profile()">Profile</a></li>
-                <li><a href="@routes.Auth.logout()">Logout</a></li>
-            </ul>
-        </div>
-    </div>
+        </nav>
 
-    <div class="row"><p></p></div>
-    @content
+        <div class="container-fluid">
+            <div class="row">
+                <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+                    <div class="sidebar-sticky">
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="@routes.Home.index()">
+                                    <span data-feather="home"></span>
+                                    Dashboard <span class="sr-only">(current)</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="@routes.Rides.index()">
+                                    <span data-feather="file"></span>
+                                    Rides
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">
+                                    <span data-feather="shopping-cart"></span>
+                                    Settings
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="@routes.User.profile()">
+                                    <span data-feather="users"></span>
+                                    Profile
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
 
-    <script src="@routes.WebJarAssets.at(wjAssets.locate("jquery.min.js"))"></script>
-    <script src="@routes.WebJarAssets.at(wjAssets.locate("foundation.min.js"))"></script>
-    <script src="@routes.Assets.versioned("scripts/main.js")"></script>
-    <script src="@routes.Assets.versioned("scripts/hello.js")"></script>
+                <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+
+                    @content
+
+                </main>
+
+            </div>
+        </div>
+
+
+        <script src="@routes.Assets.versioned("lib/jquery/jquery.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.versioned("lib/bootstrap/js/bootstrap.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.versioned("lib/bootstrap-datepicker/js/bootstrap-datepicker.js")" type="text/javascript"></script>
+        @*<script src="@routes.Assets.versioned("scripts/main.js")"></script>*@
+        @*<script src="@routes.Assets.versioned("scripts/hello.js")"></script>*@
+        @*<script src="http://v4-alpha.getbootstrap.com/assets/js/vendor/tether.min.js" type="text/javascript"></script>*@
 
     </body>
 

@@ -7,14 +7,13 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
 scalaVersion := "2.11.11"
 
 // Resolvers
-resolvers += "Ejisan Github" at "https://ejisan.github.io/repo/"
+resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
+
 
 // Dependencies
 libraryDependencies ++= Seq(
   ws,
   cache,
-  "com.ejisan" %% "play-pagemeta" % "2.0.1",
-  "com.ejisan" %% "play-form" % "3.0.1",
   "io.lemonlabs" %% "scala-uri" % "1.1.2",
   "org.mockito" % "mockito-core" % "2.2.29" % Test,
   "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
@@ -22,12 +21,9 @@ libraryDependencies ++= Seq(
 
 // Web Jars Dependencies
 libraryDependencies ++= Seq(
-  "org.webjars" %% "webjars-play" % "2.5.0",
-  "org.webjars.bower" % "compass-mixins" % "1.0.2",
-  "org.webjars" % "foundation" % "6.2.3",
-  "org.webjars" % "jquery" % "2.2.4"
+  "com.adrianhurt" %% "play-bootstrap" % "1.4-P25-B4-SNAPSHOT",
+  "org.webjars" % "bootstrap" % "4.1.3" exclude("org.webjars", "jquery"),
+  "org.webjars" % "jquery" % "3.3.1-1",
+  "org.webjars" % "font-awesome" % "4.7.0",
+  "org.webjars" % "bootstrap-datepicker" % "1.4.0" exclude("org.webjars", "bootstrap")
 )
-
-dependencyOverrides += "org.webjars" % "jquery" % "2.2.4"
-
-TwirlKeys.templateImports += "ejisan.play.libs.PageMeta"

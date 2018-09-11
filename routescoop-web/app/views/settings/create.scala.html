@@ -1,0 +1,22 @@
+@import models.Profile
+
+@(form: Form[SettingsForm.Data], url: Call)(implicit request: RequestHeader, messages: Messages)
+
+@helper.base {
+    @Html("")
+} {
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Add settings</h1>
+    </div>
+
+    <p>
+        Add new settings for your weight (in pounds), FTP, and maximum heart rate.
+    </p>
+
+    @b4.vertical.form(url) { implicit vfc =>
+        @b4.text(form("weight"), '_label -> "Weight (lbs)")
+        @b4.text(form("ftp"), '_label -> "FTP", 'placeholder -> "Functional threshold power")
+        @b4.text(form("hr"), '_label -> "Max Heart Rate")
+        @b4.submit('class -> "btn btn-primary"){ <i class="fa fa-ok"></i> Submit }
+    }
+}

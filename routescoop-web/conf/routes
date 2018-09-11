@@ -15,6 +15,9 @@ GET         /strava/authorize           controllers.Strava.authorize
 GET         /rides                      controllers.Rides.index
 POST        /rides/sync                 controllers.Rides.sync
 
+GET         /settings/new               controllers.Settings.create
+POST        /settings                   controllers.Settings.save
+
 GET         /login                      controllers.Auth.login
 GET         /logout                     controllers.Auth.logout
 GET         /profile                    controllers.User.profile
@@ -22,8 +25,5 @@ GET         /profile                    controllers.User.profile
 GET         /bootstrap                  controllers.Home.bootstrap
 
 
-# Map static resources from the web jars to the /assets/lib URL path
-#GET         /assets/lib/*file           controllers.WebJarAssets.at(file)
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
-#GET		    /assets/*file			    controllers.Assets.at(path="/public", file)

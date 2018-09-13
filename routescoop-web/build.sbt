@@ -15,7 +15,7 @@ libraryDependencies ++= Seq(
   ws,
   cache,
   "io.lemonlabs" %% "scala-uri" % "1.1.2",
-  "org.mockito" % "mockito-core" % "2.2.29" % Test,
+  "org.mockito" % "mockito-core" % "2.22.0" % Test,
   "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
 )
 

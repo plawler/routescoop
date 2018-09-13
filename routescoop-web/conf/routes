@@ -15,6 +15,7 @@ GET         /strava/authorize           controllers.Strava.authorize
 GET         /rides                      controllers.Rides.index
 POST        /rides/sync                 controllers.Rides.sync
 
+GET         /settings                   controllers.Settings.list
 GET         /settings/new               controllers.Settings.create
 POST        /settings                   controllers.Settings.save
 

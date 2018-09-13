@@ -27,8 +27,7 @@ case class CreateUserSettings(
   userId: String,
   weight: Int,
   ftp: Int,
-  maxHeartRate: Int,
-  createdAt: Instant = Instant.now.truncatedTo(ChronoUnit.SECONDS)
+  maxHeartRate: Int
 )
 
 object CreateUserSettings {
@@ -55,8 +54,7 @@ object UserSettings {
       create.userId,
       create.weight,
       create.ftp,
-      create.maxHeartRate,
-      create.createdAt.truncatedTo(ChronoUnit.SECONDS)
+      create.maxHeartRate
     )
 
 }

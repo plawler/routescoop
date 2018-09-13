@@ -48,7 +48,7 @@ class Users @Inject()(userService: UserService, actorSystem: ActorSystem)
       errors => Future.successful(BadRequest(JsError.toJson(errors))),
       createSettings => {
         val userSettings = UserSettings.of(createSettings)
-        userService.createSettings(userSettings) map (_ => Ok(Json.toJson(userSettings)))
+        userService.createSettings(userSettings) map (_ => Created(Json.toJson(userSettings)))
       }
     )
   }

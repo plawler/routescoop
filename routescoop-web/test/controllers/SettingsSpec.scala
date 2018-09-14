@@ -1,5 +1,7 @@
 package controllers
 
+import java.util.UUID
+
 import fixtures.{ProfileFixture, SettingsFixture}
 import models.{NewSettings, Profile, SettingsResultSuccess}
 import org.mockito.Mockito._
@@ -35,7 +37,7 @@ class SettingsSpec extends WordSpec with ScalaTestMatchers with MockitoSugar wit
     }
 
     "save new settings" in new SettingsTesting {
-      when(mockService.create(any[NewSettings])).thenReturn(Future.successful(SettingsResultSuccess(createdSettings)))
+      when(mockService.create(any[NewSettings])).thenReturn(Future.successful(createdResult))
 
       val result = route(app,
         FakeRequest(POST, "/settings")
@@ -48,6 +50,17 @@ class SettingsSpec extends WordSpec with ScalaTestMatchers with MockitoSugar wit
       verify(mockService).create(any[NewSettings])
     }
 
+    "list all settings for a user" in new SettingsTesting {
+      when(mockService.list(profile.id)).thenReturn(Future.successful(listResult))
+
+      val result = route(app, FakeRequest(GET, "/settings").withSession(session)).get
+      status(result) shouldBe OK
+      contentAsString(result) should include("<h1 class=\"h2\">Settings</h1>")
+      contentAsString(result) should include(s"<td>${createdSettings.weight}</td>")
+      contentAsString(result) should include(s"<td>${createdSettings.ftp}</td>")
+      contentAsString(result) should include(s"<td>${createdSettings.maxHeartRate}</td>")
+      contentAsString(result) should include(s"<td>${createdSettings.createdAt}</td>")
+    }
 
   }
 

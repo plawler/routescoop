@@ -15,5 +15,5 @@ object Settings {
 }
 
 sealed trait SettingsResult
-case class SettingsResultSuccess(settings: Settings) extends SettingsResult
+case class SettingsResultSuccess(settings: Seq[Settings]) extends SettingsResult
 case class SettingsResultError(message: String) extends SettingsResult

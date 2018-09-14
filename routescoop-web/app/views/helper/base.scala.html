@@ -10,9 +10,6 @@
         <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("lib/bootstrap/css/bootstrap.min.css")">
         <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("lib/font-awesome/css/font-awesome.min.css")">
         <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("lib/bootstrap-datepicker/css/bootstrap-datepicker3.css")">
-        @*<link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">*@
-        @*<link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/docs.min.css")">*@
-
         <!-- Custom styles for this template -->
         <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("styles/dashboard.css")">
 
@@ -22,19 +19,12 @@
     <body>
         <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
             <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Routescoop</a>
-            @*<input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">*@
             <ul class="navbar-nav px-3">
                 <ul class="navbar-nav px-3">
                     <li class="nav-item text-nowrap">
                         <a class="nav-link" href="@routes.Auth.logout()">Logout</a>
                     </li>
                 </ul>
-                @*<li class="nav-item text-nowrap">*@
-                    @*<a class="nav-link" href="@routes.User.profile()">Profile</a>*@
-                @*</li>*@
-                @*<li class="nav-item text-nowrap">*@
-                    @*<a class="nav-link" href="@routes.Auth.logout()">Logout</a>*@
-                @*</li>*@
             </ul>
         </nav>
 
@@ -56,7 +46,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="#">
+                                <a class="nav-link" href="@routes.Settings.list()">
                                     <span data-feather="shopping-cart"></span>
                                     Settings
                                 </a>
@@ -80,13 +70,9 @@
             </div>
         </div>
 
-
         <script src="@routes.Assets.versioned("lib/jquery/jquery.min.js")" type="text/javascript"></script>
         <script src="@routes.Assets.versioned("lib/bootstrap/js/bootstrap.min.js")" type="text/javascript"></script>
         <script src="@routes.Assets.versioned("lib/bootstrap-datepicker/js/bootstrap-datepicker.js")" type="text/javascript"></script>
-        @*<script src="@routes.Assets.versioned("scripts/main.js")"></script>*@
-        @*<script src="@routes.Assets.versioned("scripts/hello.js")"></script>*@
-        @*<script src="http://v4-alpha.getbootstrap.com/assets/js/vendor/tether.min.js" type="text/javascript"></script>*@
 
     </body>
 

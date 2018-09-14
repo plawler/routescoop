@@ -1,7 +1,7 @@
 package controllers
 
 import javax.inject.{Inject, Singleton}
-import models.{NewSettings, Profile, SettingsResultSuccess}
+import models.{NewSettings, Profile, SettingsResultError, SettingsResultSuccess}
 import modules.NonBlockingContext
 import play.api.Logger
 import play.api.cache.CacheApi
@@ -52,8 +52,19 @@ class Settings @Inject()(
     }
   }
 
-  def list = authenticated { implicit request =>
-    Ok(request.flash.get("success").getOrElse("error"))
+  def list = authenticated.async { implicit request =>
+    getProfile(request) match {
+      case Some(profile) =>
+        settingsService.list(profile.id) map {
+          case SettingsResultSuccess(settings) => Ok(views.html.settings.list(settings))
+          case SettingsResultError(message) =>
+            Logger.error(s"Failed to retrieve settings: $message")
+            Ok(views.html.settings.list(Seq())).flashing("error" -> "Failed to retrieve settings")
+        }
+      case None =>
+        Logger.error("A profile wasn't found in cache for the user...logging out")
+        Future.successful(Redirect(routes.Auth.logout()))
+    }
   }
 
   private def getProfile(request: Request[Any]): Option[Profile] = {

@@ -1,0 +1,36 @@
+@import models.Settings
+
+@(list: Seq[Settings])(implicit request: RequestHeader, messages: Messages)
+
+@helper.base {
+    @Html("")
+} {
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Settings</h1>
+    </div>
+
+    <p>
+        Your history of performance settings. These values impact the calculations of training stress and normalized power so it is important to be accurate when creating new values
+    </p>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Weight</th>
+                <th scope="col">FTP</th>
+                <th scope="col">Max Heart Rate</th>
+                <th scope="col">Date</th>
+            </tr>
+        </thead>
+        <tbody>
+        @for(s <- list) {
+            <tr>
+                <td>@s.weight</td>
+                <td>@s.ftp</td>
+                <td>@s.maxHeartRate</td>
+                <td>@s.createdAt</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

@@ -1,9 +1,9 @@
 package controllers
 
-import fixtures.{ProfileFixture, SettingsFixture}
-import models.{NewSettings, Profile, SettingsResultSuccess}
-import org.mockito.Mockito._
+import fixtures.SettingsFixture
+import models.{NewSettings, Profile}
 import org.mockito.ArgumentMatchers._
+import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{WordSpec, Matchers => ScalaTestMatchers}
 import org.scalatestplus.play.OneAppPerSuite
@@ -35,7 +35,7 @@ class SettingsSpec extends WordSpec with ScalaTestMatchers with MockitoSugar wit
     }
 
     "save new settings" in new SettingsTesting {
-      when(mockService.create(any[NewSettings])).thenReturn(Future.successful(SettingsResultSuccess(createdSettings)))
+      when(mockService.create(any[NewSettings])).thenReturn(Future.successful(createdResult))
 
       val result = route(app,
         FakeRequest(POST, "/settings")
@@ -48,6 +48,17 @@ class SettingsSpec extends WordSpec with ScalaTestMatchers with MockitoSugar wit
       verify(mockService).create(any[NewSettings])
     }
 
+    "list all settings for a user" in new SettingsTesting {
+      when(mockService.list(profile.id)).thenReturn(Future.successful(listResult))
+
+      val result = route(app, FakeRequest(GET, "/settings").withSession(session)).get
+      status(result) shouldBe OK
+      contentAsString(result) should include("<h1 class=\"h2\">Settings</h1>")
+      contentAsString(result) should include(s"<td>${createdSettings.weight}</td>")
+      contentAsString(result) should include(s"<td>${createdSettings.ftp}</td>")
+      contentAsString(result) should include(s"<td>${createdSettings.maxHeartRate}</td>")
+      contentAsString(result) should include(s"<td>${createdSettings.createdAt}</td>")
+    }
 
   }
 

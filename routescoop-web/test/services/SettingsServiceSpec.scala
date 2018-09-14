@@ -2,7 +2,6 @@ package services
 
 import config.AppConfig
 import fixtures.SettingsFixture
-import models.{SettingsResultError, SettingsResultSuccess}
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.Json

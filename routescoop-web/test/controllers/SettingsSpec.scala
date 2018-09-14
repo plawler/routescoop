@@ -1,11 +1,9 @@
 package controllers
 
-import java.util.UUID
-
-import fixtures.{ProfileFixture, SettingsFixture}
-import models.{NewSettings, Profile, SettingsResultSuccess}
-import org.mockito.Mockito._
+import fixtures.SettingsFixture
+import models.{NewSettings, Profile}
 import org.mockito.ArgumentMatchers._
+import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{WordSpec, Matchers => ScalaTestMatchers}
 import org.scalatestplus.play.OneAppPerSuite

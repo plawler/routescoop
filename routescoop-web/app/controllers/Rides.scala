@@ -34,7 +34,7 @@ class Rides @Inject()(
   }
 
   def index = authenticated  { implicit request =>
-    Ok(views.html.rides.index())
+    Ok(views.html.rides.index(routes.Rides.sync()))
   }
 
   private def getProfile(request: Request[Any]): Option[Profile] = {

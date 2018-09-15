@@ -1,4 +1,4 @@
-@()(implicit request: RequestHeader, messages: Messages)
+@(url: Call)(implicit request: RequestHeader, messages: Messages)
 @helper.base {
     @Html("")
 } {
@@ -7,12 +7,10 @@
         <h1 class="h2">Rides</h1>
     </div>
 
-    <form action="@routes.Rides.sync()" method="post">
-        <div class="row">
-            <div class="small-12 columns">
-                <button type="submit" class="button">Synch Now!</button>
-            </div>
-        </div>
-    </form>
+    <p>Pull all your rides from Strava for analysis.</p>
+
+    @b4.vertical.form(url) { implicit vfc =>
+        @b4.submit('class -> "btn btn-primary"){ <i class="fa fa-ok"></i> Synch now! }
+    }
 
 }

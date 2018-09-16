@@ -1,5 +1,7 @@
 package fixtures
 
+import java.time.temporal.ChronoUnit
+
 import models.{User, UserSettings}
 
 /**
@@ -19,5 +21,9 @@ trait UserFixture {
   )
 
   val userSettings = UserSettings("theSettingsId", user.id, 155, 285, 200)
+  val yearOldSettings = userSettings.copy(createdAt = userSettings.createdAt.minus(365, ChronoUnit.DAYS))
+  val twoYearOldSettings = userSettings.copy(createdAt = userSettings.createdAt.minus(730, ChronoUnit.DAYS))
+
+  val allSettings = Seq(userSettings, yearOldSettings, twoYearOldSettings)
 
 }

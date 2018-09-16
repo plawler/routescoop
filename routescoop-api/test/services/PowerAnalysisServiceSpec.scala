@@ -70,7 +70,8 @@ class PowerAnalysisServiceSpec extends WordSpec with Matchers with MockitoSugar 
         PowerEffort(sampleActivity.id, 3600, Instant.now, 150, 200, Some(210))
       )
 
-      when(mockUserService.getSettingsFor(sampleActivity.startedAt)).thenReturn(Future.successful(Some(settings)))
+      when(mockUserService.getSettingsFor(sampleActivity))
+        .thenReturn(Future.successful(Some(settings)))
       when(mockPowerEffortStore.findByActivityId(sampleActivity.id)).thenReturn(efforts)
 
       val stats = Await.result(service.createActivityStats(sampleActivity), 3 seconds)

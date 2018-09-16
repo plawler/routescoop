@@ -14,15 +14,20 @@ import scala.concurrent.{ExecutionContext, Future, blocking}
 trait UserService {
 
   def createUser(user: User): Future[Unit]
+
   def updateUser(user: User): Future[Unit]
+
   def getUser(userId: String): Future[Option[User]]
 
   def startDataSync(user: User): Future[UserDataSync]
+
   def completeDataSync(syncId: String, completedAt: Instant): Future[Unit]
 
   def createSettings(settings: UserSettings): Future[Unit]
+
   def getAllSettings(userId: String): Future[Seq[UserSettings]]
-  def getSettingsFor(date: Instant): Future[Option[UserSettings]]
+
+  def getSettingsFor(activity: Activity): Future[Option[UserSettings]]
 
 }
 
@@ -35,16 +40,22 @@ class UserServiceImpl @Inject()(
 )(implicit @NonBlockingContext ec: ExecutionContext) extends UserService {
 
   override def createUser(user: User): Future[Unit] = Future {
-    blocking { userStore.insert(user) }
+    blocking {
+      userStore.insert(user)
+    }
   }
 
   override def updateUser(user: User) = Future {
-    blocking { userStore.update(user) }
+    blocking {
+      userStore.update(user)
+    }
   }
 
 
   override def getUser(userId: String): Future[Option[User]] = Future {
-    blocking { userStore.select(userId) }
+    blocking {
+      userStore.select(userId)
+    }
   }
 
   override def startDataSync(user: User): Future[UserDataSync] = Future {
@@ -56,25 +67,36 @@ class UserServiceImpl @Inject()(
   }
 
   override def completeDataSync(syncId: String, completedAt: Instant): Future[Unit] = Future {
-    blocking { dataSyncStore.update(syncId, completedAt) }
+    blocking {
+      dataSyncStore.update(syncId, completedAt)
+    }
   }
 
   override def createSettings(settings: UserSettings): Future[Unit] = Future {
-    blocking { settingsStore.insert(settings) }
+    blocking {
+      settingsStore.insert(settings)
+    }
   }
 
   override def getAllSettings(userId: String) = Future {
-    blocking { settingsStore.findByUserId(userId)}
+    blocking {
+      settingsStore.findByUserId(userId)
+    }
   }
 
-  override def getSettingsFor(date: Instant): Future[Option[UserSettings]] = Future {
-    blocking { settingsStore.findLatestFor(date) }
+  override def getSettingsFor(activity: Activity): Future[Option[UserSettings]] = {
+    blocking {
+      settingsStore.findLatestFor(activity.userId, activity.startedAt)
+    } match {
+      case None => getLatest(activity.userId)
+      case s @ Some(_) => Future.successful(s)
+    }
   }
 
   private def getLatest(userId: String): Future[Option[UserSettings]] = {
     getAllSettings(userId) map { all =>
       if (all.isEmpty) None
-      else all.sortWith((s1,s2) => s1.createdAt.isAfter(s2.createdAt)).headOption
+      else all.sortWith((s1, s2) => s1.createdAt.isAfter(s2.createdAt)).headOption
     }
   }
 

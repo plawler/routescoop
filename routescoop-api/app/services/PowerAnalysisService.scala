@@ -41,7 +41,7 @@ class PowerAnalysisService @Inject()(
   }
 
   def createActivityStats(activity: Activity): Future[Option[ActivityStats]] = {
-    userService.getSettingsFor(activity.startedAt) map {
+    userService.getSettingsFor(activity) map {
       case Some(settings) =>
         Some(calculateActivityStats(activity, settings))
       case None =>

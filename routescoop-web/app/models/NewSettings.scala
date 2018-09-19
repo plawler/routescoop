@@ -1,10 +1,9 @@
 package models
 
-import java.time.Instant
-
+import java.time.{Instant, LocalDate}
 import play.api.libs.json.Json
 
-case class NewSettings(userId: String, weight: Int, ftp: Int, maxHeartRate: Int)
+case class NewSettings(userId: String, weight: Int, ftp: Int, maxHeartRate: Int, createdOn: LocalDate = LocalDate.now())
 object NewSettings {
   implicit val format = Json.format[NewSettings]
 }

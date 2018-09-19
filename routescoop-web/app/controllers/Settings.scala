@@ -1,5 +1,9 @@
 package controllers
 
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Date
+
 import javax.inject.{Inject, Singleton}
 import models.{NewSettings, Profile, SettingsResultError, SettingsResultSuccess}
 import modules.NonBlockingContext
@@ -22,6 +26,8 @@ class Settings @Inject()(
   val messagesApi: MessagesApi)
   (implicit @NonBlockingContext ec: ExecutionContext) extends Controller with I18nSupport {
 
+  implicit val dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
   def postUrl = routes.Settings.save()
   def listUrl = routes.Settings.list()
 
@@ -36,7 +42,7 @@ class Settings @Inject()(
           formWithErrors =>
             Future.successful(BadRequest(views.html.settings.create(formWithErrors, postUrl))),
           data => {
-            settingsService.create(NewSettings(profile.id, data.weight, data.ftp, data.hr)) map {
+            settingsService.create(toNewSettings(profile, data)) map {
               case srs: SettingsResultSuccess => Redirect(listUrl).flashing("success" -> "Settings saved")
               case _ => Redirect(listUrl).flashing("error" -> "Attempt to save settings failed")
             } recover {
@@ -76,17 +82,23 @@ class Settings @Inject()(
     }
   }
 
+  private def toNewSettings(profile: Profile, data: SettingsForm.Data) = {
+    val createdOn = data.createdOn map (d => LocalDate.parse(d, dtf)) getOrElse LocalDate.now()
+    NewSettings(profile.id, data.weight, data.ftp, data.hr, createdOn)
+  }
+
 }
 
 object SettingsForm {
 
-  case class Data(weight: Int, ftp: Int, hr: Int)
+  case class Data(weight: Int, ftp: Int, hr: Int, createdOn: Option[String] = None)
 
   val form = Form(
     mapping(
       "weight" -> number(min = 0),
       "ftp" -> number(min = 0),
-      "hr" -> number(min = 0)
+      "hr" -> number(min = 0),
+      "createdOn" -> optional(text)
     )(Data.apply)(Data.unapply)
   )
 

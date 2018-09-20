@@ -1,11 +1,10 @@
 package models
 
-import java.time.Instant
+import java.time.{Instant, LocalDate, LocalDateTime, ZoneOffset}
 import java.util.UUID
+
 import anorm.{Macro, RowParser}
-
 import play.api.libs.json.Json
-
 import java.time.temporal.ChronoUnit
 
 
@@ -27,7 +26,8 @@ case class CreateUserSettings(
   userId: String,
   weight: Int,
   ftp: Int,
-  maxHeartRate: Int
+  maxHeartRate: Int,
+  createdOn: LocalDate = LocalDate.now()
 )
 
 object CreateUserSettings {
@@ -54,7 +54,8 @@ object UserSettings {
       create.userId,
       create.weight,
       create.ftp,
-      create.maxHeartRate
+      create.maxHeartRate,
+      create.createdOn.atStartOfDay().toInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.SECONDS)
     )
 
 }

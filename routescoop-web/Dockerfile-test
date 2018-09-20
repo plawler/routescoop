@@ -1,4 +1,4 @@
-FROM        pelawler/activator
+FROM        ysihaoy/scala-play:2.11.8-2.5.4-sbt-0.13.11 as build
 
 COPY        ["build.sbt", "/tmp/build/"]
 COPY        ["project/plugins.sbt", "project/build.properties", "/tmp/build/project/"]

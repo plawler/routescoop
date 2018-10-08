@@ -1,4 +1,4 @@
-@(url: Call)(implicit request: RequestHeader, messages: Messages)
+@(hasSettings: Boolean, url: Call)(implicit request: RequestHeader, messages: Messages)
 @helper.base {
     @Html("")
 } {
@@ -9,8 +9,15 @@
 
     <p>Pull all your rides from Strava for analysis.</p>
 
-    @b4.vertical.form(url) { implicit vfc =>
-        @b4.submit('class -> "btn btn-primary"){ <i class="fa fa-ok"></i> Synch now! }
+    @if(hasSettings) {
+        @b4.vertical.form(url) { implicit vfc =>
+            @b4.submit('class -> "btn btn-primary"){ <i class="fa fa-ok"></i> Synch now! }
+        }
+    } else {
+        <p>
+            We found no performance settings for your account. <a href="@url">Create new settings.</a>
+        </p>
     }
+
 
 }

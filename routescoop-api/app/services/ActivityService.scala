@@ -1,15 +1,15 @@
 package services
 
+import akka.actor.ActorSystem
+import com.typesafe.scalalogging.LazyLogging
+import javax.inject.{Inject, Singleton}
+import models._
 import modules.NonBlockingContext
 import repositories.{StravaActivityStore, StravaLapStore, StravaStreamStore}
-import akka.actor.ActorSystem
-import javax.inject.{Inject, Singleton}
 
-import com.typesafe.scalalogging.LazyLogging
-import models._
-
-import scala.concurrent.{Await, ExecutionContext, Future, blocking}
+import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.language.postfixOps
+import scala.util.{Failure, Success, Try}
 
 trait ActivityService {
 

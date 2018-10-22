@@ -1,6 +1,6 @@
 app = routescoop
 doc = docker-compose -f docker-compose.yml
-doctest = $(doc) -f docker-compose.test.yml run --rm
+doctest = docker-compose -f docker-compose.test.yml run --rm
 
 .PHONY: up down clean test
 

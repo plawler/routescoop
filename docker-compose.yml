@@ -22,6 +22,8 @@ services:
       - mysqldb:mysqldb.local
   mysqldb:
     image: mysql:5.7.16
+    volumes:
+      - ./data:/var/lib/mysql
     ports:
       - 3306:3306
     environment:

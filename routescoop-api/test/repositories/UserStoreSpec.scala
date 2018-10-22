@@ -19,7 +19,7 @@ class UserStoreSpec extends WordSpec with Matchers with UserFixture {
 
     "insert a user" in {
       userStore.insert(user)
-      userStore.insert(stravaUser)
+      userStore.insert(paul)
     }
 
     "retrieve a user" in {

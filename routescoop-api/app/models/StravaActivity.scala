@@ -1,10 +1,10 @@
 package models
 
-import anorm.{Macro, RowParser}
-import kiambogo.scrava.models.PersonalActivitySummary
-
 import java.time.Instant
 import java.util.UUID
+
+import anorm.{Macro, RowParser}
+import services.SummaryActivity
 
 sealed trait Activity {
   val id: String
@@ -57,46 +57,40 @@ object StravaActivity {
 
   implicit val parser: RowParser[StravaActivity] = Macro.namedParser[StravaActivity]
 
-  def create(user: User, summary: PersonalActivitySummary): StravaActivity = {
-    val startLat = if (summary.start_latlng.nonEmpty) summary.start_latlng.head.toDouble else -999.0
-    val startLong = if (summary.start_latlng.nonEmpty) summary.start_latlng(1).toDouble else -999.0
-    val endLat = summary.end_latlng map (ll => if (ll.nonEmpty) ll.head.toDouble else -999.0)
-    val endLong = summary.end_latlng map (ll => if (ll.nonEmpty) ll(1).toDouble else -999.0)
-
+  def create(user: User, sa: SummaryActivity): StravaActivity = {
     StravaActivity(
       UUID.randomUUID().toString,
       user.id,
-      stravaId = summary.id,
-      user.stravaId.get, // todo: handle this
-      summary.name,
-      summary.distance,
-      summary.moving_time,
-      summary.elapsed_time,
-      summary.total_elevation_gain,
-      summary.`type`,
-      Instant.parse(summary.start_date),
-      summary.timezone,
-      startLat,
-      startLong,
-      summary.trainer,
-      summary.commute,
-      summary.manual,
-      summary.average_speed,
-      summary.max_speed,
-      summary.external_id,
-      endLat,
-      endLong,
-      summary.map.summary_polyline,
-      summary.map.polyline,
-      summary.average_cadence.map(_.toDouble),
-      summary.average_temp,
-      summary.average_watts.map(_.toDouble),
-      weightedAverageWatts = None,
-      summary.kilojoules.map(_.toDouble),
-      summary.device_watts,
-      summary.average_heartrate.map(_.toDouble),
-      summary.max_heartrate.map(_.toDouble),
-      summary.workout_type
+      sa.info.id,
+      user.stravaId.get,
+      sa.info.name,
+      sa.info.distance,
+      sa.info.moving_time,
+      sa.info.elapsed_time,
+      sa.info.total_elevation_gain,
+      sa.info.`type`,
+      sa.info.start_date,
+      sa.info.timezone,
+      sa.location.start_latitude.getOrElse(0.0),
+      sa.location.start_longitude.getOrElse(0.0),
+      sa.info.trainer,
+      sa.info.commute,
+      sa.info.manual,
+      sa.performance.average_speed,
+      sa.performance.max_speed,
+      Some(sa.info.external_id),
+      endLat = None,
+      endLong = None,
+      mapPolyLine = None,
+      sa.map.summary_polyline,
+      sa.performance.average_cadence,
+      averageTemp = None,
+      sa.performance.average_watts,
+      sa.performance.weighted_average_watts,
+      sa.performance.kilojoules,
+      sa.performance.device_watts,
+      sa.performance.average_heartrate,
+      sa.performance.max_heartrate
     )
   }
 

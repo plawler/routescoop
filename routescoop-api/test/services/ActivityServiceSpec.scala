@@ -49,8 +49,8 @@ class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
   "The Strava Service" should {
 
     "sync a user's activities" in {
-      when(mockStravaWebService.getActivities(stravaUser.id)).thenReturn(Future.successful(Seq(sampleActivity)))
-      when(mockActivityStore.findByUserId(stravaUser.id)).thenReturn(Nil)
+      when(mockStravaWebService.getActivities(paul.id)).thenReturn(Future.successful(Seq(sampleActivity)))
+      when(mockActivityStore.findByUserId(paul.id)).thenReturn(Nil)
 
       val result = Await.result(service.syncActivities(userDataSync), 60 seconds)
       result shouldEqual 1
@@ -61,8 +61,8 @@ class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
     }
 
     "sync only the latest activities" in {
-      when(mockStravaWebService.getActivities(stravaUser.id)).thenReturn(Future.successful(remoteActivities))
-      when(mockActivityStore.findByUserId(stravaUser.id)).thenReturn(localActivities)
+      when(mockStravaWebService.getActivities(paul.id)).thenReturn(Future.successful(remoteActivities))
+      when(mockActivityStore.findByUserId(paul.id)).thenReturn(localActivities)
 
       Await.result(service.syncActivities(userDataSync), 60 seconds)
 
@@ -104,14 +104,14 @@ trait ActivityServiceFixture extends LapFixture with StreamFixture with MockitoS
   val id1 = "00000000-0000-0000-1111-000000000001"
   val id2 = "00000000-0000-0000-1111-000000000002"
 
-  val userDataSync = UserDataSync(dataSyncId, stravaUser.id, Instant.now)
+  val userDataSync = UserDataSync(dataSyncId, paul.id, Instant.now)
 
-  val a1 = sampleActivity.copy(id = id1, userId = stravaUser.id, stravaId = 1)
-  val a2 = sampleActivity.copy(id = id2, userId = stravaUser.id, stravaId = 2)
+  val a1 = sampleActivity.copy(id = id1, userId = paul.id, stravaId = 1)
+  val a2 = sampleActivity.copy(id = id2, userId = paul.id, stravaId = 2)
 
-  val r1 = sampleActivity.copy(id = UUID.randomUUID().toString, userId = stravaUser.id, stravaId = 1)
-  val r2 = sampleActivity.copy(id = UUID.randomUUID().toString, userId = stravaUser.id, stravaId = 2)
-  val r3 = sampleActivity.copy(id = UUID.randomUUID().toString, userId = stravaUser.id, stravaId = 3)
+  val r1 = sampleActivity.copy(id = UUID.randomUUID().toString, userId = paul.id, stravaId = 1)
+  val r2 = sampleActivity.copy(id = UUID.randomUUID().toString, userId = paul.id, stravaId = 2)
+  val r3 = sampleActivity.copy(id = UUID.randomUUID().toString, userId = paul.id, stravaId = 3)
 
   val localActivities = Seq(a1, a2)
   val remoteActivities = Seq(r1, r2, r3)

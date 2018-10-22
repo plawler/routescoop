@@ -26,4 +26,13 @@ trait UserFixture {
 
   val allSettings = Seq(userSettings, yearOldSettings, twoYearOldSettings)
 
+  val paul = User(
+    "5b8dba213298951dabb098f5",
+    "paul.lawler",
+    "paul.lawler@gmail.com",
+    None,
+    Some("5bdcec198a22eab01151c947e6d99ebf250ee4de"),
+    Some(18629225)
+  )
+
 }

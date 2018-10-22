@@ -107,6 +107,7 @@ fabric.properties
 /node_modules
 
 ### Application Specific ###
+/data
 run-play.sh
 *.env
 

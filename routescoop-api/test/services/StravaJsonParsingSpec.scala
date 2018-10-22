@@ -5,7 +5,7 @@ import org.scalatest.{Matchers, WordSpec}
 import org.scalatest.mockito.MockitoSugar
 import play.api.libs.json.Json
 
-class StravaStreamParsingSpec extends WordSpec with Matchers with MockitoSugar with StravaStreamJsonFixture {
+class StravaJsonParsingSpec extends WordSpec with Matchers with MockitoSugar with StravaStreamJsonFixture {
 
   "The Strava Web Service" should {
 
@@ -41,6 +41,12 @@ class StravaStreamParsingSpec extends WordSpec with Matchers with MockitoSugar w
     "handle null string value for watts in stream" in {
       val nullWattsStream = Json.parse(stravaStreamJsonNullWatts).as[ActivityStream]
       println(nullWattsStream.watts.data)
+    }
+
+    "parse a list of summary activities" in {
+      val json = Thread.currentThread.getContextClassLoader.getResourceAsStream("activities_json.txt")
+      val summaryActivityList = Json.parse(json).as[Seq[SummaryActivity]]
+      summaryActivityList.size shouldBe 30
     }
 
   }

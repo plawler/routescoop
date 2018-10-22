@@ -1,17 +1,19 @@
 package services
 
-import javax.inject.Inject
+import java.time.Instant
 
+import javax.inject.Inject
 import com.google.inject.Singleton
 import com.typesafe.scalalogging.LazyLogging
 import kiambogo.scrava.ScravaClient
 import models._
-import modules.NonBlockingContext
+import modules.{NonBlockingContext, StravaConfig}
 import play.api.libs.ws.WSClient
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration._
 import scala.util.control.NonFatal
 
 
@@ -26,21 +28,27 @@ trait StravaWebService {
 }
 
 @Singleton
-class StravaWebServiceImpl @Inject()(userService: UserService, ws: WSClient)(implicit @NonBlockingContext ec: ExecutionContext)
-  extends StravaWebService with LazyLogging {
+class StravaWebServiceImpl @Inject()(
+  userService: UserService, ws: WSClient, config: StravaConfig)
+  (implicit @NonBlockingContext ec: ExecutionContext) extends StravaWebService with LazyLogging {
+
+  val pageSize = config.pageSize
 
   override def getActivities(userId: String): Future[Seq[StravaActivity]] = {
-    getUser(userId).map {
+    getUser(userId) flatMap {
       case Some(user) =>
-        logger.info("User exists. Fetching activities from Strava...")
-        getUserActivities(user)
-      case None => Nil
+        userService.lastDataSync(user) flatMap {
+          case Some(sync) => getStravaActivities(user, Some(sync.startedAt))
+          case None => getStravaActivities(user)
+        }
+      case None => Future.successful(Nil)
     }
   }
 
   override def getLaps(activity: StravaActivity): Future[Seq[StravaLap]] = {
     getUser(activity.userId) map {
       case Some(user) =>
+        logger.info("User exists. Fetching laps from Strava...")
         user.stravaToken match {
           case Some(token) =>
             createClient(token).listActivityLaps(activity.stravaId).map(lap => StravaLap.create(activity, lap))
@@ -71,30 +79,40 @@ class StravaWebServiceImpl @Inject()(userService: UserService, ws: WSClient)(imp
     }
   }
 
-  private def getUserActivities(user: User): Seq[StravaActivity] = {
+  private def getStravaActivities(user: User, lastSyncStartedAt: Option[Instant] = None): Future[Seq[StravaActivity]] = {
+    val params = lastSyncStartedAt map { at =>
+      s"?after=${(at.toEpochMilli / 1000).toInt}" // strava api requires the timestamp to be an int
+    } getOrElse {
+      s"?page=1&per_page=$pageSize"
+    }
+
+    val url = "https://www.strava.com/api/v3/athlete/activities" + params
+
     user.stravaToken match {
       case Some(token) =>
-        val activities = createClient(token).listAthleteActivities()
-        logger.info(s"Found ${activities.size} athlete activities")
-        activities.map(summary => StravaActivity.create(user, summary))
+        ws.url(url)
+          .withHeaders("Authorization" -> s"Bearer $token")
+          .withRequestTimeout(10 seconds)
+          .get() map { response =>
+          response.json.validate[Seq[SummaryActivity]] match {
+            case success: JsSuccess[Seq[SummaryActivity]] =>
+              success.get map (sa => StravaActivity.create(user, sa))
+            case error: JsError =>
+              logger.error("Failed to map Strava json activity response", error)
+              Nil
+          }
+        } recover {
+          case NonFatal(e) =>
+            logger.error(s"Failed to retrieve Strava activity data for user $user", e)
+            Nil
+        }
       case None =>
         logger.warn(s"User ${user.id} has no Strava token")
-        Nil
+        Future.successful(Nil)
     }
   }
 
   private def createClient(token: String) = new ScravaClient(token)
-
-  private def getScravaClient(userId: String): Future[Option[ScravaClient]] = {
-    getUser(userId) map {
-      case Some(user) =>
-        user.stravaToken match {
-          case Some(token) => Some(createClient(token))
-          case _ => None
-        }
-      case _ => None
-    }
-  }
 
   private def getUser(userId: String) = userService.getUser(userId)
 
@@ -252,5 +270,96 @@ object ActivityStream {
       (JsPath \ "moving").read[MovingStream].orElse(Reads.pure(MovingStream(0))) and
       (JsPath \ "grade_smooth").read[GradeStream].orElse(Reads.pure(GradeStream(0)))
     ) (ActivityStream.apply _)
+
+}
+
+case class SummaryActivityMap(
+  id: String,
+  summary_polyline: Option[String]
+)
+
+case class SummaryActivityLocation(
+  location_city: Option[String],
+  location_state: Option[String],
+  location_country: String,
+  start_latitude: Option[Double],
+  start_longitude: Option[Double]
+)
+
+case class SummaryActivityPerformance(
+  average_speed: Double,
+  max_speed: Double,
+  average_cadence: Option[Double],
+  average_watts: Option[Double],
+  weighted_average_watts: Option[Int],
+  kilojoules: Option[Double],
+  device_watts: Option[Boolean],
+  has_heartrate: Boolean,
+  average_heartrate: Option[Double],
+  max_heartrate: Option[Double],
+  display_hide_heartrate_option: Boolean,
+  max_watts: Option[Int]
+)
+
+case class SummaryActivitySocial(
+  kudos_count: Int,
+  comment_count: Int,
+  athlete_count: Int,
+  achievement_count: Int,
+  photo_count: Int,
+  total_photo_count: Int,
+  has_kudoed: Boolean,
+  pr_count: Int
+)
+
+case class SummaryActivityInfo(
+//  athleteId: Int,
+  name: String,
+  distance: Double,
+  moving_time: Int,
+  elapsed_time: Int,
+  total_elevation_gain: Double,
+  `type`: String,
+  id: Int,
+  external_id: String,
+  upload_id: Int,
+  start_date: Instant,
+  start_date_local: Instant,
+  timezone: String,
+  utc_offset: Int,
+  trainer: Boolean,
+  commute: Boolean,
+  manual: Boolean,
+  `private`: Boolean,
+  visibility: String,
+  flagged: Boolean,
+  gear_id: Option[String]
+)
+
+case class SummaryActivity(
+  info: SummaryActivityInfo,
+  map: SummaryActivityMap,
+  location: SummaryActivityLocation,
+  performance: SummaryActivityPerformance,
+  social: SummaryActivitySocial
+)
+
+object SummaryActivity {
+
+  implicit val summaryActivityInfoReads: Reads[SummaryActivityInfo] = Json.reads[SummaryActivityInfo]
+
+  implicit val summaryActivityMapReads: Reads[SummaryActivityMap] = Json.reads[SummaryActivityMap]
+
+  implicit val summaryActivityLocationReads: Reads[SummaryActivityLocation] = Json.reads[SummaryActivityLocation]
+  implicit val summaryActivityPerformanceReads: Reads[SummaryActivityPerformance] = Json.reads[SummaryActivityPerformance]
+  implicit val summaryActivitySocialReads: Reads[SummaryActivitySocial] = Json.reads[SummaryActivitySocial]
+
+  implicit val summaryActivityReads: Reads[SummaryActivity] = (
+    JsPath.read[SummaryActivityInfo] and
+      (JsPath \ "map").read[SummaryActivityMap] and
+    JsPath.read[SummaryActivityLocation] and
+    JsPath.read[SummaryActivityPerformance] and
+    JsPath.read[SummaryActivitySocial]
+  )(SummaryActivity.apply _)
 
 }

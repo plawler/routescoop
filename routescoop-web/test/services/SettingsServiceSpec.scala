@@ -36,7 +36,7 @@ class SettingsServiceSpec extends WordSpec with Matchers {
       } { implicit port =>
         WsTestClient.withClient { client =>
           val service = new SettingsService(client, config)
-          val result = Await.result(service.create(newSettings), 1 second)
+          val result = Await.result(service.create(newSettings), 5 seconds)
           result shouldEqual createdResult
         }
       }
@@ -50,7 +50,7 @@ class SettingsServiceSpec extends WordSpec with Matchers {
       } { implicit port =>
         WsTestClient.withClient { client =>
           val service = new SettingsService(client, config)
-          val result = Await.result(service.list(profile.id), 1 second)
+          val result = Await.result(service.list(profile.id), 5 seconds)
           result shouldEqual listResult
         }
       }

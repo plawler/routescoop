@@ -56,7 +56,10 @@ class UserDataSyncSqlStore @Inject()(db: Database) extends UserDataSyncStore {
 
   override def findByUserId(userId: String): Seq[StoredUserDataSync] = db.withConnection { implicit conn =>
     SQL"""
-          SELECT * FROM #$UserDataSyncsTable WHERE userId = $userId
+          SELECT *
+          FROM #$UserDataSyncsTable
+          WHERE userId = $userId
+          ORDER BY startedAt DESC
       """.as(StoredUserDataSync.parser.*)
   }
 

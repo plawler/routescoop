@@ -23,6 +23,8 @@ trait UserService {
 
   def completeDataSync(syncId: String, completedAt: Instant): Future[Unit]
 
+  def lastDataSync(user: User): Future[Option[UserDataSync]]
+
   def createSettings(settings: UserSettings): Future[Unit]
 
   def getAllSettings(userId: String): Future[Seq[UserSettings]]
@@ -69,6 +71,14 @@ class UserServiceImpl @Inject()(
   override def completeDataSync(syncId: String, completedAt: Instant): Future[Unit] = Future {
     blocking {
       dataSyncStore.update(syncId, completedAt)
+    }
+  }
+
+  override def lastDataSync(user: User): Future[Option[UserDataSync]] = Future {
+    blocking{
+      dataSyncStore.findByUserId(user.id).find(p => p.completedAt.nonEmpty) map { lastCompleted =>
+        UserDataSync(lastCompleted.id, lastCompleted.userId, lastCompleted.startedAt)
+      }
     }
   }
 

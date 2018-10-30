@@ -6,6 +6,11 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
 scalaVersion := "2.11.11"
 
+resolvers ++= Seq(
+  "Sonatype Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
+  "Sonatype Releases" at "http://oss.sonatype.org/content/repositories/releases"
+)
+
 libraryDependencies ++= Seq(
   jdbc,
   evolutions,
@@ -16,6 +21,7 @@ libraryDependencies ++= Seq(
   "com.github.kiambogo" %% "scrava" % "1.3.0",
   "mysql" % "mysql-connector-java" % "6.0.6",
   "org.playframework.anorm" %% "anorm" % "2.6.0",
+  "org.scala-saddle" %% "saddle-core" % "1.3.+",
   "org.mockito" % "mockito-core" % "2.2.29" % Test,
   "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % Test,
   "com.typesafe.akka" %% "akka-testkit" % "2.4.16" % Test

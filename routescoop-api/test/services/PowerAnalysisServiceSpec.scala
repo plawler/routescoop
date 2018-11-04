@@ -44,6 +44,24 @@ class PowerAnalysisServiceSpec extends WordSpec with Matchers with MockitoSugar 
       smallestEffort.startedAt shouldEqual sampleActivity.startedAt.plusSeconds(streamData.head.timeIndexInSeconds)
     }
 
+    "build the interval indices for power efforts" in new Fixture {
+      service.buildIntervalIndices(1 to 30) should have size 30
+      service.buildIntervalIndices(1 to 300) should have size 300
+      service.buildIntervalIndices(1 to 1800) should have size 600
+      service.buildIntervalIndices(1 to 5400) should have size 720
+
+      service.buildIntervalIndices(1 to 300)(299) shouldEqual 300
+      service.buildIntervalIndices(1 to 1800)(599) shouldEqual 1800
+    }
+
+    "calculate power efforts for large streams" in new Fixture {
+      when(mockStreamStore.findByActivityId(sampleActivity.id)) thenReturn longActivityStreams
+      val start = System.currentTimeMillis()
+      val efforts = service.calculatePowerEfforts(sampleActivity)
+      val end = System.currentTimeMillis()
+      println(s"Calculating power efforts for large streams execution time: ${(end - start) / 1000} seconds")
+    }
+
     "save power efforts" in new Fixture {
       when(mockStreamStore.findByActivityId(sampleActivity.id)).thenReturn(streams)
       val efforts = service.calculatePowerEfforts(sampleActivity)
@@ -81,7 +99,7 @@ class PowerAnalysisServiceSpec extends WordSpec with Matchers with MockitoSugar 
 
   }
 
-  trait Fixture extends PowerEffortFixture { // todo move to EffortFixture
+  trait Fixture extends PowerEffortFixture {
     val mockStreamStore = mock[StravaStreamStore]
     val mockPowerEffortStore = mock[PowerEffortStore]
     val mockUserService = mock[UserService]

@@ -116,6 +116,7 @@ object PowerMetrics {
     }.reverse
   }
 
+  // https://stackoverflow.com/questions/1319891/calculating-the-moving-average-of-a-list
   def movingAverage(values: List[Double], period: Int): List[Double] = {
     val first = (values take period).sum / period
     val subtract = values map (_ / period)

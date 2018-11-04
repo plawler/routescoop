@@ -9,6 +9,8 @@ services:
       - 9000:9000
     env_file:
       - routescoop.env
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx256m
   routescoop-api:
     build: ./routescoop-api
     restart: always
@@ -18,6 +20,9 @@ services:
       - 9001:9000
     env_file:
       - routescoop.env
+    environment:
+      - JAVA_OPTS=-Xms512m -Xmx1g
+      - STRAVA_ACTIVITY_PAGE_SIZE=200
     links:
       - mysqldb:mysqldb.local
   mysqldb:

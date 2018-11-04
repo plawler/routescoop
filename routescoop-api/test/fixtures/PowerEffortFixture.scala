@@ -4,7 +4,9 @@ import java.util.UUID
 
 import models.{PowerEffort, StravaStream}
 
-trait PowerEffortFixture extends StreamFixture { // todo move to EffortFixture
+import scala.io.Source
+
+trait PowerEffortFixture extends StreamFixture {
   val streams = for {
     second <- 1 to 40
   } yield {
@@ -18,4 +20,24 @@ trait PowerEffortFixture extends StreamFixture { // todo move to EffortFixture
   }
 
   val samplePowerEffort = PowerEffort.create(sampleActivity, 30, 360, 140, 400, None)
+
+  val watts = Thread.currentThread.getContextClassLoader.getResourceAsStream("long_activity_watts.txt")
+  val line = Source.fromInputStream(watts).getLines()
+  val data = line.mkString.split(",").toSeq.map(_.toInt)
+
+  lazy val longActivityStreams = {
+
+    for {
+      second <- 1 to data.size
+    } yield {
+      StravaStream(
+        UUID.randomUUID().toString,
+        sampleActivity.toString,
+        second,
+        heartRate = Some(140),
+        watts = Some(data(second - 1))
+      )
+    }
+  }
+
 }

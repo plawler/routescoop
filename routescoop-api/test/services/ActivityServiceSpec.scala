@@ -90,9 +90,15 @@ class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
       verify(mockLapStore).insert(sampleLap)
       verify(mockStreamStore).insertBatch(streams)
 
-      listener.expectMsgClass(10 seconds, classOf[StravaLapsCreated])
-      listener.expectMsgClass(10 seconds, classOf[StravaStreamsCreated])
+//      listener.expectMsgClass(10 seconds, classOf[StravaLapsCreated])
+//      listener.expectMsgClass(10 seconds, classOf[StravaStreamsCreated])
       listener.expectMsgClass(10 seconds, classOf[StravaActivitySyncCompleted])
+    }
+
+    "fetch activities by sync" in {
+      when(mockActivityStore.findBySyncId(dataSyncId)).thenReturn(localActivities)
+      val result = Await.result(service.getActivitiesBySync(dataSyncId), 3 seconds)
+      result.size shouldBe 2
     }
 
   }

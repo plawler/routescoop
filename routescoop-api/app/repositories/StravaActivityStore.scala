@@ -20,6 +20,7 @@ trait StravaActivityStore {
 
   def findById(id: String): Option[StravaActivity]
   def findByUserId(userId: String): Seq[StravaActivity]
+  def findBySyncId(syncId: String): Seq[StravaActivity]
 }
 
 @Singleton
@@ -119,4 +120,11 @@ class StravaActivityStoreImpl @Inject()(db: Database)(implicit @BlockingContext 
           SELECT * FROM #$StravaActivitiesTable WHERE userId = $userId
       """.as(StravaActivity.parser.*)
   }
+
+  override def findBySyncId(syncId: String) = db.withConnection { implicit conn =>
+    SQL"""
+          SELECT * FROM #$StravaActivitiesTable WHERE dataSyncId = $syncId
+      """.as(StravaActivity.parser.*)
+  }
+
 }

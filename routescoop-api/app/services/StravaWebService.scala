@@ -48,7 +48,6 @@ class StravaWebServiceImpl @Inject()(
   override def getLaps(activity: StravaActivity): Future[Seq[StravaLap]] = {
     getUser(activity.userId) map {
       case Some(user) =>
-        logger.info("User exists. Fetching laps from Strava...")
         user.stravaToken match {
           case Some(token) =>
             createClient(token).listActivityLaps(activity.stravaId).map(lap => StravaLap.create(activity, lap))

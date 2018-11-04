@@ -112,7 +112,8 @@ CREATE TABLE strava_streams (
   watts INT NULL,
   moving BOOLEAN,
   PRIMARY KEY (id),
-  FOREIGN KEY fk_strava_activities_strava_streams(activityId) REFERENCES strava_activities(id) ON DELETE CASCADE
+  FOREIGN KEY fk_strava_activities_strava_streams(activityId) REFERENCES strava_activities(id) ON DELETE CASCADE,
+  INDEX idx_activity_id_time_index_in_seconds (activityId, timeIndexInSeconds)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;

@@ -47,7 +47,11 @@ class PowerAnalysisServiceSpec extends WordSpec with Matchers with MockitoSugar 
     "build the interval indices for power efforts" in new Fixture {
       service.buildIntervalIndices(1 to 30) should have size 30
       service.buildIntervalIndices(1 to 300) should have size 300
+      service.buildIntervalIndices(1 to 1800) should have size 600
       service.buildIntervalIndices(1 to 5400) should have size 720
+
+      service.buildIntervalIndices(1 to 300)(299) shouldEqual 300
+      service.buildIntervalIndices(1 to 1800)(599) shouldEqual 1800
     }
 
     "calculate power efforts for large streams" in new Fixture {

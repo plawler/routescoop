@@ -1,15 +1,16 @@
 package services
 
-import akka.actor.ActorSystem
-import com.typesafe.scalalogging.LazyLogging
 import javax.inject.{Inject, Singleton}
 import models._
 import modules.NonBlockingContext
 import repositories.{StravaActivityStore, StravaLapStore, StravaStreamStore}
 
+import akka.actor.ActorSystem
+import com.typesafe.scalalogging.LazyLogging
+
 import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.language.postfixOps
-import scala.util.{Failure, Success, Try}
+import scala.util.control.NonFatal
 
 trait ActivityService {
 
@@ -18,6 +19,8 @@ trait ActivityService {
   def syncActivityDetails(activity: StravaActivity): Future[Unit]
 
   def getActivity(activityId: String): Future[Option[StravaActivity]]
+
+  def getActivitiesBySync(syncId: String): Future[Seq[Activity]]
 
 }
 
@@ -43,7 +46,7 @@ class StravaActivityService @Inject()(
         saveActivity(activityToSync)
       }
       unprocessedActivities.size
-    }
+    } // todo: recover the future? probably so
   }
 
   override def getActivity(activityId: String): Future[Option[StravaActivity]] = Future {
@@ -53,10 +56,22 @@ class StravaActivityService @Inject()(
   }
 
   override def syncActivityDetails(activity: StravaActivity): Future[Unit] = {
-    for {
-      _ <- syncLaps(activity)
-      _ <- syncStreams(activity)
-    } yield actorSystem.eventStream.publish(StravaActivitySyncCompleted(activity))
+    val futureLaps = syncLaps(activity)
+    val futureStreams = syncStreams(activity)
+    (for {
+      _ <- futureLaps
+      _ <- futureStreams
+    } yield {
+      actorSystem.eventStream.publish(StravaActivitySyncCompleted(activity))
+    }) recover {
+      case NonFatal(e) =>
+        logger.info(s"Strava activity details borked for activity ${activity.stravaId}", e)
+        actorSystem.eventStream.publish(StravaActivitySyncCompleted(activity)) // todo: failed
+    }
+  }
+
+  override def getActivitiesBySync(syncId: String): Future[Seq[StravaActivity]] = Future {
+    blocking(activityStore.findBySyncId(syncId))
   }
 
   private def saveActivity(activity: StravaActivity) = {
@@ -68,15 +83,13 @@ class StravaActivityService @Inject()(
     // fetch all laps for an activity and send collection to lap store
     stravaWebService.getLaps(activity) map { laps =>
       laps.foreach(lapStore.insert) // todo: insertBatch
-      actorSystem.eventStream.publish(StravaLapsCreated(activity))
-    }
+    } //map (_ => actorSystem.eventStream.publish(StravaLapsCreated(activity)))
   }
 
   private def syncStreams(activity: StravaActivity): Future[Unit] = {
     stravaWebService.getStreams(activity) map { streams =>
       streamStore.insertBatch(streams)
-      actorSystem.eventStream.publish(StravaStreamsCreated(activity))
-    }
+    } //map (_ => actorSystem.eventStream.publish(StravaStreamsCreated(activity)))
   }
 
   private def filterLatest(userId: String, stravaActivities: Seq[StravaActivity]) = {

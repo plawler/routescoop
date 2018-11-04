@@ -51,10 +51,8 @@ class StravaActivityProcessor @Inject()(activityService: ActivityService)
       log.info(s"Getting activity data for activity ${created.activity.id}")
       activityService.syncActivityDetails(created.activity)
     case synched: StravaActivitySyncCompleted =>
-      log.info(s"Completed activity proceessing for ${synched.activity.id}")
-      synched.activity.dataSyncId foreach { syncId =>
-        context.child(syncId) foreach (_ ! ActivityProcessed)
-      }
+      log.info(s"Completed activity processing for ${synched.activity.id}")
+      synched.activity.dataSyncId foreach (syncId => context.child(syncId) foreach (_ ! ActivityProcessed))
     case completed: ActivityProcessingCompleted =>
       log.info(s"Finished processing all activities for user data sync ${completed.syncId}")
       context.system.eventStream.publish(StravaDataSyncCompleted(completed.syncId))

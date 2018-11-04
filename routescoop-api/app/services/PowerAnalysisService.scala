@@ -24,7 +24,6 @@ class PowerAnalysisService @Inject()(
     val (times, watts, heartRates) = streamStore.findByActivityId(activity.id).map { stream =>
       (stream.timeIndexInSeconds, stream.watts.getOrElse(0), stream.heartRate.getOrElse(0))
     }.unzip3
-
     // the timeIndexInSeconds is not consecutive due to activity pauses
     // however i still need to capture the timeIndexInSeconds to get the overall stats correct
     buildIntervalIndices(times) map (interval => calculatePowerEffort(activity, interval, times, watts, heartRates))

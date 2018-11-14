@@ -15,6 +15,7 @@ class ApplicationModule extends AbstractModule {
     bind(classOf[UserSettingsStore]).to(classOf[UserSettingsSqlStore])
     bind(classOf[UserService]).to(classOf[UserServiceImpl])
 
+    bind(classOf[AppConfig]).toProvider(classOf[AppConfigProvider])
     bind(classOf[StravaConfig]).toProvider(classOf[StravaConfigProvider])
     bind(classOf[StravaActivityStore]).to(classOf[StravaActivityStoreImpl])
     bind(classOf[StravaLapStore]).to(classOf[StravaLapStoreImpl])

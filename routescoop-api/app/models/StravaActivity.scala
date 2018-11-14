@@ -1,9 +1,10 @@
 package models
 
 import java.time.Instant
-import java.util.UUID
+import java.util.{Date, UUID}
 
 import anorm.{Macro, RowParser}
+import play.api.libs.json.Json
 import services.SummaryActivity
 
 sealed trait Activity {
@@ -93,6 +94,23 @@ object StravaActivity {
       sa.performance.max_heartrate
     )
   }
+}
+
+case class Summary(
+  id: String,
+  name: String,
+  startedAt: Date,
+  distance: Double,
+  movingTime: Int,
+  analysisCompleted: Boolean = false
+)
+
+object Summary {
+
+  import utils.AnormExtension.rowToBoolean
+
+  implicit val format = Json.format[Summary]
+  implicit val parser = Macro.namedParser[Summary]
 
 }
 

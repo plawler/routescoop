@@ -1,7 +1,7 @@
 package services
 
 import java.time.Instant
-import java.util.UUID
+import java.util.{Date, UUID}
 
 import akka.actor.ActorSystem
 import akka.testkit.{TestKit, TestProbe}
@@ -101,6 +101,10 @@ class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
       result.size shouldBe 2
     }
 
+    "calculate page and offset for fetching activities" in {
+
+    }
+
   }
 
 }
@@ -125,4 +129,8 @@ trait ActivityServiceFixture extends LapFixture with StreamFixture with MockitoS
   val stream1 = sampleStream.copy(id = "stream1", activityId = sampleActivity.id)
   val stream2 = sampleStream.copy(id = "stream2", activityId = sampleActivity.id)
   val streams = Seq(stream1, stream2)
+
+  val summaries = 1 to 10 map { count =>
+    Summary(s"activityId$count", s"activity$count", new Date(Instant.now().toEpochMilli), 2000.0, 1800)
+  }
 }

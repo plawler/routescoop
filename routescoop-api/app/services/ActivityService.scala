@@ -22,6 +22,7 @@ trait ActivityService {
 
   def getActivitiesBySync(syncId: String): Future[Seq[Activity]]
 
+  def fetchActivities(userId: String, page: Int, itemsPerPage: Int): Future[Seq[Summary]]
 }
 
 @Singleton
@@ -66,12 +67,19 @@ class StravaActivityService @Inject()(
     }) recover {
       case NonFatal(e) =>
         logger.info(s"Strava activity details borked for activity ${activity.stravaId}", e)
-        actorSystem.eventStream.publish(StravaActivitySyncCompleted(activity)) // todo: failed
+        actorSystem.eventStream.publish(StravaActivitySyncCompleted(activity))
     }
   }
 
   override def getActivitiesBySync(syncId: String): Future[Seq[StravaActivity]] = Future {
     blocking(activityStore.findBySyncId(syncId))
+  }
+
+  override def fetchActivities(userId: String, page: Int = 1, itemsPerPage: Int = 30): Future[Seq[Summary]] = Future {
+    blocking {
+      val offset = if (page > 0) (page * itemsPerPage) - itemsPerPage else 0
+      activityStore.fetchPaged(userId, offset, itemsPerPage)
+    }
   }
 
   private def saveActivity(activity: StravaActivity) = {

@@ -22,7 +22,7 @@ services:
       - routescoop.env
     environment:
       - JAVA_OPTS=-Xms512m -Xmx1g
-      - STRAVA_ACTIVITY_PAGE_SIZE=200
+      - STRAVA_ACTIVITY_PAGE_SIZE=50
     links:
       - mysqldb:mysqldb.local
   mysqldb:

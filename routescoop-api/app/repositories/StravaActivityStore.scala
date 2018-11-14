@@ -2,17 +2,17 @@ package repositories
 
 
 import anorm._
-import models.StravaActivity
+import models.{StravaActivity, Summary}
 import modules.BlockingContext
-
 import play.api.db.Database
-
 import javax.inject.{Inject, Singleton}
+
 import scala.concurrent.ExecutionContext
 
 trait StravaActivityStore {
 
   val StravaActivitiesTable = "strava_activities"
+  val ActivityStatsTable = "activity_stats"
 
   def destroy(): Unit
 
@@ -21,6 +21,8 @@ trait StravaActivityStore {
   def findById(id: String): Option[StravaActivity]
   def findByUserId(userId: String): Seq[StravaActivity]
   def findBySyncId(syncId: String): Seq[StravaActivity]
+
+  def fetchPaged(userId: String, offset: Int, rows: Int): Seq[Summary]
 }
 
 @Singleton
@@ -121,10 +123,27 @@ class StravaActivityStoreImpl @Inject()(db: Database)(implicit @BlockingContext 
       """.as(StravaActivity.parser.*)
   }
 
-  override def findBySyncId(syncId: String) = db.withConnection { implicit conn =>
+  override def findBySyncId(syncId: String): Seq[StravaActivity] = db.withConnection { implicit conn =>
     SQL"""
           SELECT * FROM #$StravaActivitiesTable WHERE dataSyncId = $syncId
       """.as(StravaActivity.parser.*)
+  }
+
+  override def fetchPaged(userId: String, offset: Int, rows: Int): Seq[Summary] = db.withConnection { implicit conn =>
+    SQL"""
+          SELECT a.id,
+            a.name,
+            a.startedAt,
+            a.distance,
+            a.movingTime,
+            CASE WHEN s.activityId IS NULL THEN false ELSE true END AS analysisCompleted
+          FROM #$StravaActivitiesTable a
+          LEFT JOIN #$ActivityStatsTable s
+            ON s.activityId = a.id
+          WHERE a.userId = $userId
+          ORDER BY a.startedAt desc
+          LIMIT $offset, $rows
+      """.as(Summary.parser.*)
   }
 
 }

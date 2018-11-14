@@ -17,7 +17,7 @@ class ActivityStatsStoreSpec extends WordSpec with Matchers with ActivityStatsFi
   val activityStore = application.injector.instanceOf(classOf[StravaActivityStore])
   val activityStatsStore = application.injector.instanceOf(classOf[ActivityStatsStore])
 
-  "The UserSettingsStore" should {
+  "The ActivityStatsStore" should {
 
     "delete all data" in {
       activityStatsStore.destroy()

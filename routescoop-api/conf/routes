@@ -12,7 +12,7 @@ POST    /api/v1/users/:id/syncs         controllers.Users.sync(id: String)
 POST    /api/v1/users/:id/settings      controllers.Users.createSettings(id: String)
 GET     /api/v1/users/:id/settings      controllers.Users.getAllSettings(id: String)
 
-GET     /api/v1/users/:id/activities    controllers.Activities.list(id: String)
+GET     /api/v1/users/:id/activities    controllers.Activities.list(id: String, page: Int ?= 1)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                   controllers.Assets.versioned(path="/public", file: Asset)

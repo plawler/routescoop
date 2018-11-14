@@ -13,6 +13,7 @@ import scala.concurrent.ExecutionContext
 trait ActivityStatsStore {
 
   val ActivityStatsTable = "activity_stats"
+  val ActivityTable = "strava_activities"
 
   def insert(activityStats: ActivityStats): Unit
   def destroy(): Unit

@@ -31,6 +31,16 @@ class StravaActivityStoreSpec extends WordSpec with Matchers with ActivityStoreF
       activityStore.findById(testActivity.id).foreach(_.id shouldEqual testActivity.id)
     }
 
+    "retrieve activity summaries by page" in {
+      1 to 9 foreach { count =>
+        val activity = sampleActivity.copy(id = s"${activityId + count}", userId = testUser.id)
+        activityStore.insert(activity)
+      }
+
+      activityStore.fetchPaged(testUser.id, 0, 1).size shouldEqual 1 // page 1 is an offset of zero
+      activityStore.fetchPaged(testUser.id, 0, 2).size shouldEqual 2
+    }
+
   }
 
 }

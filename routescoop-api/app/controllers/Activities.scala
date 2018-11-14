@@ -1,20 +1,21 @@
 package controllers
 
-import javax.inject.Inject
-
 import com.typesafe.scalalogging.LazyLogging
-import modules.NonBlockingContext
+import javax.inject.{Inject, Singleton}
+import modules.{AppConfig, NonBlockingContext}
+import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
-import services.StravaWebService
+import services.ActivityService
 
 import scala.concurrent.ExecutionContext
 
-class Activities @Inject()(stravaWebService: StravaWebService)(implicit @NonBlockingContext ec: ExecutionContext)
+@Singleton
+class Activities @Inject()(activityService: ActivityService, config: AppConfig)(implicit @NonBlockingContext ec: ExecutionContext)
   extends Controller with LazyLogging {
 
-  def list(userId: String) = Action.async { implicit request =>
-    stravaWebService.getActivities(userId) map { activities =>
-      Ok(s"Did you see the list of $activities") // todo: use local activity service
+  def list(userId: String, page: Int) = Action.async { implicit request =>
+    activityService.fetchActivities(userId, page, config.pageSize) map { summaries =>
+      Ok(Json.toJson(summaries))
     }
   }
 

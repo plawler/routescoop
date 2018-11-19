@@ -33,4 +33,20 @@ class RideService @Inject()(config: AppConfig, ws: WSClient)(implicit @NonBlocki
     }
   }
 
+  def listRideSummaries(user: User, page: Int): Future[RideSummaryResult] = {
+    val summaryUrl = s"$url/${user.id}/activities?page=$page"
+    ws.url(summaryUrl).get() map { response =>
+      response.status match {
+        case Status.OK =>
+          response.json.validate[Seq[RideSummary]] match {
+            case success: JsSuccess[Seq[RideSummary]] => RideSummaryResultSuccess(success.get)
+            case error: JsError =>
+              Logger.error(s"api response error: $error")
+              RideSummaryResultError("Fetching ride summaries failed")
+          }
+        case _ => RideSummaryResultError(s"Fetching ride summaries failed with status ${response.status}")
+      }
+    }
+  }
+
 }

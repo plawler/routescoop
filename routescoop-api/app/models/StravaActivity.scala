@@ -99,7 +99,7 @@ object StravaActivity {
 case class Summary(
   id: String,
   name: String,
-  startedAt: Date,
+  startedAt: Instant,
   distance: Double,
   movingTime: Int,
   analysisCompleted: Boolean = false

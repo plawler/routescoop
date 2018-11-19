@@ -1,7 +1,7 @@
 package controllers
 
 import javax.inject.Inject
-import models.{Profile, RideSyncResultStarted, SettingsResultSuccess}
+import models._
 import modules.NonBlockingContext
 import play.api.Logger
 import play.api.cache.CacheApi
@@ -37,10 +37,17 @@ class Rides @Inject()(
     }
   }
 
-  def index = authenticated.async { implicit request =>
+  def index(page: Int) = authenticated.async { implicit request =>
     getProfile(request) map { profile =>
-      hasSettings(profile.id) map { hasSettings =>
-        Ok(views.html.rides.index(hasSettings, if (hasSettings) syncRidesUrl else createSettingsUrl))
+      hasSettings(profile.id) flatMap { hasSettings =>
+        val url = if (hasSettings) syncRidesUrl else createSettingsUrl
+        rideService.listRideSummaries(profile.toUser, page) map {
+          case RideSummaryResultSuccess(summaries) =>
+            Ok(views.html.rides.index(hasSettings, summaries, url))
+          case RideSummaryResultError(message) =>
+            Logger.error(message)
+            Ok(views.html.rides.index(hasSettings, Seq(), url)).flashing("error" -> "Failed to retrieve your ride list")
+        }
       }
     } getOrElse {
       Logger.error("A profile wasn't found in cache for the user...logging out")

@@ -131,6 +131,6 @@ trait ActivityServiceFixture extends LapFixture with StreamFixture with MockitoS
   val streams = Seq(stream1, stream2)
 
   val summaries = 1 to 10 map { count =>
-    Summary(s"activityId$count", s"activity$count", new Date(Instant.now().toEpochMilli), 2000.0, 1800)
+    Summary(s"activityId$count", s"activity$count", Instant.now(), 2000.0, 1800)
   }
 }

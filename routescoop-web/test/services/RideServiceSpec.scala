@@ -1,11 +1,8 @@
 package services
 
-import java.time.Instant
-import java.util.UUID
-
 import config.AppConfig
-import fixtures.ProfileFixture
-import models.{RideSync, RideSyncResultStarted}
+import fixtures.RideFixture
+import models.{RideSummary, RideSummaryResultSuccess, RideSyncResultStarted}
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.Json
@@ -38,11 +35,24 @@ class RideServiceSpec extends WordSpec with Matchers {
       }
     }
 
+    "list ride summaries" in new RideServiceTesting {
+      Server.withRouter() {
+        case GET(p"/api/v1/users/${profileWithStrava.id}/activities") => Action { // do not include parameters in url
+          Ok(rideSummaryPageJson)
+        }
+      } { implicit port =>
+        WsTestClient.withClient { client =>
+          val service = new RideService(config, client)
+          val result = Await.result(service.listRideSummaries(profileWithStrava.toUser, 1), 5.seconds)
+          result shouldEqual RideSummaryResultSuccess(summaries)
+        }
+      }
+    }
+
   }
 
-  trait RideServiceTesting extends ProfileFixture {
-    val userId = profileWithStrava.id
-    val rideSync = RideSync(UUID.randomUUID().toString, userId, Instant.now)
+  trait RideServiceTesting extends RideFixture {
+
   }
 
 }

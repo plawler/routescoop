@@ -1,4 +1,6 @@
-@(hasSettings: Boolean, url: Call)(implicit request: RequestHeader, messages: Messages)
+@import org.apache.http.client.utils.DateUtils
+@import org.joda.time.DateTimeUtils
+@(hasSettings: Boolean, summaries: Seq[RideSummary], url: Call)(implicit request: RequestHeader, messages: Messages)
 @helper.base {
     @Html("")
 } {
@@ -13,11 +15,43 @@
         @b4.vertical.form(url) { implicit vfc =>
             @b4.submit('class -> "btn btn-primary"){ <i class="fa fa-ok"></i> Synch now! }
         }
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Distance</th>
+                    <th scope="col">Moving Time</th>
+                    <th scope="col">Analysis Complete</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for(s <- summaries) {
+                    <tr>
+                        <td>@s.name</td>
+                        <td>@s.startedAt</td>
+                        <td>@metersToMiles(s.distance)</td>
+                        <td>@formattedTime(s.movingTime)</td>
+                        <td>@s.analysisCompleted</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     } else {
         <p>
             We found no performance settings for your account. <a href="@url">Create new settings.</a>
         </p>
     }
 
+}
 
+@formattedTime(seconds: Int) = @{
+    val hours = seconds / 3600
+    val minutes = (seconds % 3600) / 60
+    "%02d:%02d:%02d".format(hours, minutes, seconds % 60)
+}
+
+@metersToMiles(meters: Double) = @{
+    val km = meters / 1000
+    "%.1f mi".format(km * 0.6213712)
 }

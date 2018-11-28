@@ -1,11 +1,10 @@
 package repositories
 
-import models.ActivityStats
+import models.{ActivityStats, DailyStress}
 import modules.BlockingContext
 import anorm._
 import play.api.db.Database
 import javax.inject.{Inject, Singleton}
-
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.concurrent.ExecutionContext
@@ -14,11 +13,12 @@ trait ActivityStatsStore {
 
   val ActivityStatsTable = "activity_stats"
   val ActivityTable = "strava_activities"
+  val DaysTable = "days"
 
   def insert(activityStats: ActivityStats): Unit
   def destroy(): Unit
   def findByActivityId(activityId: String): Option[ActivityStats]
-  def findByUserId(userId: String): Seq[ActivityStats]
+  def getDailyStress(userId: String, numberOfDays: Int): Seq[DailyStress]
 
 }
 
@@ -61,5 +61,20 @@ class ActivityStatsStoreSql @Inject()(db: Database)
       """.as(ActivityStats.parser.singleOpt)
   }
 
-  override def findByUserId(userId: String): Seq[ActivityStats] = ???
+  override def getDailyStress(userId: String, numberOfDays: Int): Seq[DailyStress] = db.withConnection { implicit conn =>
+    val lookBack = numberOfDays - 1
+    SQL"""
+          SELECT coalesce(date(a.startedAt), d.dt) AS day, sum(coalesce(s.stressScore, 0)) as stressScore
+          FROM #$DaysTable d
+          LEFT JOIN #$ActivityTable a
+            ON d.dt = DATE(a.startedAt)
+            AND a.userId = $userId
+          LEFT JOIN #$ActivityStatsTable s
+            ON s.activityId = a.id
+          WHERE d.dt BETWEEN DATE(now() - INTERVAL $lookBack DAY) AND now()
+          GROUP BY day, d.dt
+          ORDER BY d.dt DESC
+      """.as(DailyStress.parser.*)
+  }
+
 }

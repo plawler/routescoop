@@ -1,7 +1,9 @@
 package models
 
-import anorm.{Macro, RowParser}
+import java.time.{Instant, LocalDate}
+import java.util.Date
 
+import anorm.{Macro, RowParser}
 import play.api.libs.json.Json
 
 sealed trait Stats
@@ -24,4 +26,11 @@ object ActivityStats {
   implicit val activityStatsFormat = Json.format[ActivityStats]
   implicit val parser: RowParser[ActivityStats] = Macro.namedParser[ActivityStats]
 
+}
+
+case class DailyStress(day: LocalDate, stressScore: Int)
+
+object DailyStress {
+  implicit val format = Json.format[ActivityStats]
+  implicit val parser = Macro.namedParser[DailyStress]
 }

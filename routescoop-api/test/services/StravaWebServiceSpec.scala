@@ -36,7 +36,7 @@ class StravaWebServiceSpec extends WordSpec with Matchers with MockitoSugar {
       when(mockUserService.lastDataSync(paul)).thenReturn(Future.successful(None))
       val result = Await.result(service.getActivities(paul.id), 100 seconds)
       result should not be empty
-      result should have length 30
+      result should have length 50
     }
 
     "get a list of recent activities for a user" in new StravaWebServiceFixture {

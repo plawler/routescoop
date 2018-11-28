@@ -34,7 +34,15 @@ class ActivityStatsStoreSpec extends WordSpec with Matchers with ActivityStatsFi
     }
 
     "should find activity stats by activity id" in {
-      activityStatsStore.findByActivityId(testActivity.id) map (_ shouldEqual testStats)
+      val result = activityStatsStore.findByActivityId(testActivity.id)
+      result map (_ shouldEqual testStats)
+    }
+
+    "should collect the daily stress records" in {
+      val days = 60
+      val result = activityStatsStore.getDailyStress(testUser.id, days)
+      result.head.stressScore shouldEqual testStats.stressScore
+      result.size shouldEqual days
     }
 
   }

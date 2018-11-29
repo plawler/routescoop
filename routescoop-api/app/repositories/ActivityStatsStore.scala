@@ -73,7 +73,7 @@ class ActivityStatsStoreSql @Inject()(db: Database)
             ON s.activityId = a.id
           WHERE d.dt BETWEEN DATE(now() - INTERVAL $lookBack DAY) AND now()
           GROUP BY day, d.dt
-          ORDER BY d.dt DESC
+          ORDER BY d.dt
       """.as(DailyStress.parser.*)
   }
 

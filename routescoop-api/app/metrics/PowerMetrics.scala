@@ -1,7 +1,5 @@
 package metrics
 
-import models.PowerEffort
-
 import java.text.DecimalFormat
 
 case class Result(index: Int, value: Int)
@@ -9,6 +7,8 @@ case class Result(index: Int, value: Int)
 object PowerMetrics {
 
   val formatter = new DecimalFormat("#.##")
+  val CtlTimeConstant = 42d // days
+  val AtlTimeConstant = 7d // days
 
   // inspired by https://stackoverflow.com/questions/1319891/calculating-the-moving-average-of-a-list
 
@@ -102,6 +102,13 @@ object PowerMetrics {
   def variabilityIndex(normalizedPower: Int, avgPower: Int): Double = {
     val vi = normalizedPower.toDouble / avgPower.toDouble
     formatter.format(vi).toDouble
+  }
+
+  def trainingLoad(priorTrainingLoad: Double, stressScore: Double, trainingLoadTimeConstant: Double): Int = {
+    val tl = priorTrainingLoad + ((stressScore - priorTrainingLoad) / trainingLoadTimeConstant)
+    BigDecimal(tl).setScale(0, BigDecimal.RoundingMode.HALF_UP).toInt
+    // scores.foldLeft(51)((y, s) => trainingLoad(y, s, 42))
+    // how to get the initial starting CTL/ATL without going back to the beginning. does the time constant fix that requiring us to pull at minimum 42 days?
   }
 
   def rollingAverage(values: Seq[Int], interval: Int): Seq[Double] = {

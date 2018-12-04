@@ -7,6 +7,7 @@ case class Result(index: Int, value: Int)
 object PowerMetrics {
 
   val formatter = new DecimalFormat("#.##")
+  val formatterSingle = new DecimalFormat("#.#")
   val CtlTimeConstant = 42d // days
   val AtlTimeConstant = 7d // days
 
@@ -104,11 +105,23 @@ object PowerMetrics {
     formatter.format(vi).toDouble
   }
 
-  def trainingLoad(priorTrainingLoad: Double, stressScore: Double, trainingLoadTimeConstant: Double): Int = {
+
+  /**
+    * Training Load is an exponentially weighted average of TSS per day with an N day Time Constant (TC).
+    * In other words it takes into account mostly the last N days of training.
+    *
+    * Chronic Training Load has a time constant of 42 days and can be thought of as “fitness”.
+    *
+    * Acute Training Load has a time constant of 7 days and can be thought of as "fatigue".
+    *
+    * @param priorTrainingLoad
+    * @param stressScore
+    * @param trainingLoadTimeConstant
+    * @return double value of training load score
+    */
+  def trainingLoad(priorTrainingLoad: Double, stressScore: Double, trainingLoadTimeConstant: Double): Double = {
     val tl = priorTrainingLoad + ((stressScore - priorTrainingLoad) / trainingLoadTimeConstant)
-    BigDecimal(tl).setScale(0, BigDecimal.RoundingMode.HALF_UP).toInt
-    // scores.foldLeft(51)((y, s) => trainingLoad(y, s, 42))
-    // how to get the initial starting CTL/ATL without going back to the beginning. does the time constant fix that requiring us to pull at minimum 42 days?
+    formatterSingle.format(tl).toDouble
   }
 
   def rollingAverage(values: Seq[Int], interval: Int): Seq[Double] = {

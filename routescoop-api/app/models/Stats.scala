@@ -34,3 +34,16 @@ object DailyStress {
   implicit val format = Json.format[ActivityStats]
   implicit val parser = Macro.namedParser[DailyStress]
 }
+
+case class DailyTrainingLoad(
+  date: LocalDate,
+  fitness: Double,
+  fatigue: Double,
+  rampRate: Double,
+  stressBalance: Double
+)
+
+object DailyTrainingLoad {
+  implicit val format = Json.format[DailyTrainingLoad]
+}
+

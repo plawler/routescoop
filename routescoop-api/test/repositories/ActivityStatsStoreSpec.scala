@@ -41,7 +41,7 @@ class ActivityStatsStoreSpec extends WordSpec with Matchers with ActivityStatsFi
     "should collect the daily stress records" in {
       val days = 60
       val result = activityStatsStore.getDailyStress(testUser.id, days)
-      result.head.stressScore shouldEqual testStats.stressScore
+      result.last.stressScore shouldEqual testStats.stressScore
       result.size shouldEqual days
     }
 

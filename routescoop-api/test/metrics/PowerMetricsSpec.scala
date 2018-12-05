@@ -2,7 +2,10 @@ package metrics
 
 import org.scalatest.{FlatSpec, Matchers}
 import PowerMetrics._
+import fixtures.StressScoreFixture
+import models.{DailyStress, DailyTrainingLoad}
 
+import java.time.LocalDate
 import scala.io.Source
 
 class PowerMetricsSpec extends FlatSpec with Matchers with Fixture {
@@ -28,7 +31,6 @@ class PowerMetricsSpec extends FlatSpec with Matchers with Fixture {
   }
 
   it should "calculate the max value with index in a rolling average" in {
-    val data = Seq(100, 150, 200, 100, 150, 150, 150, 200, 100, 200)
     maxAverageWithIndex(data, interval) shouldEqual (166, 5)
   }
 
@@ -42,13 +44,22 @@ class PowerMetricsSpec extends FlatSpec with Matchers with Fixture {
     val watts = Thread.currentThread.getContextClassLoader.getResourceAsStream("watts.txt")
     val line = Source.fromInputStream(watts).getLines()
     val data = line.mkString.split(",").toList
-    println(movingAverage(data.map(_.toDouble), 60 * 30).max)
-    println(rollingAverage(data.map(_.toInt), 60 * 30).max)
+    movingAverage(data.map(_.toDouble), 60 * 30).max shouldEqual 189.13888888888818
+    rollingAverage(data.map(_.toInt), 60 * 30).max shouldEqual 189.13888888888818
+  }
+
+  it should "calculate chronic training load (fitness)" in {
+    trainingLoad(startingCtl, stressScores.head, 42) shouldEqual 52.7
+  }
+
+  it should "calculate acute training load (fatigue)" in {
+    val startingAtl = 65
+    trainingLoad(startingAtl, stressScores.head, 7) shouldEqual 67.6
   }
 
 }
 
-trait Fixture {
+trait Fixture extends StressScoreFixture {
   val data = Seq(100, 150, 200, 100, 150, 150, 150, 200, 100, 200)
   val interval = 3
 }

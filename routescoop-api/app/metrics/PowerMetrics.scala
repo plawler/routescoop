@@ -1,7 +1,5 @@
 package metrics
 
-import models.PowerEffort
-
 import java.text.DecimalFormat
 
 case class Result(index: Int, value: Int)
@@ -9,6 +7,9 @@ case class Result(index: Int, value: Int)
 object PowerMetrics {
 
   val formatter = new DecimalFormat("#.##")
+  val formatterSingle = new DecimalFormat("#.#")
+  val CtlTimeConstant = 42d // days
+  val AtlTimeConstant = 7d // days
 
   // inspired by https://stackoverflow.com/questions/1319891/calculating-the-moving-average-of-a-list
 
@@ -102,6 +103,25 @@ object PowerMetrics {
   def variabilityIndex(normalizedPower: Int, avgPower: Int): Double = {
     val vi = normalizedPower.toDouble / avgPower.toDouble
     formatter.format(vi).toDouble
+  }
+
+
+  /**
+    * Training Load is an exponentially weighted average of TSS per day with an N day Time Constant (TC).
+    * In other words it takes into account mostly the last N days of training.
+    *
+    * Chronic Training Load has a time constant of 42 days and can be thought of as “fitness”.
+    *
+    * Acute Training Load has a time constant of 7 days and can be thought of as "fatigue".
+    *
+    * @param priorTrainingLoad
+    * @param stressScore
+    * @param trainingLoadTimeConstant
+    * @return double value of training load score
+    */
+  def trainingLoad(priorTrainingLoad: Double, stressScore: Double, trainingLoadTimeConstant: Double): Double = {
+    val tl = priorTrainingLoad + ((stressScore - priorTrainingLoad) / trainingLoadTimeConstant)
+    formatterSingle.format(tl).toDouble
   }
 
   def rollingAverage(values: Seq[Int], interval: Int): Seq[Double] = {

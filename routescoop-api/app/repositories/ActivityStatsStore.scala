@@ -19,6 +19,7 @@ trait ActivityStatsStore {
   def destroy(): Unit
   def findByActivityId(activityId: String): Option[ActivityStats]
   def getDailyStress(userId: String, numberOfDays: Int): Seq[DailyStress]
+  def getDailyStress(userId: String): Seq[DailyStress]
 
 }
 
@@ -77,4 +78,21 @@ class ActivityStatsStoreSql @Inject()(db: Database)
       """.as(DailyStress.parser.*)
   }
 
+  override def getDailyStress(userId: String) = db.withConnection { implicit conn =>
+    SQL"""
+         select coalesce(date(a.startedat), d.dt) as day, sum(coalesce(s.stressscore, 0)) as stressscore
+         from #$DaysTable d
+         left join #$ActivityTable a
+           on d.dt = date(a.startedat)
+           and a.userid = $userId
+         left join  #$ActivityStatsTable s
+           on s.activityid = a.id
+         where d.dt >= ( select min(date(a2.startedat))
+                         from #$ActivityTable a2
+                         where a2.userid = $userId)
+           and d.dt <= now()
+         group by day, d.dt
+         order by d.dt
+      """.as(DailyStress.parser.*)
+  }
 }

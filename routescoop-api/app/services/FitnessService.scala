@@ -18,7 +18,7 @@ class FitnessService @Inject()(activityStatsStore: ActivityStatsStore)
   val f = new DecimalFormat("#.#")
 
   def getDailyTrainingLoad(userId: String, numberOfDays: Int): Seq[DailyTrainingLoad] = {
-    val stresses = activityStatsStore.getDailyStress(userId, numberOfDays)
+    val stresses = activityStatsStore.getDailyStress(userId)
     calculateTrainingLoad(stresses).takeRight(numberOfDays) // start from the latest day
   }
 

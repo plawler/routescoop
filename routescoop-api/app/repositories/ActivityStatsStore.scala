@@ -80,18 +80,20 @@ class ActivityStatsStoreSql @Inject()(db: Database)
 
   override def getDailyStress(userId: String) = db.withConnection { implicit conn =>
     SQL"""
-         select coalesce(date(a.startedat), d.dt) as day, sum(coalesce(s.stressscore, 0)) as stressscore
+         select coalesce(date(a.startedAt), d.dt) as day,
+            sum(coalesce(s.stressScore, 0)) as stressScore,
+            week(coalesce(date(a.startedAt), d.dt)) as week
          from #$DaysTable d
          left join #$ActivityTable a
-           on d.dt = date(a.startedat)
-           and a.userid = $userId
+           on d.dt = date(a.startedAt)
+           and a.userId = $userId
          left join  #$ActivityStatsTable s
-           on s.activityid = a.id
-         where d.dt >= ( select min(date(a2.startedat))
+           on s.activityId = a.id
+         where d.dt >= ( select min(date(a2.startedAt))
                          from #$ActivityTable a2
-                         where a2.userid = $userId)
+                         where a2.userId = $userId)
            and d.dt <= now()
-         group by day, d.dt
+         group by day, week, d.dt
          order by d.dt
       """.as(DailyStress.parser.*)
   }

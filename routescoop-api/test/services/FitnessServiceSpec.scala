@@ -22,7 +22,7 @@ class FitnessServiceSpec extends WordSpec with Matchers with MockitoSugar {
 
     "calculate training load" in new Fixture {
       val dailyTrainingLoads = service.calculateTrainingLoad(stresses, Some(startingCtl), Some(startingAtl))
-      dailyTrainingLoads.last shouldBe DailyTrainingLoad(LocalDate.of(2018, 12, 1), 53.1, 50.9, -1.3, 2.2)
+      dailyTrainingLoads.last shouldBe DailyTrainingLoad(LocalDate.of(2018, 12, 1), 53.1, 50.9, 2.2)
     }
 
   }

@@ -28,7 +28,7 @@ object ActivityStats {
 
 }
 
-case class DailyStress(day: LocalDate, stressScore: Int)
+case class DailyStress(day: LocalDate, stressScore: Int, week: Int = -1)
 
 object DailyStress {
   implicit val format = Json.format[ActivityStats]
@@ -39,11 +39,16 @@ case class DailyTrainingLoad(
   date: LocalDate,
   fitness: Double,
   fatigue: Double,
-  rampRate: Double,
   stressBalance: Double
 )
 
 object DailyTrainingLoad {
   implicit val format = Json.format[DailyTrainingLoad]
+}
+
+case class FitnessTrend(trainingLoad: Seq[DailyTrainingLoad], rampRate: Seq[Int])
+
+object FitnessTrend {
+  implicit val format = Json.format[FitnessTrend]
 }
 

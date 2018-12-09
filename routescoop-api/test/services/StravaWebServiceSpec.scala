@@ -66,7 +66,5 @@ class StravaWebServiceSpec extends WordSpec with Matchers with MockitoSugar {
     when(mockStravaActivity.stravaId).thenReturn(796833837)
   }
 
-
-
 }
 

@@ -46,7 +46,13 @@ object DailyTrainingLoad {
   implicit val format = Json.format[DailyTrainingLoad]
 }
 
-case class FitnessTrend(trainingLoad: Seq[DailyTrainingLoad], rampRate: Seq[Int])
+case class RampRate(sixWeekAvgs: Seq[Int], ramps: Seq[Int])
+
+object RampRate {
+  implicit val format = Json.format[RampRate]
+}
+
+case class FitnessTrend(trainingLoad: Seq[DailyTrainingLoad], rampRate: RampRate)
 
 object FitnessTrend {
   implicit val format = Json.format[FitnessTrend]

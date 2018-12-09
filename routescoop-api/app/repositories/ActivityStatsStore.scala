@@ -79,10 +79,11 @@ class ActivityStatsStoreSql @Inject()(db: Database)
   }
 
   override def getDailyStress(userId: String) = db.withConnection { implicit conn =>
+    val mode = 3 // week with > 3 days and starts on a monday
     SQL"""
          select coalesce(date(a.startedAt), d.dt) as day,
             sum(coalesce(s.stressScore, 0)) as stressScore,
-            week(coalesce(date(a.startedAt), d.dt)) as week
+            week(coalesce(date(a.startedAt), d.dt), $mode) as week
          from #$DaysTable d
          left join #$ActivityTable a
            on d.dt = date(a.startedAt)

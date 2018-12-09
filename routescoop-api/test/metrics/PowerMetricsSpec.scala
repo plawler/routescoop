@@ -1,11 +1,10 @@
 package metrics
 
-import org.scalatest.{FlatSpec, Matchers}
-import PowerMetrics._
 import fixtures.StressScoreFixture
-import models.{DailyStress, DailyTrainingLoad}
+import metrics.PowerMetrics._
 
-import java.time.LocalDate
+import org.scalatest.{FlatSpec, Matchers}
+
 import scala.io.Source
 
 class PowerMetricsSpec extends FlatSpec with Matchers with Fixture {
@@ -55,16 +54,6 @@ class PowerMetricsSpec extends FlatSpec with Matchers with Fixture {
   it should "calculate acute training load (fatigue)" in {
     val startingAtl = 65
     trainingLoad(startingAtl, stressScores.head, 7) shouldEqual 67.6
-  }
-
-  it should "calculate ramp rate" in {
-    val grouped = stressesWithWeek.groupBy(_.week)
-    val summed = grouped.mapValues(_.map(_.stressScore).sum)
-    val weeklyTss = summed.toSeq.sortWith(_._1 < _._1)
-    val ramps = weeklyTss.map(_._2 / 7)
-    println(ramps)
-    val rampRate = ramps.sliding(2).toList.map(x => x.last - x.head)
-    println(rampRate)
   }
 
 }

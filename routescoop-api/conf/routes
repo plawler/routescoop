@@ -14,7 +14,8 @@ GET     /api/v1/users/:id/settings      controllers.Users.getAllSettings(id: Str
 
 GET     /api/v1/users/:id/activities    controllers.Activities.list(id: String, page: Int ?= 1)
 
-GET     /api/v1/users/:id/fitness/:days controllers.Fitness.list(id: String, days: Int)
+GET     /api/v1/users/:id/fitness/:days controllers.Fitness.trainingLoad(id: String, days: Int)
+GET     /api/v1/users/:id/ramp/:days    controllers.Fitness.rampRate(id: String, days: Int)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                   controllers.Assets.versioned(path="/public", file: Asset)

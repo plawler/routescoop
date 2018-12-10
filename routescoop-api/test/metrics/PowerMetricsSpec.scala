@@ -1,11 +1,10 @@
 package metrics
 
-import org.scalatest.{FlatSpec, Matchers}
-import PowerMetrics._
 import fixtures.StressScoreFixture
-import models.{DailyStress, DailyTrainingLoad}
+import metrics.PowerMetrics._
 
-import java.time.LocalDate
+import org.scalatest.{FlatSpec, Matchers}
+
 import scala.io.Source
 
 class PowerMetricsSpec extends FlatSpec with Matchers with Fixture {

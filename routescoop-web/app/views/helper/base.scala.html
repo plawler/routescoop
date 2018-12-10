@@ -1,4 +1,4 @@
-@(header: Html = Html(""))(content: Html)(implicit request: RequestHeader, messages: Messages)
+@(header: Html = Html(""), scripts: Html = Html(""))(content: Html)(implicit request: RequestHeader, messages: Messages)
 <!DOCTYPE html>
 <html lang="@{messages.lang.code}">
     <head>
@@ -74,6 +74,8 @@
         <script src="@routes.Assets.versioned("lib/bootstrap/js/bootstrap.min.js")" type="text/javascript"></script>
         <script src="@routes.Assets.versioned("lib/bootstrap-datepicker/js/bootstrap-datepicker.js")" type="text/javascript"></script>
         <script src="@routes.Assets.versioned("lib/chartjs/Chart.bundle.js")" type="text/javascript"></script>
+
+        @scripts
 
     </body>
 

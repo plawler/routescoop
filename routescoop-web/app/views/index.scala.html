@@ -15,7 +15,17 @@
                 }]
             },
 
-            options: {}
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero:true
+                        }
+                    }]
+                }
+            }
         });
     </script>
 }
@@ -29,7 +39,7 @@
         Some default chart information here. Probably start with training hours by zone intensity.
     </p>
 
-    <canvas id="pmc" width="400" height="400"></canvas>
+    <canvas id="pmc" width="1000" height="400"></canvas>
 
     <p>
         PMC is a bit misleading because not all TSS is created equal. You can be fitter on a lower CTL and fresher on a lower ATL.

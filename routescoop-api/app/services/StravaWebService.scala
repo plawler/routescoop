@@ -321,7 +321,7 @@ case class SummaryActivityInfo(
   `type`: String,
   id: Int,
   external_id: String,
-  upload_id: Int,
+  upload_id: Long,
   start_date: Instant,
   start_date_local: Instant,
   timezone: String,

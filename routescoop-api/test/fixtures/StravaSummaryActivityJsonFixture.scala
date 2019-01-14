@@ -4,7 +4,6 @@ trait StravaSummaryActivityJsonFixture {
 
   val stravaSummaryActivityJson =
     """
-      |[
       |    {
       |        "resource_state": 2,
       |        "athlete": {
@@ -65,48 +64,51 @@ trait StravaSummaryActivityJsonFixture {
       |        "pr_count": 0,
       |        "total_photo_count": 0,
       |        "has_kudoed": false
-      |    },
-      |    {
+      |    }
+    """.stripMargin
+
+  val stravaWalkJson =
+    """
+      |{
       |        "resource_state": 2,
       |        "athlete": {
       |            "id": 178697,
       |            "resource_state": 1
       |        },
-      |        "name": "Morning Ride",
-      |        "distance": 69644.3,
-      |        "moving_time": 8922,
-      |        "elapsed_time": 10393,
-      |        "total_elevation_gain": 874,
-      |        "type": "Ride",
-      |        "workout_type": null,
-      |        "id": 1890152815,
-      |        "external_id": "garmin_push_3071773176",
-      |        "upload_id": 2024110553,
-      |        "start_date": "2018-10-07T11:25:07Z",
-      |        "start_date_local": "2018-10-07T07:25:07Z",
+      |        "name": "Lunch Walk",
+      |        "distance": 5915.4,
+      |        "moving_time": 4990,
+      |        "elapsed_time": 5647,
+      |        "total_elevation_gain": 167,
+      |        "type": "Walk",
+      |        "id": 2060551286,
+      |        "external_id": "garmin_push_3278119000",
+      |        "upload_id": 2201584152,
+      |        "start_date": "2019-01-06T17:00:26Z",
+      |        "start_date_local": "2019-01-06T12:00:26Z",
       |        "timezone": "(GMT-05:00) America/New_York",
-      |        "utc_offset": -14400,
+      |        "utc_offset": -18000,
       |        "start_latlng": [
-      |            34.14,
-      |            -84.22
+      |            34.25,
+      |            -84.14
       |        ],
       |        "end_latlng": [
-      |            34.14,
-      |            -84.22
+      |            34.25,
+      |            -84.14
       |        ],
-      |        "location_city": "Alpharetta",
-      |        "location_state": "GA",
+      |        "location_city": null,
+      |        "location_state": null,
       |        "location_country": "United States",
-      |        "start_latitude": 34.14,
-      |        "start_longitude": -84.22,
-      |        "achievement_count": 1,
-      |        "kudos_count": 10,
+      |        "start_latitude": 34.25,
+      |        "start_longitude": -84.14,
+      |        "achievement_count": 0,
+      |        "kudos_count": 6,
       |        "comment_count": 0,
-      |        "athlete_count": 4,
+      |        "athlete_count": 1,
       |        "photo_count": 0,
       |        "map": {
-      |            "id": "a1890152815",
-      |            "summary_polyline": "_njoEjy_aO~GhVfDh@hAgR]sPqDqJXid@yWaI}u@ky@uf@kB|WqYp\\gk@cVwLuEeIuBwbAqVgZx@c}@cEwLo`A}Mib@_SeMqToaA{O{]kh@pMnYcGfDyJiDie@dDklAmNeAvHgVuAybBsYwVfC{MeEuGkJc[AoM|IcAhe@wDnJwTtM{_@gIuK~CaQjSeFv_@oRtAca@nQ}HtHuCfRwLlX~Nte@qE`UlS~B`JtJt@~YzP|m@lNtb@tShEtCjb@{RtmAjBfSs]{Dt@bPdI|CwGnUXhLcIzJmJnZwNhOQ~GerAp@wQ~FmMpUTbQnEtEn\\v@lJ_PX}f@jtAKzCvDkGpLc@pd@{Gj[hDfT_Dn]`BvG_PjVcR`Dmi@oDmP|DwRtN~StKjQjYlLtHjKoHrTdJ~KqCjCwFlLbFdOaIKy]`Gue@gEeJb`@iI|WnAlVuEja@wUzOyUjk@tx@hOi@bXcNvc@_@lOeLt_@jJnK~NqLxKLp\\jH|CjCdRfIfLtOySzk@oHxMsx@f_AeMlOwHnOeQhLe\\fZoUrOjMd^{Br]xKra@R`X}IjYb@~RuL|LCrEjEl@eMjFo@xJgY?sSzb@eRpXyVyXie@wDqTmJC",
+      |            "id": "a2060551286",
+      |            "summary_polyline": "qt`pEhfp`OnBnInDjAbF|GzHiAvB`AdBiBgCyGsBf@uAeCzD~HgFyCmCoOeFgEi@}H_AbAhAuAn@bI|EdEhCtOlFbD_DyCg@sDdA`CdC_@lC~G_CfC_KA{KuHcHaYCnAwEbBhArC_CTaBrG_CiA",
       |            "resource_state": 2
       |        },
       |        "trainer": false,
@@ -115,88 +117,21 @@ trait StravaSummaryActivityJsonFixture {
       |        "private": false,
       |        "visibility": "everyone",
       |        "flagged": false,
-      |        "gear_id": "b2497339",
+      |        "gear_id": null,
       |        "from_accepted_tag": false,
-      |        "average_speed": 7.806,
-      |        "max_speed": 17.7,
-      |        "average_cadence": 88.4,
-      |        "average_temp": 23,
-      |        "average_watts": 135.6,
-      |        "weighted_average_watts": 169,
-      |        "kilojoules": 1210.1,
-      |        "device_watts": true,
+      |        "average_speed": 1.185,
+      |        "max_speed": 2.4,
+      |        "average_cadence": 51.5,
       |        "has_heartrate": true,
-      |        "average_heartrate": 144.4,
-      |        "max_heartrate": 180,
+      |        "average_heartrate": 103.3,
+      |        "max_heartrate": 133,
+      |        "heartrate_opt_out": false,
       |        "display_hide_heartrate_option": false,
-      |        "max_watts": 1095,
-      |        "elev_high": 321,
-      |        "elev_low": 211,
-      |        "pr_count": 1,
-      |        "total_photo_count": 0,
-      |        "has_kudoed": false
-      |    },
-      |    {
-      |        "resource_state": 2,
-      |        "athlete": {
-      |            "id": 178697,
-      |            "resource_state": 1
-      |        },
-      |        "name": "Afternoon Ride",
-      |        "distance": 0,
-      |        "moving_time": 1800,
-      |        "elapsed_time": 1800,
-      |        "total_elevation_gain": 0,
-      |        "type": "Ride",
-      |        "workout_type": 12,
-      |        "id": 1890299542,
-      |        "external_id": "activity_3069880547.tcx",
-      |        "upload_id": 2024262580,
-      |        "start_date": "2018-10-06T21:11:28Z",
-      |        "start_date_local": "2018-10-06T17:11:28Z",
-      |        "timezone": "(GMT-05:00) America/New_York",
-      |        "utc_offset": -14400,
-      |        "start_latlng": null,
-      |        "end_latlng": null,
-      |        "location_city": null,
-      |        "location_state": null,
-      |        "location_country": "United States",
-      |        "start_latitude": null,
-      |        "start_longitude": null,
-      |        "achievement_count": 0,
-      |        "kudos_count": 1,
-      |        "comment_count": 0,
-      |        "athlete_count": 1,
-      |        "photo_count": 0,
-      |        "map": {
-      |            "id": "a1890299542",
-      |            "summary_polyline": null,
-      |            "resource_state": 2
-      |        },
-      |        "trainer": true,
-      |        "commute": false,
-      |        "manual": false,
-      |        "private": false,
-      |        "visibility": "everyone",
-      |        "flagged": false,
-      |        "gear_id": "b2497339",
-      |        "from_accepted_tag": false,
-      |        "average_speed": 0,
-      |        "max_speed": 0,
-      |        "average_cadence": 88.8,
-      |        "average_watts": 158.1,
-      |        "weighted_average_watts": 160,
-      |        "kilojoules": 284.7,
-      |        "device_watts": true,
-      |        "has_heartrate": true,
-      |        "average_heartrate": 147,
-      |        "max_heartrate": 171,
-      |        "display_hide_heartrate_option": false,
-      |        "max_watts": 328,
+      |        "elev_high": 397.4,
+      |        "elev_low": 263.4,
       |        "pr_count": 0,
       |        "total_photo_count": 0,
       |        "has_kudoed": false
       |    }
-      |]
     """.stripMargin
 }

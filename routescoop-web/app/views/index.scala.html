@@ -1,6 +1,36 @@
 @()(implicit request: RequestHeader, messages: Messages)
 
-@helper.base() {
+@scripts = {
+    <script type="text/javascript">
+        var ctx = document.getElementById('pmc').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ["January", "February", "March", "April", "May", "June", "July"],
+                datasets: [{
+                    label: "My First Dataset",
+                    backgroundColor: 'rgb(255, 99, 132)',
+                    borderColor: 'rgb(255, 99, 132)',
+                    data: [0, 10, 5, 2, 20, 30, 45]
+                }]
+            },
+
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero:true
+                        }
+                    }]
+                }
+            }
+        });
+    </script>
+}
+
+@helper.base(scripts = scripts) {
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h1 class="h2">Dashboard</h1>
     </div>
@@ -8,6 +38,8 @@
     <p>
         Some default chart information here. Probably start with training hours by zone intensity.
     </p>
+
+    <canvas id="pmc" width="1000" height="400"></canvas>
 
     <p>
         PMC is a bit misleading because not all TSS is created equal. You can be fitter on a lower CTL and fresher on a lower ATL.

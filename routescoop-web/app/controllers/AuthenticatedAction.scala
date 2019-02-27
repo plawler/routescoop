@@ -2,24 +2,24 @@ package controllers
 
 import models.Profile
 
-import play.api.Logger
 import play.api.cache.CacheApi
 import play.api.mvc.Results._
-import play.api.mvc.{ActionBuilder, Request, Result}
-
+import play.api.mvc.{ActionBuilder, Request, Result, WrappedRequest}
 import javax.inject.{Inject, Singleton}
+
 import scala.concurrent.Future
 
 
-@Singleton
-class AuthenticatedAction @Inject()(cache: CacheApi) extends ActionBuilder[Request] {
+case class AuthenticatedRequest[A](profile: Option[Profile], request: Request[A]) extends WrappedRequest[A](request)
 
-  override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] = {
-    request.session.get("idToken") flatMap { id =>
+@Singleton
+class AuthenticatedAction @Inject()(cache: CacheApi) extends ActionBuilder[AuthenticatedRequest] {
+
+  override def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] = {
+    request.session.get("idToken") map { id =>
       val profileKey = id + "profile" // todo: check for validity of jwt
-      cache.get[Profile](profileKey) map { profile =>
-        block(request)
-      }
+      val maybeProfile = cache.get[Profile](profileKey)
+      block(AuthenticatedRequest(maybeProfile, request))
     } getOrElse {
       Future.successful(Redirect(routes.Auth.login()))
     }

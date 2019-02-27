@@ -2,7 +2,8 @@ package services
 
 import config.AppConfig
 import fixtures.RideFixture
-import models.{RideSummary, RideSummaryResultSuccess, RideSyncResultStarted}
+import models.{RideSummaryResultSuccess, RideSyncResultStarted}
+
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.Json

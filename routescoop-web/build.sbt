@@ -21,7 +21,7 @@ libraryDependencies ++= Seq(
 
 // Web Jars Dependencies
 libraryDependencies ++= Seq(
-  "com.adrianhurt" %% "play-bootstrap" % "1.4-P25-B4-SNAPSHOT",
+  "com.adrianhurt" %% "play-bootstrap" % "1.4-P25-B4",
   "org.webjars" % "bootstrap" % "4.1.3" exclude("org.webjars", "jquery"),
   "org.webjars" % "bootstrap-datepicker" % "1.4.0" exclude("org.webjars", "bootstrap"),
   "org.webjars" % "chartjs" % "2.7.3",

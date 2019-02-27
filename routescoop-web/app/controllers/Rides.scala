@@ -1,8 +1,9 @@
 package controllers
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import models._
 import modules.NonBlockingContext
+
 import play.api.Logger
 import play.api.cache.CacheApi
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -12,6 +13,7 @@ import services.{RideService, SettingsService}
 
 import scala.concurrent.{ExecutionContext, Future}
 
+@Singleton
 class Rides @Inject()(
   authenticated: AuthenticatedAction,
   rideService: RideService,

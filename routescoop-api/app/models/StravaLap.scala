@@ -2,18 +2,17 @@ package models
 
 import java.time.Instant
 import java.util.UUID
-
 import anorm.{Macro, RowParser}
-import kiambogo.scrava.models.LapEffort
+import services.LapEffort
 
 sealed trait Lap
 
 case class StravaLap(
   id: String,
   activityId: String,
-  stravaId: Int,
-  stravaActivityId: Int,
-  athleteId: Int,
+  stravaId: Long,
+  stravaActivityId: Long,
+  athleteId: Long,
   resourceState: Int,
   name: String,
   elapsedTime: Int,
@@ -42,8 +41,8 @@ object StravaLap {
       UUID.randomUUID().toString,
       activity.id,
       lap.id,
-      lap.activity("id"),
-      lap.athlete("id"),
+      activity.stravaId,
+      activity.athleteId,
       lap.resource_state,
       lap.name,
       lap.elapsed_time,

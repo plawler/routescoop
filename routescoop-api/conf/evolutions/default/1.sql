@@ -28,8 +28,8 @@ CREATE TABLE user_data_syncs (
 CREATE TABLE strava_activities (
   id VARCHAR(40) NOT NULL,
   userId VARCHAR(40) NOT NULL,
-  stravaId INT NOT NULL,
-  athleteId INT NOT NULL,
+  stravaId BIGINT NOT NULL,
+  athleteId BIGINT NOT NULL,
   name VARCHAR(255) NOT NULL,
   distance DOUBLE NOT NULL,
   movingTime INT NOT NULL,
@@ -70,9 +70,9 @@ CREATE TABLE strava_activities (
 CREATE TABLE strava_laps (
   id VARCHAR(40) NOT NULL,
   activityId VARCHAR(40) NOT NULL,
-  stravaId INT NOT NULL,
-  stravaActivityId INT NOT NULL,
-  athleteId INT NOT NULL,
+  stravaId BIGINT NOT NULL,
+  stravaActivityId BIGINT NOT NULL,
+  athleteId BIGINT NOT NULL,
   resourceState INT NOT NULL,
   name VARCHAR(50) NOT NULL,
   elapsedTime INT NOT NULL,

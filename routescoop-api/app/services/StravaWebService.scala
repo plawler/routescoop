@@ -5,7 +5,6 @@ import java.time.Instant
 import javax.inject.Inject
 import com.google.inject.Singleton
 import com.typesafe.scalalogging.LazyLogging
-import kiambogo.scrava.ScravaClient
 import models._
 import modules.{NonBlockingContext, StravaConfig}
 import play.api.libs.ws.WSClient
@@ -45,15 +44,21 @@ class StravaWebServiceImpl @Inject()(
     }
   }
 
-  override def getLaps(activity: StravaActivity): Future[Seq[StravaLap]] = {
-    getUser(activity.userId) map {
-      case Some(user) =>
-        user.stravaToken match {
-          case Some(token) =>
-            createClient(token).listActivityLaps(activity.stravaId).map(lap => StravaLap.create(activity, lap))
-          case None => Nil
+  def getLaps(activity: StravaActivity): Future[Seq[StravaLap]] = {
+    val url = s"https://www.strava.com/api/v3/activities/${activity.stravaId}/laps"
+    getToken(activity.userId) flatMap {
+      case Some(token) =>
+        ws.url(url).withHeaders("Authorization" -> s"Bearer $token").get() map { response =>
+          response.json.validate[Seq[LapEffort]] match {
+            case success: JsSuccess[Seq[LapEffort]] =>
+              success.get.map(lap => StravaLap.create(activity, lap))
+            case error: JsError =>
+              logger.error(s"No lap data found for activity ${activity.id}", error)
+              logger.error(error.toString)
+              Nil
+          }
         }
-      case None => Nil
+      case None => Future.successful(Nil)
     }
   }
 
@@ -111,8 +116,6 @@ class StravaWebServiceImpl @Inject()(
     }
   }
 
-  private def createClient(token: String) = new ScravaClient(token)
-
   private def getUser(userId: String) = userService.getUser(userId)
 
   private def getToken(userId: String) = {
@@ -128,6 +131,32 @@ class StravaWebServiceImpl @Inject()(
     }
   }
 
+}
+
+case class LapEffort(
+  id: Long,
+  resource_state: Int,
+  name: String,
+  elapsed_time: Int,
+  moving_time: Int,
+  start_date: String,
+  start_date_local: String,
+  distance: Float,
+  start_index: Int,
+  end_index: Int,
+  total_elevation_gain: Float,
+  average_speed: Float,
+  max_speed: Float,
+  average_cadence: Option[Float],
+  average_watts: Float,
+  device_watts: Option[Boolean],
+  average_heartrate: Option[Float],
+  max_heartrate: Option[Float],
+  lap_index: Int
+)
+
+object LapEffort {
+  implicit val reader: Reads[LapEffort] = Json.reads[LapEffort]
 }
 
 sealed trait Stream {
@@ -319,7 +348,7 @@ case class SummaryActivityInfo(
   elapsed_time: Int,
   total_elevation_gain: Double,
   `type`: String,
-  id: Int,
+  id: Long,
   external_id: String,
   upload_id: Long,
   start_date: Instant,

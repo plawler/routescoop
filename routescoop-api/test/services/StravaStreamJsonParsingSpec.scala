@@ -5,7 +5,7 @@ import org.scalatest.{Matchers, WordSpec}
 import org.scalatest.mockito.MockitoSugar
 import play.api.libs.json.Json
 
-class StravaJsonParsingSpec extends WordSpec with Matchers with MockitoSugar with StravaStreamJsonFixture {
+class StravaStreamJsonParsingSpec extends WordSpec with Matchers with MockitoSugar with StravaStreamJsonFixture {
 
   "The Strava Web Service" should {
 

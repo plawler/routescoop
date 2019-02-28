@@ -20,7 +20,7 @@ sealed trait Activity {
 case class StravaActivity(
   id: String,
   userId: String,
-  stravaId: Int,
+  stravaId: Long,
   athleteId: Int,
   name: String,
   distance: Double,

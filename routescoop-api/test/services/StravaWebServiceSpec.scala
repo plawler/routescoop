@@ -50,6 +50,12 @@ class StravaWebServiceSpec extends WordSpec with Matchers with MockitoSugar {
       result should have length 5
     }
 
+    "get laps for an activity" in new StravaWebServiceFixture {
+      val result = Await.result(service.getLaps(mockStravaActivity), 5 seconds)
+      result should not be empty
+      result should have length 1
+    }
+
     "get streams for an activity" in new StravaWebServiceFixture {
       val result = Await.result(service.getStreams(mockStravaActivity), 5 seconds)
       result should not be empty

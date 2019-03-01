@@ -1,27 +1,40 @@
-@()(implicit request: RequestHeader, messages: Messages)
-
+@(fitnessList: Seq[DailyFitness])(implicit request: RequestHeader, messages: Messages)
 @scripts = {
     <script type="text/javascript">
         var ctx = document.getElementById('pmc').getContext('2d');
+        var days = [@Html(fitnessList.map(f => s"'${f.date}'").mkString(","))];
+        // var daysFmt = days.map(function(d) {
+        //    return new Date(d + 'T00:00:00');
+        // });
         var chart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ["January", "February", "March", "April", "May", "June", "July"],
-                datasets: [{
-                    label: "My First Dataset",
-                    backgroundColor: 'rgb(255, 99, 132)',
-                    borderColor: 'rgb(255, 99, 132)',
-                    data: [0, 10, 5, 2, 20, 30, 45]
-                }]
+                labels: days,
+                datasets: [
+                    {
+                        label: "Fitness",
+                        borderColor: 'rgb(255, 99, 132)',
+                        data: [@fitnessList.map(_.fitness).mkString(",")]
+                    },
+                    {
+                        label: "Fatigue",
+                        borderColor: '#4289f4',
+                        data: [@fitnessList.map(_.fatigue).mkString(",")]
+                    },
+                    {
+                        label: "Stress",
+                        borderColor: '#000000',
+                        data: [@fitnessList.map(_.stressBalance).mkString(",")]
+                    }
+                ]
             },
-
             options: {
                 responsive: false,
                 maintainAspectRatio: false,
                 scales: {
                     yAxes: [{
                         ticks: {
-                            beginAtZero:true
+                            beginAtZero: true
                         }
                     }]
                 }
@@ -42,6 +55,6 @@
     <canvas id="pmc" width="1000" height="400"></canvas>
 
     <p>
-        PMC is a bit misleading because not all TSS is created equal. You can be fitter on a lower CTL and fresher on a lower ATL.
+        PMC is a bit misleading because not all TSS is created equal. You can be fitter on a lower CTL and fresher on a higher ATL.
     </p>
 }

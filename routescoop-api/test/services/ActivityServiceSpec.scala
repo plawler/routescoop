@@ -49,7 +49,7 @@ class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
   "The Strava Service" should {
 
     "sync a user's activities" in {
-      when(mockStravaWebService.getActivities(paul.id)).thenReturn(Future.successful(Seq(sampleActivity)))
+      when(mockStravaWebService.getRecentActivities(paul.id)).thenReturn(Future.successful(Seq(sampleActivity)))
       when(mockActivityStore.findByUserId(paul.id)).thenReturn(Nil)
 
       val result = Await.result(service.syncActivities(userDataSync), 60 seconds)
@@ -61,7 +61,7 @@ class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
     }
 
     "sync only the latest activities" in {
-      when(mockStravaWebService.getActivities(paul.id)).thenReturn(Future.successful(remoteActivities))
+      when(mockStravaWebService.getRecentActivities(paul.id)).thenReturn(Future.successful(remoteActivities))
       when(mockActivityStore.findByUserId(paul.id)).thenReturn(localActivities)
 
       Await.result(service.syncActivities(userDataSync), 60 seconds)

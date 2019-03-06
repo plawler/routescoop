@@ -19,6 +19,7 @@ import scala.util.control.NonFatal
 trait StravaWebService {
 
   def getActivities(userId: String): Future[Seq[StravaActivity]]
+  def getRecentActivities(userId: String): Future[Seq[StravaActivity]]
 
   def getLaps(activity: StravaActivity): Future[Seq[StravaLap]]
 
@@ -42,6 +43,17 @@ class StravaWebServiceImpl @Inject()(
         }
       case None => Future.successful(Nil)
     }
+  }
+
+  override def getRecentActivities(userId: String): Future[Seq[StravaActivity]] = {
+    getUser(userId) flatMap {
+      case Some(user) => getStravaActivities(user)
+      case None => Future.successful(Nil)
+    }
+  }
+
+  def getPreviousActivities(userId: String, before: Instant): Future[Seq[StravaActivity]] = {
+    ???
   }
 
   def getLaps(activity: StravaActivity): Future[Seq[StravaLap]] = {

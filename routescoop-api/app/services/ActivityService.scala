@@ -38,7 +38,7 @@ class StravaActivityService @Inject()(
     logger.info(s"Synching activities for user $userDataSync")
     val userId = userDataSync.userId
 
-    stravaWebService.getActivities(userId) map { stravaActivities =>
+    stravaWebService.getRecentActivities(userId) map { stravaActivities =>
       logger.info(s"Available activities count is ${stravaActivities.size}")
       val unprocessedActivities = filterLatest(userId, stravaActivities)
       logger.info(s"Unprocessed activities count is ${unprocessedActivities.size}")

@@ -8,6 +8,7 @@ import repositories.{StravaActivityStore, StravaLapStore, StravaStreamStore}
 import akka.actor.ActorSystem
 import com.typesafe.scalalogging.LazyLogging
 
+import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.language.postfixOps
 import scala.util.control.NonFatal
@@ -37,10 +38,16 @@ class StravaActivityService @Inject()(
   override def syncActivities(userDataSync: UserDataSync): Future[Int] = {
     logger.info(s"Synching activities for user $userDataSync")
     val userId = userDataSync.userId
+    val localActivities = activityStore.findByUserId(userId)
+    val gotActivities = if (userDataSync.previous) {
+      stravaWebService.getPreviousActivities(userId, earliestActivityDate(localActivities))
+    } else {
+      stravaWebService.getRecentActivities(userId)
+    }
 
-    stravaWebService.getRecentActivities(userId) map { stravaActivities =>
+    gotActivities map { stravaActivities =>
       logger.info(s"Available activities count is ${stravaActivities.size}")
-      val unprocessedActivities = filterLatest(userId, stravaActivities)
+      val unprocessedActivities = filterLatest(userId, stravaActivities, localActivities)
       logger.info(s"Unprocessed activities count is ${unprocessedActivities.size}")
       unprocessedActivities.foreach { activity =>
         val activityToSync = activity.copy(dataSyncId = Some(userDataSync.id))
@@ -100,9 +107,24 @@ class StravaActivityService @Inject()(
     } //map (_ => actorSystem.eventStream.publish(StravaStreamsCreated(activity)))
   }
 
-  private def filterLatest(userId: String, stravaActivities: Seq[StravaActivity]) = {
-    val localActivities = activityStore.findByUserId(userId)
-    stravaActivities.filterNot(a => localActivities.exists(a.stravaId == _.stravaId))
+  private def filterLatest(userId: String, stravas: Seq[StravaActivity], locals: Seq[StravaActivity]) = {
+    stravas.filterNot(a => locals.exists(a.stravaId == _.stravaId))
+  }
+
+  private def earliestActivityDate(activities: Seq[StravaActivity]): Instant = {
+    if (activities.isEmpty) {
+      Instant.now
+    } else {
+      activities.sortWith(ascSortByDate).head.startedAt
+    }
+  }
+
+  private def ascSortByDate(a1: StravaActivity, a2: StravaActivity) = {
+    a1.startedAt.isBefore(a2.startedAt)
+  }
+
+  private def descSortByDate(a1: StravaActivity, a2: StravaActivity) = {
+    a1.startedAt.isAfter(a2.startedAt)
   }
 
 }

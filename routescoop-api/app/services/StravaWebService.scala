@@ -18,8 +18,9 @@ import scala.util.control.NonFatal
 
 trait StravaWebService {
 
-  def getActivities(userId: String): Future[Seq[StravaActivity]]
   def getRecentActivities(userId: String): Future[Seq[StravaActivity]]
+
+  def getPreviousActivities(userId: String, before: Instant): Future[Seq[StravaActivity]]
 
   def getLaps(activity: StravaActivity): Future[Seq[StravaLap]]
 
@@ -34,17 +35,6 @@ class StravaWebServiceImpl @Inject()(
 
   val pageSize = config.pageSize
 
-  override def getActivities(userId: String): Future[Seq[StravaActivity]] = {
-    getUser(userId) flatMap {
-      case Some(user) =>
-        userService.lastDataSync(user) flatMap {
-          case Some(sync) => getStravaActivities(user, Some(sync.startedAt))
-          case None => getStravaActivities(user)
-        }
-      case None => Future.successful(Nil)
-    }
-  }
-
   override def getRecentActivities(userId: String): Future[Seq[StravaActivity]] = {
     getUser(userId) flatMap {
       case Some(user) => getStravaActivities(user)
@@ -52,8 +42,11 @@ class StravaWebServiceImpl @Inject()(
     }
   }
 
-  def getPreviousActivities(userId: String, before: Instant): Future[Seq[StravaActivity]] = {
-    ???
+  override def getPreviousActivities(userId: String, before: Instant): Future[Seq[StravaActivity]] = {
+    getUser(userId) flatMap {
+      case Some(user) => getStravaActivities(user, Some(before))
+      case None => Future.successful(Nil)
+    }
   }
 
   def getLaps(activity: StravaActivity): Future[Seq[StravaLap]] = {
@@ -95,14 +88,15 @@ class StravaWebServiceImpl @Inject()(
     }
   }
 
-  private def getStravaActivities(user: User, lastSyncStartedAt: Option[Instant] = None): Future[Seq[StravaActivity]] = {
-    val params = lastSyncStartedAt map { at =>
-      s"?after=${(at.toEpochMilli / 1000).toInt}" // strava api requires the timestamp to be an int
+  private def getStravaActivities(user: User, before: Option[Instant] = None): Future[Seq[StravaActivity]] = {
+    val params = before map { at =>
+      s"?before=${(at.toEpochMilli / 1000).toInt}" // strava api requires the timestamp to be an int
     } getOrElse {
       s"?page=1&per_page=$pageSize"
     }
 
     val url = "https://www.strava.com/api/v3/athlete/activities" + params
+    logger.info(s"Strava list activities request url: $url")
 
     user.stravaToken match {
       case Some(token) =>

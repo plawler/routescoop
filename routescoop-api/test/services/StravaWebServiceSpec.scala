@@ -26,7 +26,7 @@ class StravaWebServiceSpec extends WordSpec with Matchers with MockitoSugar {
 
     "get a list of all activities for a user" in new StravaWebServiceFixture {
       when(mockUserService.lastDataSync(stravaUser)).thenReturn(Future.successful(None))
-      val result = Await.result(service.getActivities(stravaUser.id), 10 seconds)
+      val result = Await.result(service.getRecentActivities(stravaUser.id), 10 seconds)
       result should not be empty
       result should have length 14
     }
@@ -34,20 +34,23 @@ class StravaWebServiceSpec extends WordSpec with Matchers with MockitoSugar {
     "get a list of all activities for paul" in new StravaWebServiceFixture {
       when(mockUserService.getUser(paul.id)).thenReturn(Future.successful(Some(paul)))
       when(mockUserService.lastDataSync(paul)).thenReturn(Future.successful(None))
-      val result = Await.result(service.getActivities(paul.id), 100 seconds)
+      val result = Await.result(service.getRecentActivities(paul.id), 100 seconds)
       result should not be empty
       result should have length 50
     }
 
     "get a list of recent activities for a user" in new StravaWebServiceFixture {
-      val instant = LocalDate.of(2018, Month.MARCH, 1).atStartOfDay().toInstant(ZoneOffset.UTC)
-      val sync = UserDataSync("lastSyncId", stravaUser.id, instant)
-
-      when(mockUserService.lastDataSync(stravaUser)).thenReturn(Future.successful(Some(sync)))
-
-      val result = Await.result(service.getActivities(stravaUser.id), 5 seconds)
+      when(mockUserService.lastDataSync(stravaUser)).thenReturn(Future.successful(None))
+      val result = Await.result(service.getRecentActivities(stravaUser.id), 5 seconds)
       result should not be empty
-      result should have length 5
+      result should have length 14
+    }
+
+    "get a list of previous activities for a user" in new StravaWebServiceFixture {
+      val instant = LocalDate.of(2018, Month.MARCH, 1).atStartOfDay().toInstant(ZoneOffset.UTC)
+      val result = Await.result(service.getPreviousActivities(stravaUser.id, instant), 5 seconds)
+      result should not be empty
+      result should have length 9
     }
 
     "get laps for an activity" in new StravaWebServiceFixture {

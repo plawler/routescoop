@@ -2,7 +2,6 @@ package controllers
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.Date
 
 import javax.inject.{Inject, Singleton}
 import models.{NewSettings, Profile, SettingsResultError, SettingsResultSuccess}

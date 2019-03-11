@@ -17,7 +17,7 @@ class RideService @Inject()(config: AppConfig, ws: WSClient)(implicit @NonBlocki
 
   val url = s"${config.baseApiUrl}/users"
 
-  def syncStrava(user: User): Future[RideSyncResult] = {
+  def syncStrava(user: User, fetchOlderRides: Boolean = false): Future[RideSyncResult] = {
     val syncUrl = s"$url/${user.id}/syncs"
     ws.url(syncUrl).post(Results.EmptyContent()) map { response =>
       response.status match {

@@ -1,10 +1,9 @@
 @import org.apache.http.client.utils.DateUtils
 @import org.joda.time.DateTimeUtils
-@(hasSettings: Boolean, summaries: Seq[RideSummary], url: Call)(implicit request: RequestHeader, messages: Messages)
+@(hasSettings: Boolean, summaries: Seq[RideSummary], url: Call, form: Form[FetchRidesForm.Data])(implicit request: RequestHeader, messages: Messages)
 @helper.base {
     @Html("")
 } {
-
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h1 class="h2">Rides</h1>
     </div>
@@ -13,7 +12,8 @@
 
     @if(hasSettings) {
         @b4.vertical.form(url) { implicit vfc =>
-            @b4.submit('class -> "btn btn-primary"){ <i class="fa fa-ok"></i> Synch now! }
+            @b4.checkbox(form("fetchOlderRides"), '_text -> "Fetch older rides", 'checked -> false)
+            @b4.submit('class -> "btn btn-primary"){ <i class="fa fa-ok"></i> Fetch activities }
         }
         <table class="table">
             <thead>

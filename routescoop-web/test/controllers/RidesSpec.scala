@@ -29,9 +29,18 @@ class RidesSpec extends WordSpec with Matchers with MockitoSugar with OneAppPerS
 
     "initiate a ride sync from Strava" in new RidesTesting {
       when(mockRideService.syncStrava(stravaUser)).thenReturn(Future.successful(RideSyncResultStarted(rideSync)))
-      val result = route(app, FakeRequest(POST, "/rides/sync").withSession(session)).get
+      val result = route(
+        app,
+        FakeRequest(POST, "/rides/sync")
+          .withFormUrlEncodedBody("fetchOlderRides" -> "false")
+          .withSession(session)
+      ).get
       status(result) shouldBe OK
       contentAsString(result) should startWith("Sync started")
+    }
+
+    "initiate a ride sync for older rides" in new RidesTesting {
+//      fail("implement me")
     }
 
     "errors if no user is found" in new RidesTesting {

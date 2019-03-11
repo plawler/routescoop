@@ -7,7 +7,7 @@ import play.api.libs.json.{Json, OFormat}
 /**
   * Created by paullawler on 1/22/17.
   */
-case class UserDataSync(id: String, userId: String, startedAt: Instant)
+case class UserDataSync(id: String, userId: String, startedAt: Instant, previous: Boolean = false)
 
 object UserDataSync {
 

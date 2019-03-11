@@ -6,10 +6,13 @@ import modules.NonBlockingContext
 
 import play.api.Logger
 import play.api.cache.CacheApi
+import play.api.data.Forms._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.ws.WSClient
 import play.api.mvc.{Controller, Request}
 import services.{RideService, SettingsService}
+
+import play.api.data.Form
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -29,10 +32,17 @@ class Rides @Inject()(
   def sync = authenticated.async { implicit request =>
     getProfile(request) match {
       case Some(profile) =>
-        rideService.syncStrava(profile.toUser) map {
-          case RideSyncResultStarted(sync) => Ok(s"Sync started : $sync")
-          case default => Ok(s"Sync error: $default")
-        }
+        FetchRidesForm.form.bindFromRequest.fold(
+          formWithErrors => {
+            Future.successful(Redirect(routes.Rides.index()).flashing("error" -> "Fetch rides form invalid"))
+          },
+          data => {
+            rideService.syncStrava(profile.toUser, data.fetchOlderRides) map {
+              case RideSyncResultStarted(sync) => Ok(s"Sync started : $sync")
+              case default => Ok(s"Sync error: $default")
+            }
+          }
+        )
       case None =>
         Logger.error("A profile wasn't found in cache for the user...logging out")
         Future.successful(Redirect(routes.Auth.logout()))
@@ -45,10 +55,12 @@ class Rides @Inject()(
         val url = if (hasSettings) syncRidesUrl else createSettingsUrl
         rideService.listRideSummaries(profile.toUser, page) map {
           case RideSummaryResultSuccess(summaries) =>
-            Ok(views.html.rides.index(hasSettings, summaries, url))
+            Ok(views.html.rides.index(hasSettings, summaries, url, FetchRidesForm.form))
           case RideSummaryResultError(message) =>
             Logger.error(message)
-            Ok(views.html.rides.index(hasSettings, Seq(), url)).flashing("error" -> "Failed to retrieve your ride list")
+            Ok(
+              views.html.rides.index(hasSettings, Seq(), url, FetchRidesForm.form)
+            ).flashing("error" -> "Failed to retrieve your ride list")
         }
       }
     } getOrElse {
@@ -72,5 +84,17 @@ class Rides @Inject()(
       case _ => false
     }
   }
+
+}
+
+object FetchRidesForm {
+
+  case class Data(fetchOlderRides: Boolean)
+
+  val form = Form(
+    mapping(
+      "fetchOlderRides" -> boolean
+    )(Data.apply)(Data.unapply)
+  )
 
 }

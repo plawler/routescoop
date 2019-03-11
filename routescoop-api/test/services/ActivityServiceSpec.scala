@@ -1,21 +1,21 @@
 package services
 
-import java.time.Instant
-import java.util.{Date, UUID}
+import fixtures.{LapFixture, StreamFixture}
+import models._
+import repositories.{StravaActivityStore, StravaLapStore, StravaStreamStore}
 
 import akka.actor.ActorSystem
 import akka.testkit.{TestKit, TestProbe}
-import fixtures.{LapFixture, StreamFixture}
-import models._
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
-import repositories.{StravaActivityStore, StravaLapStore, StravaStreamStore}
 
+import java.time.Instant
+import java.util.UUID
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
   with WordSpecLike // needs to be trait instead

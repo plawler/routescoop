@@ -24,7 +24,7 @@ class RideServiceSpec extends WordSpec with Matchers {
 
     "sync rides with Strava" in new RideServiceTesting {
       Server.withRouter() {
-        case POST(p"/api/v1/users/${profileWithStrava.id}/syncs") => Action {
+        case POST(p"/api/v1/syncs") => Action {
           Accepted(Json.toJson(rideSync))
         }
       } { implicit port =>

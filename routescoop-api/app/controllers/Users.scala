@@ -1,13 +1,13 @@
 package controllers
 
 import javax.inject.Inject
+import models.{CreateUserSettings, User, UserSettings}
+import modules.NonBlockingContext
+import services.UserService
 
 import akka.actor.ActorSystem
-import models.{CreateUserSettings, UserSettings, User}
-import modules.NonBlockingContext
 import play.api.libs.json.{JsError, Json}
 import play.api.mvc.{Action, Controller}
-import services.UserService
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,13 +33,6 @@ class Users @Inject()(userService: UserService, actorSystem: ActorSystem)
     userService.getUser(id).map { user =>
       if (user.isEmpty) NotFound
       else Ok(Json.toJson(user))
-    }
-  }
-
-  def sync(userId: String) = Action.async { implicit request =>
-    userService.getUser(userId) flatMap { // todo: Created
-      case Some(user) => userService.startDataSync(user) map (sync => Accepted(Json.toJson(sync)))
-      case None => Future.successful(NotFound(s"User not found with id $userId"))
     }
   }
 

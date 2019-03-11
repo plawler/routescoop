@@ -4,9 +4,10 @@ import config.AppConfig
 import javax.inject.{Inject, Singleton}
 import models._
 import modules.NonBlockingContext
+
 import play.api.Logger
 import play.api.http.Status
-import play.api.libs.json.{JsError, JsSuccess}
+import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.libs.ws.WSClient
 import play.api.mvc.Results
 
@@ -15,11 +16,11 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class RideService @Inject()(config: AppConfig, ws: WSClient)(implicit @NonBlockingContext ec: ExecutionContext) {
 
-  val url = s"${config.baseApiUrl}/users"
+  val url = s"${config.baseApiUrl}"
 
   def syncStrava(user: User, fetchOlderRides: Boolean = false): Future[RideSyncResult] = {
-    val syncUrl = s"$url/${user.id}/syncs"
-    ws.url(syncUrl).post(Results.EmptyContent()) map { response =>
+    val syncUrl = s"$url/syncs"
+    ws.url(syncUrl).post(Json.obj("userId" -> user.id, "fetchOlderRides" -> fetchOlderRides)) map { response =>
       response.status match {
         case Status.ACCEPTED =>
           response.json.validate[RideSync] match {
@@ -29,12 +30,13 @@ class RideService @Inject()(config: AppConfig, ws: WSClient)(implicit @NonBlocki
               RideSyncResultError("Attempt to sync rides failed")
           }
         case Status.NOT_FOUND => RideSyncResultError(s"User ${user.id} not found")
+        case Status.BAD_REQUEST => RideSyncResultError(s"Bad request: $response")
       }
     }
   }
 
   def listRideSummaries(user: User, page: Int): Future[RideSummaryResult] = {
-    val summaryUrl = s"$url/${user.id}/activities?page=$page"
+    val summaryUrl = s"$url/users/${user.id}/activities?page=$page"
     ws.url(summaryUrl).get() map { response =>
       response.status match {
         case Status.OK =>

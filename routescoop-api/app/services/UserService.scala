@@ -19,8 +19,6 @@ trait UserService {
 
   def getUser(userId: String): Future[Option[User]]
 
-  def startDataSync(user: User): Future[UserDataSync]
-
   def completeDataSync(syncId: String, completedAt: Instant): Future[Unit]
 
   def lastDataSync(user: User): Future[Option[UserDataSync]]
@@ -60,20 +58,14 @@ class UserServiceImpl @Inject()(
     }
   }
 
-  override def startDataSync(user: User): Future[UserDataSync] = Future {
-    val stored = StoredUserDataSync.create(user.id)
-    dataSyncStore.insert(stored)
-    val dataSync = UserDataSync(stored.id, stored.userId, stored.startedAt)
-    actorSystem.eventStream.publish(StravaDataSyncStarted(dataSync))
-    dataSync
-  }
-
+  // todo: move to the data sync service
   override def completeDataSync(syncId: String, completedAt: Instant): Future[Unit] = Future {
     blocking {
       dataSyncStore.update(syncId, completedAt)
     }
   }
 
+  // todo: move to the data sync service
   override def lastDataSync(user: User): Future[Option[UserDataSync]] = Future {
     blocking{
       dataSyncStore.findByUserId(user.id).find(p => p.completedAt.nonEmpty) map { lastCompleted =>

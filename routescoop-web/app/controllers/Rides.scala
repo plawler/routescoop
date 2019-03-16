@@ -30,51 +30,32 @@ class Rides @Inject()(
   val createSettingsUrl = routes.Settings.create()
 
   def sync = authenticated.async { implicit request =>
-    getProfile(request) match {
-      case Some(profile) =>
-        FetchRidesForm.form.bindFromRequest.fold(
-          formWithErrors => {
-            Future.successful(Redirect(routes.Rides.index()).flashing("error" -> "Fetch rides form invalid"))
-          },
-          data => {
-            rideService.syncStrava(profile.toUser, data.fetchOlderRides) map {
-              case RideSyncResultStarted(sync) => Ok(s"Sync started : $sync")
-              case default => Ok(s"Sync error: $default")
-            }
-          }
-        )
-      case None =>
-        Logger.error("A profile wasn't found in cache for the user...logging out")
-        Future.successful(Redirect(routes.Auth.logout()))
-    }
+    FetchRidesForm.form.bindFromRequest.fold(
+      formWithErrors => {
+        Future.successful(Redirect(routes.Rides.index()).flashing("error" -> "Fetch rides form invalid"))
+      },
+      data => {
+        rideService.syncStrava(request.profile.toUser, data.fetchOlderRides) map {
+          case RideSyncResultStarted(sync) => Ok(s"Sync started : $sync")
+          case default => Ok(s"Sync error: $default")
+        }
+      }
+    )
   }
 
   def index(page: Int) = authenticated.async { implicit request =>
-    getProfile(request) map { profile =>
-      hasSettings(profile.id) flatMap { hasSettings =>
-        val url = if (hasSettings) syncRidesUrl else createSettingsUrl
-        rideService.listRideSummaries(profile.toUser, page) map {
-          case RideSummaryResultSuccess(summaries) =>
-            Ok(views.html.rides.index(hasSettings, summaries, url, FetchRidesForm.form))
-          case RideSummaryResultError(message) =>
-            Logger.error(message)
-            Ok(
-              views.html.rides.index(hasSettings, Seq(), url, FetchRidesForm.form)
-            ).flashing("error" -> "Failed to retrieve your ride list")
-        }
+    val profile = request.profile
+    hasSettings(profile.id) flatMap { hasSettings =>
+      val url = if (hasSettings) syncRidesUrl else createSettingsUrl
+      rideService.listRideSummaries(profile.toUser, page) map {
+        case RideSummaryResultSuccess(summaries) =>
+          Ok(views.html.rides.index(hasSettings, summaries, url, FetchRidesForm.form))
+        case RideSummaryResultError(message) =>
+          Logger.error(message)
+          Ok(
+            views.html.rides.index(hasSettings, Seq(), url, FetchRidesForm.form)
+          ).flashing("error" -> "Failed to retrieve your ride list")
       }
-    } getOrElse {
-      Logger.error("A profile wasn't found in cache for the user...logging out")
-      Future.successful(Redirect(routes.Auth.logout()))
-    }
-  }
-
-  private def getProfile(request: Request[Any]): Option[Profile] = {
-    for {
-      sessionId <- request.session.get("idToken")
-      profile <- cache.get[Profile](sessionId + "profile")
-    } yield {
-      profile
     }
   }
 

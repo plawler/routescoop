@@ -6,10 +6,10 @@ import modules.NonBlockingContext
 import services.FitnessService
 
 import play.api.Logger
-import play.api.mvc._
 import play.api.i18n._
+import play.api.mvc._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 /**
   * This controller creates an `Action` to handle HTTP requests to the
@@ -28,16 +28,11 @@ class Home @Inject()(
     * a path of `/`.
     */
   def index = authenticated.async { implicit request =>
-    request.profile map { profile =>
-      fitnessService.fitnessTrend(profile.toUser, 180) map {
-        case FitnessTrendResultSuccess(trend) => Ok(views.html.index(trend))
-        case FitnessTrendResultError(message) =>
-          Logger.error(message)
-          Ok(views.html.index(Seq())).flashing("error" -> "Failed to retrieve the fitness data")
-      }
-    } getOrElse {
-      Logger.error("A profile wasn't found in cache for the user...logging out")
-      Future.successful(Redirect(routes.Auth.logout()))
+    fitnessService.fitnessTrend(request.profile.toUser, 180) map {
+      case FitnessTrendResultSuccess(trend) => Ok(views.html.index(trend))
+      case FitnessTrendResultError(message) =>
+        Logger.error(message)
+        Ok(views.html.index(Seq())).flashing("error" -> "Failed to retrieve the fitness data")
     }
   }
 

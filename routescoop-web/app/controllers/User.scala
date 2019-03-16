@@ -9,17 +9,12 @@ import play.api.mvc.Controller
 
 
 @Singleton
-class User @Inject()(AuthenticatedAction: AuthenticatedAction,
+class User @Inject()(authenticated: AuthenticatedAction,
                      cache: CacheApi,
                      val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
-  def profile = AuthenticatedAction { implicit request =>
-    request.session.get("idToken") flatMap { id =>
-      cache.get[Profile](id + "profile") map { profile =>
-        Logger.debug(s"User profile is: $profile")
-        Ok(views.html.user.profile(profile))
-      }
-    } getOrElse Redirect(routes.Auth.login())
+  def profile = authenticated { implicit request =>
+    Ok(views.html.user.profile(request.profile))
   }
 
 }

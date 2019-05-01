@@ -18,3 +18,4 @@ class ActorModule extends AbstractModule with AkkaGuiceSupport {
   }
 
 }
+

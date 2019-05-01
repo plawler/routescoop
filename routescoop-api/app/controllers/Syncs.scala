@@ -6,12 +6,15 @@ import modules.NonBlockingContext
 import services.{DataSyncService, UserService}
 
 import play.api.libs.json.{JsError, Json}
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{BaseController, ControllerComponents}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class Syncs @Inject()(userService: UserService, dataSyncService: DataSyncService)
-  (implicit @NonBlockingContext ec: ExecutionContext) extends Controller {
+class Syncs @Inject()(
+  userService: UserService,
+  dataSyncService: DataSyncService,
+  val controllerComponents: ControllerComponents
+) (implicit @NonBlockingContext ec: ExecutionContext) extends BaseController {
 
   def sync = Action.async(parse.json) { implicit request =>
     request.body.validate[UserDataSyncRequest].fold(

@@ -2,12 +2,15 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 import services.FitnessService
+
 import com.typesafe.scalalogging.LazyLogging
 import play.api.libs.json.Json
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{BaseController, ControllerComponents}
 
 @Singleton
-class Fitness @Inject()(fitnessService: FitnessService) extends Controller with LazyLogging {
+class Fitness @Inject()(
+  fitnessService: FitnessService,
+  val controllerComponents: ControllerComponents) extends BaseController with LazyLogging {
 
   def trainingLoad(userId: String, days: Int) = Action { implicit request =>
     val results = fitnessService.getTrainingLoad(userId, days)

@@ -2,14 +2,15 @@ package controllers
 
 import javax.inject.Inject
 import modules.NonBlockingContext
-import play.api.mvc.{Action, Controller}
 import services.HealthService
+
+import play.api.mvc.{BaseController, ControllerComponents}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-class Application @Inject()(healthService: HealthService)(implicit @NonBlockingContext ec: ExecutionContext)
-  extends Controller {
+class Application @Inject()(healthService: HealthService, val controllerComponents: ControllerComponents)
+  (implicit @NonBlockingContext ec: ExecutionContext) extends BaseController {
 
   def ping = Action { implicit request =>
     Ok("OK")

@@ -9,7 +9,7 @@ object StravaConfig {
 
   def apply(configuration: Configuration): StravaConfig = {
     new StravaConfig(
-      configuration.getInt("strava.pageSize").get
+      configuration.get[Int]("strava.pageSize")
     )
   }
 

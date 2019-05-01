@@ -7,13 +7,16 @@ import services.UserService
 
 import akka.actor.ActorSystem
 import play.api.libs.json.{JsError, Json}
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{BaseController, ControllerComponents}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 
-class Users @Inject()(userService: UserService, actorSystem: ActorSystem)
-                     (implicit @NonBlockingContext ec: ExecutionContext) extends Controller {
+class Users @Inject()(
+  userService: UserService,
+  actorSystem: ActorSystem,
+  val controllerComponents: ControllerComponents
+) (implicit @NonBlockingContext ec: ExecutionContext) extends BaseController {
 
   def create = Action.async(parse.json) { implicit request =>
     request.body.validate[User].fold(

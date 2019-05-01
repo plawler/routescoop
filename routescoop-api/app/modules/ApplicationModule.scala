@@ -1,13 +1,18 @@
 package modules
 
+import javax.inject.Singleton
+
 import com.google.inject.{AbstractModule, Provides}
 import repositories._
 import services._
 
+import akka.actor.ActorSystem
+import play.api.libs.concurrent.AkkaGuiceSupport
+
 import scala.concurrent.ExecutionContext
 
 
-class ApplicationModule extends AbstractModule {
+class ApplicationModule extends AbstractModule with AkkaGuiceSupport {
 
   override def configure(): Unit = {
     bind(classOf[UserStore]).to(classOf[UserSqlStore])
@@ -31,10 +36,14 @@ class ApplicationModule extends AbstractModule {
     bind(classOf[StravaWebService]).to(classOf[StravaWebServiceImpl])
   }
 
-  @Provides @NonBlockingContext
-  def getNonBlockingContext: ExecutionContext = play.api.libs.concurrent.Execution.defaultContext
+  @Provides
+  @Singleton
+  @NonBlockingContext
+  def getNonBlockingContext(system: ActorSystem): ExecutionContext = new DefaultExecutionContext(system)//play.api.libs.concurrent.Execution.defaultContext
 
-  @Provides @BlockingContext
-  def getBlockingContext: ExecutionContext = play.api.libs.concurrent.Execution.defaultContext
+  @Provides
+  @Singleton
+  @BlockingContext
+  def getBlockingContext(system: ActorSystem): ExecutionContext = new BlockingExectionContext(system)//play.api.libs.concurrent.Execution.defaultContext
 
 }

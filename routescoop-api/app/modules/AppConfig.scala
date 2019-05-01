@@ -9,7 +9,7 @@ object AppConfig {
 
   def apply(configuration: Configuration): AppConfig = {
     AppConfig(
-      configuration.getInt("api.pageSize").get
+      configuration.get[Int]("api.pageSize")
     )
   }
 

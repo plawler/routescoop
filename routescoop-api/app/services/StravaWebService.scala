@@ -53,7 +53,7 @@ class StravaWebServiceImpl @Inject()(
     val url = s"https://www.strava.com/api/v3/activities/${activity.stravaId}/laps"
     getToken(activity.userId) flatMap {
       case Some(token) =>
-        ws.url(url).withHeaders("Authorization" -> s"Bearer $token").get() map { response =>
+        ws.url(url).withHttpHeaders("Authorization" -> s"Bearer $token").get() map { response =>
           response.json.validate[Seq[LapEffort]] match {
             case success: JsSuccess[Seq[LapEffort]] =>
               success.get.map(lap => StravaLap.create(activity, lap))
@@ -72,7 +72,7 @@ class StravaWebServiceImpl @Inject()(
     val url = s"https://www.strava.com/api/v3/activities/${activity.stravaId}/streams?keys=$keys&key_by_type=true"
     getToken(activity.userId) flatMap {
       case Some(token) =>
-        ws.url(url).withHeaders("Authorization" -> s"Bearer $token").get() map { response =>
+        ws.url(url).withHttpHeaders("Authorization" -> s"Bearer $token").get() map { response =>
           response.json.validate[ActivityStream] match {
             case success: JsSuccess[ActivityStream] => activityStreamToStravaStreams(activity, success.get)
             case error: JsError =>
@@ -101,7 +101,7 @@ class StravaWebServiceImpl @Inject()(
     user.stravaToken match {
       case Some(token) =>
         ws.url(url)
-          .withHeaders("Authorization" -> s"Bearer $token")
+          .withHttpHeaders("Authorization" -> s"Bearer $token")
           .withRequestTimeout(10 seconds)
           .get() map { response =>
           response.json.validate[Seq[SummaryActivity]] match {

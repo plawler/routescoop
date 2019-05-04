@@ -2,17 +2,15 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 import models._
-import modules.NonBlockingContext
-
-import play.api.Logger
-import play.api.cache.CacheApi
-import play.api.data.Forms._
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.libs.ws.WSClient
-import play.api.mvc.{Controller, Request}
 import services.{RideService, SettingsService}
 
+import play.api.Logger
+import play.api.cache.SyncCacheApi
 import play.api.data.Form
+import play.api.data.Forms._
+import play.api.i18n.I18nSupport
+import play.api.libs.ws.WSClient
+import play.api.mvc.{BaseController, ControllerComponents}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -22,9 +20,9 @@ class Rides @Inject()(
   rideService: RideService,
   settingsService: SettingsService,
   ws: WSClient,
-  cache: CacheApi,
-  val messagesApi: MessagesApi)
-  (implicit @NonBlockingContext ec: ExecutionContext) extends Controller with I18nSupport {
+  cache: SyncCacheApi,
+  val controllerComponents: ControllerComponents
+)(implicit ec: ExecutionContext) extends BaseController with I18nSupport {
 
   val syncRidesUrl = routes.Rides.sync()
   val createSettingsUrl = routes.Settings.create()

@@ -15,6 +15,4 @@ class ApplicationModule extends AbstractModule {
     bind(classOf[AuthenticatedAction])
   }
 
-  @Provides @NonBlockingContext
-  def getNonBlockingContext: ExecutionContext = play.api.libs.concurrent.Execution.defaultContext
 }

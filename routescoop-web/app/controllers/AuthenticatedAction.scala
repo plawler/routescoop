@@ -1,19 +1,23 @@
 package controllers
 
-import models.Profile
-
-import play.api.cache.CacheApi
-import play.api.mvc.Results._
-import play.api.mvc.{ActionBuilder, Request, Result, WrappedRequest}
 import javax.inject.{Inject, Singleton}
+import models.Profile
+import modules.NonBlockingContext
 
-import scala.concurrent.Future
+import play.api.cache.SyncCacheApi
+import play.api.mvc.Results._
+import play.api.mvc._
+
+import scala.concurrent.{ExecutionContext, Future}
 
 
 case class AuthenticatedRequest[A](profile: Profile, request: Request[A]) extends WrappedRequest[A](request)
 
 @Singleton
-class AuthenticatedAction @Inject()(cache: CacheApi) extends ActionBuilder[AuthenticatedRequest] {
+class AuthenticatedAction @Inject()(
+  val parser: BodyParsers.Default,
+  cache: SyncCacheApi
+)(implicit val executionContext: ExecutionContext) extends ActionBuilder[AuthenticatedRequest, AnyContent] {
 
   override def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] = {
     request.session.get("idToken") map { id =>
@@ -27,5 +31,4 @@ class AuthenticatedAction @Inject()(cache: CacheApi) extends ActionBuilder[Authe
       Future.successful(Redirect(routes.Auth.login()))
     }
   }
-
 }

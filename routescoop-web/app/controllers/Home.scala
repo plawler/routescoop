@@ -2,7 +2,6 @@ package controllers
 
 import javax.inject._
 import models.{FitnessTrendResultError, FitnessTrendResultSuccess}
-import modules.NonBlockingContext
 import services.FitnessService
 
 import play.api.Logger
@@ -19,7 +18,8 @@ import scala.concurrent.ExecutionContext
 class Home @Inject()(
   fitnessService: FitnessService,
   authenticated: AuthenticatedAction,
-  val messagesApi: MessagesApi)(implicit @NonBlockingContext ec: ExecutionContext) extends Controller with I18nSupport {
+  val controllerComponents: ControllerComponents
+)(implicit ec: ExecutionContext) extends BaseController with I18nSupport {
 
   /**
     * Create an Action to render an HTML page with a welcome message.

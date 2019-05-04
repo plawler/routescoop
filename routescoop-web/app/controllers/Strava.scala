@@ -4,13 +4,13 @@ import config.StravaConfig
 import io.lemonlabs.uri.dsl._
 import javax.inject.{Inject, Singleton}
 import models.{Profile, UserResultSuccess}
-import modules.NonBlockingContext
+import services.UserService
+
 import play.api.Logger
-import play.api.cache.CacheApi
+import play.api.cache.SyncCacheApi
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
-import play.api.mvc.{Action, Controller, Request}
-import services.UserService
+import play.api.mvc.{BaseController, ControllerComponents, Request}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -19,7 +19,9 @@ class Strava @Inject()(
   userService: UserService,
   config: StravaConfig,
   ws: WSClient,
-  cache: CacheApi) (implicit @NonBlockingContext ec: ExecutionContext) extends Controller {
+  cache: SyncCacheApi,
+  val controllerComponents: ControllerComponents
+)(implicit ec: ExecutionContext) extends BaseController {
 
   def authorize = Action { implicit request =>
     val url = config.authorizationUrl ?

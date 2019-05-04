@@ -15,11 +15,11 @@ case class StravaConfig(
 object StravaConfig {
   def apply(configuration: Configuration): StravaConfig = {
     StravaConfig(
-      configuration.getString("strava.clientId").get,
-      configuration.getString("strava.clientSecret").get,
-      configuration.getString("strava.authorizationUrl").get,
-      configuration.getString("strava.redirectUrl").get,
-      configuration.getString("strava.oauthUrl").get
+      configuration.get[String]("strava.clientId"),
+      configuration.get[String]("strava.clientSecret"),
+      configuration.get[String]("strava.authorizationUrl"),
+      configuration.get[String]("strava.redirectUrl"),
+      configuration.get[String]("strava.oauthUrl")
     )
   }
 }

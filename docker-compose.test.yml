@@ -1,27 +1,23 @@
 version: '3'
 services:
   routescoop-web:
-    image: pelawler/activator
-    command: activator test
+    image: play26-docker-test
+    command: sbt test
     restart: "no"
     volumes:
       - ./routescoop-web:/app
       - $HOME/.ivy2:/root/.ivy2
-    ports:
-      - 9000:9000
     env_file:
       - routescoop.env
   routescoop-api:
-    image: pelawler/activator
-    command: activator test
+    image: play26-docker-test
+    command: sbt test
     depends_on:
       - mysqldb
     restart: "no"
     volumes:
       - ./routescoop-api:/app
       - $HOME/.ivy2:/root/.ivy2
-    ports:
-      - 9001:9000
     env_file:
       - routescoop.env
     links:

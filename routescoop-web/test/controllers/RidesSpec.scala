@@ -2,26 +2,27 @@ package controllers
 
 import fixtures.RideFixture
 import models.{Profile, RideSyncResultError, RideSyncResultStarted}
+import services.RideService
+
 import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.OneAppPerSuite
-import play.api.cache.CacheApi
+import play.api.cache.SyncCacheApi
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.RideService
 
 import scala.concurrent.Future
 
 class RidesSpec extends WordSpec with Matchers with MockitoSugar with OneAppPerSuite {
 
-  val mockCache = mock[CacheApi]
+  val mockCache = mock[SyncCacheApi]
   val mockRideService = mock[RideService]
 
   override lazy val app: play.api.Application = new GuiceApplicationBuilder()
-    .overrides(bind[CacheApi].toInstance(mockCache))
+    .overrides(bind[SyncCacheApi].toInstance(mockCache))
     .overrides(bind[RideService].toInstance(mockRideService))
     .build()
 

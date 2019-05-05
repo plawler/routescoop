@@ -3,7 +3,6 @@ package services
 import config.AppConfig
 import javax.inject.{Inject, Singleton}
 import models.{DailyFitness, FitnessTrendResult, FitnessTrendResultError, FitnessTrendResultSuccess, User}
-import modules.NonBlockingContext
 
 import play.api.http.Status
 import play.api.libs.json.{JsError, JsSuccess}
@@ -12,7 +11,7 @@ import play.api.libs.ws.WSClient
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class FitnessService @Inject()(config: AppConfig, ws: WSClient)(implicit @NonBlockingContext ec: ExecutionContext) {
+class FitnessService @Inject()(config: AppConfig, ws: WSClient)(implicit ec: ExecutionContext) {
 
   val url = s"${config.baseApiUrl}/users"
 

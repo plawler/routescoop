@@ -12,7 +12,7 @@ import play.api.libs.ws.WSClient
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class UserService @Inject()(ws: WSClient, config: AppConfig)(implicit @NonBlockingContext ec: ExecutionContext) {
+class UserService @Inject()(ws: WSClient, config: AppConfig)(implicit ec: ExecutionContext) {
 
   lazy val url = s"${config.baseApiUrl}/users"
 

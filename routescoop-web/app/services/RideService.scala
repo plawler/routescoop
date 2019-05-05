@@ -14,7 +14,7 @@ import play.api.mvc.Results
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RideService @Inject()(config: AppConfig, ws: WSClient)(implicit @NonBlockingContext ec: ExecutionContext) {
+class RideService @Inject()(config: AppConfig, ws: WSClient)(implicit ec: ExecutionContext) {
 
   val url = s"${config.baseApiUrl}"
 

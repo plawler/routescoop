@@ -1,35 +1,42 @@
 package controllers
 
-import java.util.UUID
-
 import config.StravaConfig
 import models.{Profile, UserResultSuccess}
+import services.UserService
+
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.OneAppPerSuite
-import play.api.cache.CacheApi
+import play.api.cache.SyncCacheApi
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
-import play.api.mvc.Action
+import play.api.mvc.{Action, DefaultActionBuilder, PlayBodyParsers}
 import play.api.mvc.Results._
 import play.api.routing.sird._
-import play.api.test.{FakeRequest, WsTestClient}
+import play.api.test.{FakeRequest, StubControllerComponentsFactory, WsTestClient}
 import play.core.server.Server
-import services.UserService
 
+import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 
-class StravaSpec extends WordSpec with Matchers with MockitoSugar with OneAppPerSuite {
+class StravaSpec extends WordSpec with Matchers with MockitoSugar with OneAppPerSuite with StubControllerComponentsFactory {
 
-  val mockCache = mock[CacheApi]
+  val mockCache = mock[SyncCacheApi]
   val mockUserService = mock[UserService]
 
+  implicit val as = ActorSystem()
+  implicit val materializer = ActorMaterializer()
+  val bodyParser = PlayBodyParsers()
+  val action = DefaultActionBuilder(bodyParser.anyContent)
+
   override lazy val app: play.api.Application = new GuiceApplicationBuilder()
-    .overrides(bind[CacheApi].toInstance(mockCache))
+    .overrides(bind[SyncCacheApi].toInstance(mockCache))
     .overrides(bind[UserService].toInstance(mockUserService))
     .build()
 
@@ -37,12 +44,12 @@ class StravaSpec extends WordSpec with Matchers with MockitoSugar with OneAppPer
 
     "callback with an authorization code" in new StravaTesting {
       Server.withRouter() {
-        case POST(p"/oauth/token") => Action {
+        case POST(p"/oauth/token") => action {
           Ok(tokenExchangeJson)
         }
       } { implicit port =>
         WsTestClient.withClient { client =>
-          val controller = new Strava(mockUserService, config, client, mockCache)
+          val controller = new Strava(mockUserService, config, client, mockCache, stubControllerComponents())
           val request = FakeRequest(play.api.http.HttpVerbs.GET, "/strava/callback").withSession("idToken" -> sessionId)
           val result = controller.callback(Some("abcdef123456")).apply(request)
 

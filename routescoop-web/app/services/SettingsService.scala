@@ -13,7 +13,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 @Singleton
-class SettingsService @Inject()(ws: WSClient, config: AppConfig)(implicit @NonBlockingContext ec: ExecutionContext) {
+class SettingsService @Inject()(ws: WSClient, config: AppConfig)(implicit ec: ExecutionContext) {
 
   def create(settings: NewSettings): Future[SettingsResult] = {
     val postUrl = s"${config.baseApiUrl}/users/${settings.userId}/settings"

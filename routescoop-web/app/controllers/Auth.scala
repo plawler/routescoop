@@ -2,18 +2,18 @@ package controllers
 
 
 import java.util.UUID
-
 import config.AuthConfig
 import io.lemonlabs.uri.dsl._
 import javax.inject.{Inject, Singleton}
 import models.{Profile, UserResultError, UserResultNotFound, UserResultSuccess}
 import modules.NonBlockingContext
+
 import play.api.Logger
-import play.api.cache.CacheApi
+import play.api.cache.{CacheApi, SyncCacheApi}
 import play.api.http.{HeaderNames, MimeTypes}
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.{WSClient, WSResponse}
-import play.api.mvc.{Action, Controller, Cookie, DiscardingCookie}
+import play.api.mvc.{Action, BaseController, Controller, ControllerComponents, Cookie, DiscardingCookie}
 import services.UserService
 import util.RandomUtil
 
@@ -22,8 +22,13 @@ import scala.util.control.NonFatal
 
 
 @Singleton
-class Auth @Inject()(config: AuthConfig, ws: WSClient, cache: CacheApi, userService: UserService)
-  (implicit @NonBlockingContext ec: ExecutionContext) extends Controller {
+class Auth @Inject()(
+  config: AuthConfig,
+  ws: WSClient,
+  cache: SyncCacheApi,
+  userService: UserService,
+  val controllerComponents: ControllerComponents
+)(implicit ec: ExecutionContext) extends BaseController {
 
   def loginUrl(state: String) = config.domain / "authorize" ?
     ("client_id" -> config.clientId) &
@@ -79,7 +84,7 @@ class Auth @Inject()(config: AuthConfig, ws: WSClient, cache: CacheApi, userServ
       "audience" -> config.getAudience
     )
 
-    val tokenResponse = ws.url(config.tokenUrl).withHeaders(HeaderNames.ACCEPT -> MimeTypes.JSON).post(json)
+    val tokenResponse = ws.url(config.tokenUrl).withHttpHeaders(HeaderNames.ACCEPT -> MimeTypes.JSON).post(json)
 
     tokenResponse map { response =>
       val idToken = (response.json \ "id_token").asOpt[String] getOrElse UUID.randomUUID().toString
@@ -91,7 +96,7 @@ class Auth @Inject()(config: AuthConfig, ws: WSClient, cache: CacheApi, userServ
   }
 
   private def getAuthProfile(accessToken: String): Future[Profile] = {
-    val response = ws.url(config.fetchUserUrl).withQueryString("access_token" -> accessToken).get()
+    val response = ws.url(config.fetchUserUrl).withQueryStringParameters("access_token" -> accessToken).get()
     response flatMap { response =>
       Future.successful(response.json.as[models.Profile])
     }

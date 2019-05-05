@@ -12,8 +12,8 @@ object AppConfig {
 
   def apply(configuration: Configuration): AppConfig = {
     new AppConfig(
-      configuration.getString("routescoop.apiHost").get,
-      configuration.getString("routescoop.apiPath").get
+      configuration.get[String]("routescoop.apiHost"),
+      configuration.get[String]("routescoop.apiPath")
     )
   }
 

@@ -2,10 +2,10 @@
 #   command: echo building database
 #   service: mysqldb
 - name: api-test
-  command: activator test
+  command: sbt test
   service: routescoop-api-test
 - name: web-test
-  command: activator test
+  command: sbt test
   service: routescoop-web-test
 - name: api-build
   command: echo api-build

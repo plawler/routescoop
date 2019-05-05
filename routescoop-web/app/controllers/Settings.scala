@@ -1,19 +1,18 @@
 package controllers
 
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-
 import javax.inject.{Inject, Singleton}
 import models.{NewSettings, Profile, SettingsResultError, SettingsResultSuccess}
-import modules.NonBlockingContext
-import play.api.Logger
-import play.api.cache.CacheApi
-import play.api.data.Form
-import play.api.data.Forms._
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Controller, Request}
 import services.SettingsService
 
+import play.api.Logger
+import play.api.cache.{CacheApi, SyncCacheApi}
+import play.api.data.Form
+import play.api.data.Forms._
+import play.api.i18n.I18nSupport
+import play.api.mvc.{BaseController, ControllerComponents}
+
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -21,9 +20,9 @@ import scala.util.control.NonFatal
 class Settings @Inject()(
   authenticated: AuthenticatedAction,
   settingsService: SettingsService,
-  cache: CacheApi,
-  val messagesApi: MessagesApi)
-  (implicit @NonBlockingContext ec: ExecutionContext) extends Controller with I18nSupport {
+  cache: SyncCacheApi,
+  val controllerComponents: ControllerComponents
+)(implicit ec: ExecutionContext) extends BaseController with I18nSupport {
 
   implicit val dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 

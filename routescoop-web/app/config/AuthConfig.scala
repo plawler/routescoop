@@ -21,14 +21,14 @@ case class AuthConfig(
 object AuthConfig {
   def apply(configuration: Configuration): AuthConfig = {
     AuthConfig(
-      configuration.getString("auth.clientSecret").get,
-      configuration.getString("auth.clientId").get,
-      configuration.getString("auth.domain").get,
-      configuration.getString("auth.callbackUrl").get,
-      configuration.getString("auth.tokenUrl").get,
-      configuration.getString("auth.fetchUserUrl").get,
-      configuration.getString("auth.logoutUrl").get,
-      configuration.getString("auth.audience")
+      configuration.get[String]("auth.clientSecret"),
+      configuration.get[String]("auth.clientId"),
+      configuration.get[String]("auth.domain"),
+      configuration.get[String]("auth.callbackUrl"),
+      configuration.get[String]("auth.tokenUrl"),
+      configuration.get[String]("auth.fetchUserUrl"),
+      configuration.get[String]("auth.logoutUrl"),
+      configuration.getOptional[String]("auth.audience")
     )
   }
 }

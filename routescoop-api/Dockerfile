@@ -1,14 +1,18 @@
-FROM        ysihaoy/scala-play:2.11.8-2.5.4-sbt-0.13.11 as build
+FROM        ysihaoy/scala-play:2.12.3-2.6.2-sbt-0.13.15 as build
+
+RUN         apk add --update nodejs
+
 COPY        ["build.sbt", "/tmp/build/"]
 COPY        ["project/plugins.sbt", "project/build.properties", "/tmp/build/project/"]
 RUN         cd /tmp/build && \
-            activator compile && \
+            sbt compile && \
             rm -rf /tmp/build
+
 # copy code
 COPY        . /routescoop-api
 WORKDIR     /routescoop-api
-RUN         activator stage
-CMD         ["activator"]
+RUN         sbt stage
+CMD         ["sbt"]
 
 FROM        pelawler/openjdk-8-jre
 COPY        --from=build routescoop-api/target/universal/stage /opt/app

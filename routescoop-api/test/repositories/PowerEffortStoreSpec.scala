@@ -26,11 +26,16 @@ class PowerEffortStoreSpec extends WordSpec with Matchers with PowerEffortStoreF
       userStore.insert(testUser)
       activityStore.insert(testActivity)
       effortStore.insert(testEffort)
+      println(testEffort)
     }
 
     "find an effort by activity" in {
       effortStore.findByActivityId(testActivity.id) shouldNot be(None)
       effortStore.findByActivityId(testActivity.id) foreach (_.activityId shouldEqual testEffort.activityId)
+    }
+
+    "get maximum power efforts" in {
+      effortStore.getMaximalEfforts(testUser.id, 365, Seq(1, 5, 30, 60, 360)) shouldNot be(empty)
     }
   }
 

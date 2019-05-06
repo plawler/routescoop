@@ -9,7 +9,7 @@ clean:
 	cd routescoop-web && rm -rf target project/target project/project
 
 test:
-	# $(doctest) routescoop-api
+	$(doctest) routescoop-api
 	$(doctest) routescoop-web
 
 down:

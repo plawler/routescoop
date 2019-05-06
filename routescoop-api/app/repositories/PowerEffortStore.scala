@@ -12,6 +12,7 @@ import scala.concurrent.ExecutionContext
 trait PowerEffortStore {
 
   val PowerEffortsTable = "power_efforts"
+  val ActivitiesTable = "strava_activities"
 
   def destroy(): Unit
 
@@ -20,6 +21,7 @@ trait PowerEffortStore {
   def insertBatch(efforts: Seq[PowerEffort]): Int
 
   def findByActivityId(activityId: String): Seq[PowerEffort]
+  def getMaximalEfforts(userId: String, lookBackInDays: Int, intervals: Seq[Int]): Seq[PowerEffort]
 
 }
 
@@ -61,4 +63,25 @@ class PowerEffortStoreImpl @Inject()(db: Database)(implicit @BlockingContext ec:
       """.as(PowerEffort.parser.*)
   }
 
+  override def getMaximalEfforts(
+    userId: String,
+    lookBackInDays: Int,
+    intervals: Seq[Int] = Nil
+  ): Seq[PowerEffort] = db.withConnection { implicit conn =>
+    SQL"""
+         SELECT p.*
+         FROM #$PowerEffortsTable p
+         JOIN (SELECT pe.intervalLengthInSeconds, MAX(criticalPower) AS criticalPower
+               FROM #$PowerEffortsTable pe
+               JOIN #$ActivitiesTable a
+                 ON a.id = pe.activityId
+                 AND a.userId = $userId
+               WHERE pe.intervalLengthInSeconds IN ($intervals)
+                 AND pe.startedAt BETWEEN DATE(NOW() - INTERVAL $lookBackInDays DAY) AND NOW()
+               GROUP BY pe.intervalLengthInSeconds) AS mmp
+           ON mmp.intervalLengthInSeconds = p.intervalLengthInSeconds
+           AND mmp.criticalPower = p.criticalPower
+        ORDER BY p.intervalLengthInSeconds
+      """.as(PowerEffort.parser.*)
+  }
 }

@@ -1,9 +1,9 @@
 package fixtures
 
+import models.StravaActivity
+
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-
-import models.StravaActivity
 
 trait ActivityFixture extends UserFixture {
   val activityId = "theActivityId"
@@ -34,5 +34,5 @@ trait ActivityFixture extends UserFixture {
 
   val yearOldActivity = sampleActivity.copy(startedAt = activityStartedAt.minus(365, ChronoUnit.DAYS))
   val twoYearOldActivity = sampleActivity.copy(startedAt = activityStartedAt.minus(730, ChronoUnit.DAYS))
-
+  val oneDayOldActivity = sampleActivity.copy(startedAt = activityStartedAt.minus(1, ChronoUnit.DAYS))
 }

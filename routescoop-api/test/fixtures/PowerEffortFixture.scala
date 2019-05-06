@@ -19,7 +19,8 @@ trait PowerEffortFixture extends StreamFixture {
     )
   }
 
-  val samplePowerEffort = PowerEffort.create(sampleActivity, 30, 360, 140, 400, None)
+  // using a day old activity because we set the timestamp to the startedAt + startedAtSecond
+  val samplePowerEffort = PowerEffort.create(oneDayOldActivity, 30, 360, 140, 400, None)
 
   val watts = Thread.currentThread.getContextClassLoader.getResourceAsStream("long_activity_watts.txt")
   val line = Source.fromInputStream(watts).getLines()

@@ -36,9 +36,11 @@ class PowerEffortStoreSpec extends WordSpec with Matchers with PowerEffortStoreF
 
     "get maximum power efforts" in {
       effortStore.getMaximalEfforts(testUser.id, 365, Seq(1, 5, 30, 60, 360)) shouldNot be(empty)
+      effortStore.getMaximalEfforts(testUser.id, 365, Seq(1, 5, 60, 360)) should be(empty)
     }
+    
   }
-
+  
 }
 
 trait PowerEffortStoreFixture extends PowerEffortFixture {

@@ -16,6 +16,7 @@ libraryDependencies ++= Seq(
   evolutions,
   ws,
   guice,
+  "org.apache.commons" % "commons-math3" % "3.6.1",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
   "mysql" % "mysql-connector-java" % "6.0.6",

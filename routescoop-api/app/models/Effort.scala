@@ -13,7 +13,11 @@ case class PowerEffort(
   avgHeartRate: Int,
   criticalPower: Int,
   normalizedPower: Option[Int] = None // np is not valuable in lower time ranges
-) extends Effort
+) extends Effort {
+
+  def watts: Int = criticalPower // this was a misunderstanding on my part. field should be 'watts'
+
+}
 
 object PowerEffort {
 

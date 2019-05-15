@@ -18,8 +18,12 @@ class LinearRegressionSpec extends FlatSpec with Matchers with RegressionFixture
 
   it should "require at least three observations" in {
     the [IllegalArgumentException] thrownBy {
-      new LinearRegression(observations.dropRight(2))
+      LinearRegression(observations.dropRight(2))
     } should have message "requirement failed: At least three observations are required to run linear regression"
+  }
+
+  it should "return the observations used for calculation" in {
+    println(model.observations)
   }
 
 }
@@ -31,5 +35,5 @@ trait RegressionFixture {
     Observation(600, 182400),
     Observation(1200, 338400)
   )
-  val model = new LinearRegression(observations)
+  val model = LinearRegression(observations)
 }

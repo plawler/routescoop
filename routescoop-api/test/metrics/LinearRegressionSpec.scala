@@ -23,7 +23,7 @@ class LinearRegressionSpec extends FlatSpec with Matchers with RegressionFixture
   }
 
   it should "return the observations used for calculation" in {
-    println(model.observations)
+    model.observations shouldEqual observations
   }
 
 }

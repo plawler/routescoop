@@ -1,8 +1,8 @@
 package services
 
-import fixtures.StressScoreFixture
+import fixtures.{CriticalPowerFixture, StressScoreFixture}
 import models.DailyTrainingLoad
-import repositories.ActivityStatsStore
+import repositories.{ActivityStatsStore, PowerEffortStore}
 
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
@@ -32,13 +32,24 @@ class FitnessServiceSpec extends WordSpec with Matchers with MockitoSugar {
       rr.sixWeekAvgs.size shouldBe 1
     }
 
+    "calculate critical power" in new Fixture {
+      val lookback = 90
+      val intervals = Seq(180, 360, 720)
+      when(mockPowerEffortStore.getMaximalEfforts(userId, lookback, intervals)).thenReturn(samples)
+      val cp = service.getCriticalPower(userId, lookback, intervals)
+      cp.predictedPower shouldBe Seq(631.0, 445.0, 383.0, 352.0, 334.0, 306.0, 296.0, 284.0, 278.0, 269.0, 265.0)
+      cp.cp shouldBe 258.7
+      cp.wPrime shouldBe 22320.0
+    }
+
   }
 
-  trait Fixture extends StressScoreFixture {
+  trait Fixture extends StressScoreFixture with CriticalPowerFixture{
     val userId = "theUserId"
     val days = stresses.size
     val mockActivityStatsStore = mock[ActivityStatsStore]
-    val service = new FitnessService(mockActivityStatsStore)
+    val mockPowerEffortStore = mock[PowerEffortStore]
+    val service = new FitnessService(mockActivityStatsStore, mockPowerEffortStore)
   }
 
 }

@@ -26,7 +26,6 @@ class PowerEffortStoreSpec extends WordSpec with Matchers with PowerEffortStoreF
       userStore.insert(testUser)
       activityStore.insert(testActivity)
       effortStore.insert(testEffort)
-      println(testEffort)
     }
 
     "find an effort by activity" in {

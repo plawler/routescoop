@@ -38,9 +38,9 @@ class StravaStreamJsonParsingSpec extends WordSpec with Matchers with MockitoSug
       noWattsStream.pivot.head.get("watts") shouldBe None
     }
 
-    "handle null string value for watts in stream" in {
+    "replace null watts string value with zero in stream" in {
       val nullWattsStream = Json.parse(stravaStreamJsonNullWatts).as[ActivityStream]
-      println(nullWattsStream.watts.data)
+      nullWattsStream.watts.data.last shouldBe 0
     }
 
     "parse a list of summary activities" in {

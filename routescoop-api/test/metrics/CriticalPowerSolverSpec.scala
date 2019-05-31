@@ -1,13 +1,16 @@
 package metrics
 
-import fixtures.PowerEffortFixture
+import fixtures.CriticalPowerFixture
 
 import org.scalatest.{FlatSpec, Matchers}
 
-class CriticalPowerSolverSpec extends FlatSpec with Matchers with CpFixture {
+class CriticalPowerSolverSpec extends FlatSpec with Matchers with CriticalPowerFixture {
+
+  val cps = MonodScherrerSolver(samples)
 
   it should "create observations from power efforts" in {
-    println(cps.observations)
+    val observations = Seq(Observation(180.0,64980.0), Observation(360.0,121320.0), Observation(720.0,206640.0))
+    cps.observations shouldEqual observations
   }
 
   it should "calculate critical power" in {
@@ -21,19 +24,6 @@ class CriticalPowerSolverSpec extends FlatSpec with Matchers with CpFixture {
   it should "predict power for a given time" in {
     cps.predict(180) shouldEqual 383.0d
     cps.predict(3600) shouldEqual 265.0d
-//    for {
-//      second <- 45 to 3065
-//    } yield {
-//      println(cps.predict(second))
-//    }
   }
 
-}
-
-trait CpFixture extends PowerEffortFixture {
-  val p1 = samplePowerEffort.copy(intervalLengthInSeconds = 180, avgHeartRate = 180, criticalPower = 361, normalizedPower = Some(362))
-  val p2 = samplePowerEffort.copy(intervalLengthInSeconds = 360, avgHeartRate = 178, criticalPower = 337, normalizedPower = Some(341))
-  val p3 = samplePowerEffort.copy(intervalLengthInSeconds = 720, avgHeartRate = 168, criticalPower = 287, normalizedPower = Some(303))
-  val samples = Seq(p1, p2, p3)
-  val cps = MonodScherrerSolver(samples)
 }

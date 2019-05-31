@@ -15,6 +15,7 @@ GET     /api/v1/users/:id/activities    controllers.Activities.list(id: String, 
 
 GET     /api/v1/users/:id/fitness/:days controllers.Fitness.trainingLoad(id: String, days: Int)
 GET     /api/v1/users/:id/ramp/:days    controllers.Fitness.rampRate(id: String, days: Int)
+GET     /api/v1/users/:id/cp/:days      controllers.Fitness.criticalPower(id: String, days: Int, intervals: Seq[Int])
 
 POST    /api/v1/syncs                   controllers.Syncs.sync
 

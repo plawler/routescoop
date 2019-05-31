@@ -1,4 +1,5 @@
 @import models.Profile
+@import helper._
 
 @(form: Form[SettingsForm.Data], url: Call)(implicit request: RequestHeader, messages: Messages)
 
@@ -14,6 +15,7 @@
     </p>
 
     @b4.vertical.form(url) { implicit vfc =>
+        @CSRF.formField
         @b4.text(form("weight"), '_label -> "Weight (lbs)")
         @b4.text(form("ftp"), '_label -> "FTP", 'placeholder -> "Functional threshold power")
         @b4.text(form("hr"), '_label -> "Max Heart Rate")

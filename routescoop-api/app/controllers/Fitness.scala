@@ -21,4 +21,8 @@ class Fitness @Inject()(
     Ok(Json.toJson(fitnessService.getRampRate(userId, days)))
   }
 
+  def criticalPower(userId: String, days: Int, intervals: Seq[Int]) = Action { implicit request =>
+    Ok(Json.toJson(fitnessService.getCriticalPower(userId, days, intervals)))
+  }
+
 }

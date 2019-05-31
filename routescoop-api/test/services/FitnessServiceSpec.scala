@@ -42,9 +42,18 @@ class FitnessServiceSpec extends WordSpec with Matchers with MockitoSugar {
       cp.wPrime shouldBe 22320.0
     }
 
+    "calculato patrick's predicted power" in new Fixture {
+      val lookback = 90
+      val intervals = Seq(180, 360, 720)
+      when(mockPowerEffortStore.getMaximalEfforts(userId, lookback, intervals)).thenReturn(patrickSamples)
+      val cp = service.getCriticalPower(userId, lookback, intervals)
+//      println(s"Patrick's CP: ${cp.cp}")
+//      println(s"Patrick's CP predictions: ${cp.predictedPower}")
+    }
+
   }
 
-  trait Fixture extends StressScoreFixture with CriticalPowerFixture{
+  trait Fixture extends StressScoreFixture with CriticalPowerFixture {
     val userId = "theUserId"
     val days = stresses.size
     val mockActivityStatsStore = mock[ActivityStatsStore]

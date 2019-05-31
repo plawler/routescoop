@@ -1,7 +1,7 @@
 package services
 
 import fixtures.{CriticalPowerFixture, StressScoreFixture}
-import models.DailyTrainingLoad
+import models.{CriticalPowerPrediction, DailyTrainingLoad}
 import repositories.{ActivityStatsStore, PowerEffortStore}
 
 import org.mockito.Mockito._
@@ -37,7 +37,7 @@ class FitnessServiceSpec extends WordSpec with Matchers with MockitoSugar {
       val intervals = Seq(180, 360, 720)
       when(mockPowerEffortStore.getMaximalEfforts(userId, lookback, intervals)).thenReturn(samples)
       val cp = service.getCriticalPower(userId, lookback, intervals)
-      cp.predictedPower shouldBe Seq(631.0, 445.0, 383.0, 352.0, 334.0, 306.0, 296.0, 284.0, 278.0, 269.0, 265.0)
+      cp.predictions shouldBe Seq(CriticalPowerPrediction(60,631), CriticalPowerPrediction(120,445), CriticalPowerPrediction(180,383), CriticalPowerPrediction(240,352), CriticalPowerPrediction(300,334), CriticalPowerPrediction(480,306), CriticalPowerPrediction(600,296), CriticalPowerPrediction(900,284), CriticalPowerPrediction(1200,278), CriticalPowerPrediction(2400,269), CriticalPowerPrediction(3600,265))
       cp.cp shouldBe 258.7
       cp.wPrime shouldBe 22320.0
     }

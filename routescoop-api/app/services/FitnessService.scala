@@ -3,7 +3,7 @@ package services
 import javax.inject.{Inject, Singleton}
 import metrics.MonodScherrerSolver
 import metrics.PowerMetrics.trainingLoad
-import models.{CriticalPower, DailyStress, DailyTrainingLoad, RampRate}
+import models.{CriticalPower, CriticalPowerPrediction, DailyStress, DailyTrainingLoad, RampRate}
 import modules.NonBlockingContext
 import repositories.{ActivityStatsStore, PowerEffortStore}
 
@@ -18,6 +18,7 @@ class FitnessService @Inject()(
   powerEffortsStore: PowerEffortStore) (implicit @NonBlockingContext ec: ExecutionContext) extends LazyLogging {
 
   val f = new DecimalFormat("#.#")
+  val durations = Seq(60d, 120d, 180d, 240d, 300d, 480d, 600d, 900d, 1200d, 2400d, 3600d)
 
   def getTrainingLoad(userId: String, numberOfDays: Int): Seq[DailyTrainingLoad] = {
     val stresses = activityStatsStore.getDailyStress(userId)
@@ -32,7 +33,9 @@ class FitnessService @Inject()(
   def getCriticalPower(userId: String, days: Int, intervals: Seq[Int]): CriticalPower = {
     val samples = powerEffortsStore.getMaximalEfforts(userId, days, intervals)
     val solver = MonodScherrerSolver(samples)
-    val predicted = Seq(60d, 120d, 180d, 240d, 300d, 480d, 600d, 900d, 1200d, 2400d, 3600d) map solver.predict
+    val predicted = durations map { duration =>
+      CriticalPowerPrediction(duration.toInt, solver.predict(duration).toInt)
+    }
     CriticalPower(solver.criticalPower, solver.wPrime, predicted)
   }
 

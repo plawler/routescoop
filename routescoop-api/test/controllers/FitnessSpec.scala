@@ -1,6 +1,6 @@
 package controllers
 
-import models.CriticalPower
+import models.{CriticalPower, CriticalPowerPrediction}
 import services.FitnessService
 
 import org.mockito.Mockito._
@@ -27,10 +27,16 @@ class FitnessSpec extends WordSpec with Matchers with MockitoSugar with OneAppPe
       val userId = "abcd1234"
       val days = 180
       val intervals = Seq(180, 360, 720)
-      val cpJson = Json.parse("""{"cp":250,"wPrime":20000,"predictedPower":[1,2,3,4]}""")
+      val cpJson = Json.parse("""{"cp":250,"wPrime":20000,"predictions":[{"duration":1,"watts":500},{"duration":2,"watts":400},{"duration":3,"watts":300},{"duration":4,"watts":200}]}""")
+      val predictions = Seq(
+        CriticalPowerPrediction(1, 500),
+        CriticalPowerPrediction(2, 400),
+        CriticalPowerPrediction(3, 300),
+        CriticalPowerPrediction(4, 200)
+      )
 
       when(mockFitnessService.getCriticalPower(userId, days, intervals))
-        .thenReturn(CriticalPower(250, 20000, Seq(1,2,3,4)))
+        .thenReturn(CriticalPower(250, 20000, predictions))
 
       val result = route(
         app,

@@ -1,6 +1,6 @@
 package metrics
 
-import models.PowerEffort
+import models.{CriticalPower, CriticalPowerPrediction, PowerEffort}
 import utils.NumberUtils._
 
 trait CriticalPowerSolver {
@@ -8,7 +8,8 @@ trait CriticalPowerSolver {
   def criticalPower: Double
   def wPrime: Double
   def observations: Seq[Observation]
-  def predict(timeInSeconds: Double): Double
+  def predict(timeInSeconds: Int): Int
+  def solveFor(durations: Seq[Int]): CriticalPower
 
 }
 
@@ -22,11 +23,20 @@ case class MonodScherrerSolver(efforts: Seq[PowerEffort]) extends CriticalPowerS
 
   override def observations: Seq[Observation] = regression.observations
 
-  override def predict(timeInSeconds: Double): Double = roundUp(regression.predict(timeInSeconds) / timeInSeconds, 0)
+  override def predict(timeInSeconds: Int): Int = {
+    roundUp(regression.predict(timeInSeconds) / timeInSeconds, 0).toInt
+  }
+
+  override def solveFor(durations: Seq[Int]) = {
+    CriticalPower(
+      criticalPower,
+      wPrime,
+      durations map (d => CriticalPowerPrediction(d, predict(d)))
+    )
+  }
 
   private def toKj(efforts: Seq[PowerEffort]): Seq[Observation] = { // convert watts to energy for linear regression
     efforts map (e => Observation(e.intervalLengthInSeconds, e.watts * e.intervalLengthInSeconds))
   }
-
 
 }

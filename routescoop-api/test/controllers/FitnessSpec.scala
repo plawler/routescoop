@@ -1,19 +1,21 @@
 package controllers
 
-import models.{CriticalPower, CriticalPowerPrediction}
+import fixtures.CriticalPowerFixture
+import models.{CP, CriticalPower, CriticalPowerPrediction, PowerModel, Simulation, SimulationResult}
 import services.FitnessService
 
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.OneAppPerSuite
+import play.api.http.{HeaderNames, MimeTypes}
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.test.FakeRequest
+import play.api.test.{FakeHeaders, FakeRequest}
 import play.api.test.Helpers._
 import play.api.inject.bind
 import play.api.libs.json.Json
 
-class FitnessSpec extends WordSpec with Matchers with MockitoSugar with OneAppPerSuite {
+class FitnessSpec extends WordSpec with Matchers with MockitoSugar with OneAppPerSuite with CriticalPowerFixture {
 
   val mockFitnessService = mock[FitnessService]
 
@@ -44,6 +46,24 @@ class FitnessSpec extends WordSpec with Matchers with MockitoSugar with OneAppPe
       ).get
       status(result) shouldBe OK
       contentAsJson(result) shouldEqual cpJson
+    }
+
+    "simulate critical power for a set of data points" in {
+      val headers = FakeHeaders(Seq(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON))
+      val simulation = Simulation(
+        CP,
+        Map(
+          180.toString -> 421.toString,
+          360.toString -> 385.toString,
+          720.toString -> 371.toString
+        )
+      )
+      when(mockFitnessService.simulateCriticalPower(simulation)).thenReturn(simulationResult)
+
+      val resultJson = Json.parse(simulationResultsJson)
+      val result = route(app, FakeRequest(POST, s"/api/v1/simulations", headers, Json.toJson(simulation))).get
+      status(result) shouldBe CREATED
+      contentAsJson(result) shouldEqual resultJson
     }
 
   }

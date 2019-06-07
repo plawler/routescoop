@@ -1,12 +1,13 @@
 package services
 
 import fixtures.{CriticalPowerFixture, StressScoreFixture}
-import models.{CriticalPowerPrediction, DailyTrainingLoad}
+import models.{CP, CriticalPowerPrediction, DailyTrainingLoad, Simulation}
 import repositories.{ActivityStatsStore, PowerEffortStore}
 
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{Matchers, WordSpec}
+import play.api.libs.json.Json
 
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -42,13 +43,10 @@ class FitnessServiceSpec extends WordSpec with Matchers with MockitoSugar {
       cp.wPrime shouldBe 22320.0
     }
 
-    "calculato patrick's predicted power" in new Fixture {
-      val lookback = 90
-      val intervals = Seq(180, 360, 720)
-      when(mockPowerEffortStore.getMaximalEfforts(userId, lookback, intervals)).thenReturn(patrickSamples)
-      val cp = service.getCriticalPower(userId, lookback, intervals)
-//      println(s"Patrick's CP: ${cp.cp}")
-//      println(s"Patrick's CP predictions: ${cp.predictedPower}")
+    "simulate critical power" in new Fixture {
+      val resultsJson = """{"simulationType":"CriticalPower","result":{"cp":354.7,"wPrime":11520,"predictions":[{"duration":60,"watts":547},{"duration":120,"watts":451},{"duration":180,"watts":419},{"duration":240,"watts":403},{"duration":300,"watts":394},{"duration":480,"watts":379},{"duration":600,"watts":374},{"duration":900,"watts":368},{"duration":1200,"watts":365},{"duration":2400,"watts":360},{"duration":3600,"watts":358}]}}""".stripMargin
+      val cp = service.simulateCriticalPower(simulation)
+      Json.toJson(cp) shouldEqual Json.parse(resultsJson)
     }
 
   }

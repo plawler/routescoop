@@ -1,0 +1,34 @@
+@(cp: CriticalPower)(implicit request: RequestHeader, messages: Messages)
+
+@scripts = {
+    <script type="text/javascript">
+        var ctx = document.getElementById('cp').getContext('2d');
+        var durations = [@Html(cp.predictions.map(p => s"'${p.duration / 60} min'").mkString(","))]
+        //var durations = [@Html(cp.predictions.map(p => s"${p.duration}").mkString(","))]
+        var chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: durations,
+                datasets: [
+                    {
+                        label: "Power",
+                        borderColor: 'rgb(255, 99, 132)',
+                        data: [@cp.predictions.map(_.watts).mkString(",")]
+                    }
+                ]
+            }
+        });
+    </script>
+}
+
+@helper.base(scripts = scripts) {
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Power</h1>
+    </div>
+
+    <p>
+        Critical power and mean maximal power curves
+    </p>
+
+    <canvas id="cp" width="1000" height="400"></canvas>
+}

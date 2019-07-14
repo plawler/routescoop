@@ -29,7 +29,8 @@ class Home @Inject()(
     */
   def index = authenticated.async { implicit request =>
     fitnessService.fitnessTrend(request.profile.toUser, 180) map {
-      case FitnessTrendResultSuccess(trend) => Ok(views.html.index(trend))
+      case FitnessTrendResultSuccess(trend) =>
+        Ok(views.html.index(trend))
       case FitnessTrendResultError(message) =>
         Logger.error(message)
         Ok(views.html.index(Seq())).flashing("error" -> "Failed to retrieve the fitness data")

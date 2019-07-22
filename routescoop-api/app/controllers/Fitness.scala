@@ -28,6 +28,10 @@ class Fitness @Inject()(
     Ok(Json.toJson(fitnessService.getCriticalPower(userId, days, intervals)))
   }
 
+  def meanMaximalPower(userId: String, days: Option[Int]) = Action { implicit request =>
+    Ok(Json.toJson(fitnessService.getMeanMaximalPower(userId, days)))
+  }
+
   def simulation = Action.async(parse.json) { implicit request =>
     request.body.validate[Simulation].fold(
       errors => Future.successful(BadRequest(JsError.toJson(errors))),

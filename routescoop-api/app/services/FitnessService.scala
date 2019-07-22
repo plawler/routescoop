@@ -10,7 +10,7 @@ import repositories.{ActivityStatsStore, PowerEffortStore}
 import com.typesafe.scalalogging.LazyLogging
 
 import java.text.DecimalFormat
-import java.time.Instant
+import java.time.{Instant, LocalDate, Period}
 import scala.concurrent.ExecutionContext
 
 @Singleton
@@ -19,7 +19,8 @@ class FitnessService @Inject()(
   powerEffortsStore: PowerEffortStore) (implicit @NonBlockingContext ec: ExecutionContext) extends LazyLogging {
 
   val f = new DecimalFormat("#.#")
-  val durations = Seq(60, 120, 180, 240, 300, 480, 600, 900, 1200, 2400, 3600)
+  val DURATIONS = Seq(60, 120, 180, 240, 300, 480, 600, 900, 1200, 2400, 3600)
+  val LONGEST_INTERVAL = 14400 // 4 hours
 
   def getTrainingLoad(userId: String, numberOfDays: Int): Seq[DailyTrainingLoad] = {
     val stresses = activityStatsStore.getDailyStress(userId)
@@ -33,14 +34,19 @@ class FitnessService @Inject()(
 
   def getCriticalPower(userId: String, days: Int, intervals: Seq[Int]): CriticalPower = {
     val samples = powerEffortsStore.getMaximalEfforts(userId, days, intervals)
-    MonodScherrerSolver(samples).solveFor(durations)
+    MonodScherrerSolver(samples).solveFor(DURATIONS)
   }
 
   def simulateCriticalPower(simulation: Simulation): SimulationResult = {
     val efforts = simulation.parameters.map {
       case (k,v) => PowerEffort("CriticalPowerSimulation", k.toInt, Instant.now, 0, v.toInt)
     }.toSeq
-    SimulationResult(CP, MonodScherrerSolver(efforts).solveFor(durations))
+    SimulationResult(CP, MonodScherrerSolver(efforts).solveFor(DURATIONS))
+  }
+
+  def getMeanMaximalPower(userId: String, days: Option[Int] = None): Seq[Effort] = {
+    val intervals = Seq.range(1, LONGEST_INTERVAL + 1) // not inclusive
+    powerEffortsStore.getMaximalEfforts(userId, days.getOrElse(365 * 10), intervals)
   }
 
   def calculateTrainingLoad(

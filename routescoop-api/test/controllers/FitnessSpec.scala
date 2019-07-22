@@ -1,7 +1,7 @@
 package controllers
 
 import fixtures.CriticalPowerFixture
-import models.{CP, CriticalPower, CriticalPowerPrediction, PowerModel, Simulation, SimulationResult}
+import models._
 import services.FitnessService
 
 import org.mockito.Mockito._
@@ -14,6 +14,9 @@ import play.api.test.{FakeHeaders, FakeRequest}
 import play.api.test.Helpers._
 import play.api.inject.bind
 import play.api.libs.json.Json
+
+import java.time.Instant
+import scala.util.Random
 
 class FitnessSpec extends WordSpec with Matchers with MockitoSugar with OneAppPerSuite with CriticalPowerFixture {
 
@@ -64,6 +67,20 @@ class FitnessSpec extends WordSpec with Matchers with MockitoSugar with OneAppPe
       val result = route(app, FakeRequest(POST, s"/api/v1/simulations", headers, Json.toJson(simulation))).get
       status(result) shouldBe CREATED
       contentAsJson(result) shouldEqual resultJson
+    }
+
+    "return the mean maximal power values for a user" in {
+      val userId = "1234567890"
+      val p = new Random
+      val hr = new Random
+      val efforts = 1 to 7200 map { i =>
+        PowerEffort(Random.alphanumeric.take(10).mkString, i, Instant.now, hr.nextInt(200), p.nextInt(1000))
+      }
+
+      when(mockFitnessService.getMeanMaximalPower(userId, None)).thenReturn(efforts)
+
+      val result = route(app, FakeRequest(GET, s"/api/v1/users/$userId/mmp")).get
+      status(result) shouldBe OK
     }
 
   }

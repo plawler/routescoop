@@ -6,11 +6,12 @@ import metrics.PowerMetrics.trainingLoad
 import models._
 import modules.NonBlockingContext
 import repositories.{ActivityStatsStore, PowerEffortStore}
+import utils.IntervalUtils
 
 import com.typesafe.scalalogging.LazyLogging
 
 import java.text.DecimalFormat
-import java.time.{Instant, LocalDate, Period}
+import java.time.Instant
 import scala.concurrent.ExecutionContext
 
 @Singleton
@@ -46,7 +47,10 @@ class FitnessService @Inject()(
 
   def getMeanMaximalPower(userId: String, days: Option[Int] = None): Seq[Effort] = {
     val intervals = Seq.range(1, LONGEST_INTERVAL + 1) // not inclusive
-    powerEffortsStore.getMaximalEfforts(userId, days.getOrElse(365 * 10), intervals)
+    val efforts = powerEffortsStore.getMaximalEfforts(userId, days.getOrElse(365 * 10), intervals)
+    efforts.filter { effort =>
+      IntervalUtils.buildIntervalIndices(efforts.last.intervalLengthInSeconds).contains(effort.intervalLengthInSeconds)
+    }
   }
 
   def calculateTrainingLoad(

@@ -44,4 +44,34 @@ class FitnessService @Inject()(config: AppConfig, ws: WSClient)(implicit ec: Exe
     }
   }
 
+  def meanMaximalPower(user: User, days: Int): Future[MeanMaxPowerResult] = {
+    val mmpUrl = s"$url/${user.id}/mmp?days=$days"
+    ws.url(mmpUrl).get() map { response =>
+      response.status match {
+        case Status.OK =>
+          response.json.validate[Seq[Effort]] match {
+            case success: JsSuccess[Seq[Effort]] => MeanMaxPowerResultSuccess(MeanMaxPower(success.get))
+            case error: JsError => MeanMaxPowerResultError(s"api response error: ${error.errors}")
+          }
+        case _ => MeanMaxPowerResultError(s"fetching mean max power failed with status ${response.status}")
+      }
+    }
+  }
+
+  def powerProfile(user: User, days: Int, durations: Seq[Int]): Future[PowerProfileResult] = {
+    val gotCp = criticalPower(user, days, durations)
+    val gotMmp = meanMaximalPower(user, days)
+    for {
+      cpr <- gotCp
+      mmpr <- gotMmp
+    } yield {
+      (cpr, mmpr) match {
+        case (CriticalPowerResultSuccess(cp), MeanMaxPowerResultSuccess(mmp)) =>
+          PowerProfileResultSuccess(PowerProfile(cp, mmp))
+        case _ =>
+          PowerProfileResultError(s"power profile api requests failed: $cpr $mmpr")
+      }
+    }
+  }
+
 }

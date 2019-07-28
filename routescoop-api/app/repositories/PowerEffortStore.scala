@@ -71,7 +71,9 @@ class PowerEffortStoreImpl @Inject()(db: Database)(implicit @BlockingContext ec:
     SQL"""
          SELECT p.*
          FROM #$PowerEffortsTable p
-         JOIN (SELECT pe.intervalLengthInSeconds, MAX(criticalPower) AS criticalPower
+         JOIN (SELECT pe.intervalLengthInSeconds,
+                max(criticalPower) as criticalPower,
+                substring_index(group_concat(pe.startedAt order by pe.criticalPower desc), ',', 1) as startedAt
                FROM #$PowerEffortsTable pe
                JOIN #$ActivitiesTable a
                  ON a.id = pe.activityId
@@ -81,6 +83,7 @@ class PowerEffortStoreImpl @Inject()(db: Database)(implicit @BlockingContext ec:
                GROUP BY pe.intervalLengthInSeconds) AS mmp
            ON mmp.intervalLengthInSeconds = p.intervalLengthInSeconds
            AND mmp.criticalPower = p.criticalPower
+           AND mmp.startedAt = p.startedAt
         ORDER BY p.intervalLengthInSeconds
       """.as(PowerEffort.parser.*)
   }

@@ -1,17 +1,16 @@
-@(cp: CriticalPower)(implicit request: RequestHeader, messages: Messages)
+@(cp: CriticalPower, mmp: MeanMaxPower)(implicit request: RequestHeader, messages: Messages)
 
 @scripts = {
     <script type="text/javascript">
         var ctx = document.getElementById('cp').getContext('2d');
         var durations = [@Html(cp.predictions.map(p => s"'${p.duration / 60} min'").mkString(","))]
-        //var durations = [@Html(cp.predictions.map(p => s"${p.duration}").mkString(","))]
         var chart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: durations,
                 datasets: [
                     {
-                        label: "Power",
+                        label: "Critical power",
                         borderColor: 'rgb(255, 99, 132)',
                         data: [@cp.predictions.map(_.watts).mkString(",")]
                     }
@@ -19,6 +18,25 @@
             }
         });
     </script>
+
+    <script type="text/javascript">
+            var ctx = document.getElementById('mmp').getContext('2d');
+            var durations = [@Html(mmp.efforts.map(p => s"'${p.duration}'").mkString(","))]
+            var chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: durations,
+                    datasets: [
+                        {
+                            label: "Mean max power",
+                            borderColor: '#4289f4',
+                            data: [@mmp.efforts.map(_.watts).mkString(",")]
+                        }
+                    ]
+                }
+            });
+    </script>
+
 }
 
 @helper.base(scripts = scripts) {
@@ -26,9 +44,8 @@
         <h1 class="h2">Power</h1>
     </div>
 
-    <p>
-        Critical power and mean maximal power curves
-    </p>
-
+    <p>Critical power = @cp.cp, W' = @cp.wPrime kj</p>
     <canvas id="cp" width="1000" height="400"></canvas>
+
+    <canvas id="mmp" width="1000" height="400"></canvas>
 }

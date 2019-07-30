@@ -44,22 +44,19 @@ class PowerAnalysisServiceSpec extends WordSpec with Matchers with MockitoSugar 
       smallestEffort.startedAt shouldEqual sampleActivity.startedAt.plusSeconds(streamData.head.timeIndexInSeconds)
     }
 
-    "build the interval indices for power efforts" in new Fixture {
-      service.buildIntervalIndices(1 to 30) should have size 30
-      service.buildIntervalIndices(1 to 300) should have size 300
-      service.buildIntervalIndices(1 to 1800) should have size 600
-      service.buildIntervalIndices(1 to 5400) should have size 720
-
-      service.buildIntervalIndices(1 to 300)(299) shouldEqual 300
-      service.buildIntervalIndices(1 to 1800)(599) shouldEqual 1800
-    }
-
     "calculate power efforts for large streams" in new Fixture {
       when(mockStreamStore.findByActivityId(sampleActivity.id)) thenReturn longActivityStreams
       val start = System.currentTimeMillis()
       val efforts = service.calculatePowerEfforts(sampleActivity)
       val end = System.currentTimeMillis()
       println(s"Calculating power efforts for large streams execution time: ${(end - start) / 1000} seconds")
+    }
+
+    "calculate power efforts when stream indices are less than total duration" in new Fixture {
+      val longActivityStreamsEvens = longActivityStreams.filter(_.timeIndexInSeconds % 2 == 0)
+      when(mockStreamStore.findByActivityId(sampleActivity.id)) thenReturn longActivityStreamsEvens
+      val efforts = service.calculatePowerEfforts(sampleActivity)
+      efforts.last.intervalLengthInSeconds shouldEqual 13320 // the last interval using the 30 second step
     }
 
     "save power efforts" in new Fixture {

@@ -49,7 +49,9 @@ class FitnessService @Inject()(
     val intervals = Seq.range(1, LONGEST_INTERVAL + 1) // not inclusive
     val efforts = powerEffortsStore.getMaximalEfforts(userId, days.getOrElse(365 * 10), intervals)
     efforts.filter { effort =>
-      IntervalUtils.buildIntervalIndices(efforts.last.intervalLengthInSeconds).contains(effort.intervalLengthInSeconds)
+      IntervalUtils.
+        calculateDisplayIntervals(efforts.last.intervalLengthInSeconds)
+        .contains(effort.intervalLengthInSeconds)
     }
   }
 

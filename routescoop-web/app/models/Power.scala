@@ -2,13 +2,20 @@ package models
 
 import play.api.libs.json.Json
 
-import java.time.Instant
+import java.time.{Instant, LocalDate}
 
 case class Effort(
   duration: Int,
   watts: Int,
   heartRate: Option[Int] = None,
   startedAt: Option[Instant] = None
+)
+
+case class ChartedEffort(
+  duration: String,
+  watts: Int,
+  heartRate: Option[Int] = None,
+  date: Option[LocalDate] = None
 )
 
 object Effort {

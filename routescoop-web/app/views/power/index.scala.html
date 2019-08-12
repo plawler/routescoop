@@ -1,3 +1,5 @@
+@import play.api.libs.json.Json
+
 @(cp: CriticalPower, mmp: MeanMaxPower)(implicit request: RequestHeader, messages: Messages)
 
 @scripts = {
@@ -20,23 +22,40 @@
     </script>
 
     <script type="text/javascript">
-            var ctx = document.getElementById('mmp').getContext('2d');
-            var durations = [@Html(mmp.efforts.map(p => s"'${p.duration}'").mkString(","))]
-            var chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: durations,
-                    datasets: [
-                        {
-                            label: "Mean max power",
-                            borderColor: '#4289f4',
-                            data: [@mmp.efforts.map(_.watts).mkString(",")]
-                        }
-                    ]
-                }
-            });
+        var ctx = document.getElementById('mmp').getContext('2d');
+        var durations = [@Html(mmp.efforts.map(p => s"'${p.duration}'").mkString(","))]
+        var chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: durations,
+                datasets: [
+                    {
+                        label: "Mean max power",
+                        borderColor: '#4289f4',
+                        data: [@mmp.efforts.map(_.watts).mkString(",")]
+                    }
+                ]
+            }
+        });
     </script>
 
+    <script type="text/javascript">
+        var efforts = @Html(Json.stringify(Json.toJson(cp.predictions)))
+        var chart = new Taucharts.Chart({
+            guide: {
+                y: { nice: false },
+                interpolate: 'smooth-keep-extremum'
+            },
+            type: 'line',
+            x: 'duration',
+            y: 'watts',
+            data: efforts,
+            plugins: [
+                Taucharts.api.plugins.get('tooltip')()
+            ]
+        });
+        chart.renderTo('#line')
+    </script>
 }
 
 @helper.base(scripts = scripts) {
@@ -44,8 +63,12 @@
         <h1 class="h2">Power</h1>
     </div>
 
-    <p>Critical power = @cp.cp, W' = @cp.wPrime kj</p>
+    <div id="line" class="c"></div>
+
     <canvas id="cp" width="1000" height="400"></canvas>
+    <p>Critical power = @cp.cp, W' = @cp.wPrime kj</p>
 
     <canvas id="mmp" width="1000" height="400"></canvas>
+
+
 }

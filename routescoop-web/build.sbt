@@ -28,5 +28,7 @@ libraryDependencies ++= Seq(
   "org.webjars" % "bootstrap-datepicker" % "1.4.0" exclude("org.webjars", "bootstrap"),
   "org.webjars" % "chartjs" % "2.7.3",
   "org.webjars" % "jquery" % "3.3.1-1",
-  "org.webjars" % "font-awesome" % "4.7.0"
+  "org.webjars" % "font-awesome" % "4.7.0",
+  "org.webjars" % "d3js" % "5.9.7",
+  "org.webjars.npm" % "taucharts" % "2.6.3"
 )

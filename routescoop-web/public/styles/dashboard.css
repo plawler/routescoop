@@ -98,3 +98,16 @@ body {
     border-color: transparent;
     box-shadow: 0 0 0 3px rgba(255, 255, 255, .25);
 }
+
+/*
+ * TauChart styles
+ */
+
+.c {
+    /*border: solid 1px gray;*/
+    width: 1000px;
+    height: 300px;
+    margin: 0;
+    padding: 0;
+    float: left;
+}

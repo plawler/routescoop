@@ -1,13 +1,11 @@
 package services
 
-import java.time.Instant
 import javax.inject.{Inject, Singleton}
-
-import akka.actor.ActorSystem
 import models._
 import modules.NonBlockingContext
-import repositories.{StoredUserDataSync, UserDataSyncStore, UserSettingsStore, UserStore}
+import repositories.{UserDataSyncStore, UserSettingsStore, UserStore}
 
+import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future, blocking}
 
 
@@ -36,7 +34,7 @@ class UserServiceImpl @Inject()(
   userStore: UserStore,
   dataSyncStore: UserDataSyncStore,
   settingsStore: UserSettingsStore,
-  actorSystem: ActorSystem
+  publisher: Publisher
 )(implicit @NonBlockingContext ec: ExecutionContext) extends UserService {
 
   override def createUser(user: User): Future[Unit] = Future {
@@ -77,6 +75,7 @@ class UserServiceImpl @Inject()(
   override def createSettings(settings: UserSettings): Future[Unit] = Future {
     blocking {
       settingsStore.insert(settings)
+      publisher.publish(UserSettingsCreated(settings))
     }
   }
 
@@ -88,17 +87,10 @@ class UserServiceImpl @Inject()(
 
   override def getSettingsFor(activity: Activity): Future[Option[UserSettings]] = {
     blocking {
-      settingsStore.findLatestFor(activity.userId, activity.startedAt)
-    } match {
-      case None => getLatest(activity.userId)
-      case s @ Some(_) => Future.successful(s)
-    }
-  }
-
-  private def getLatest(userId: String): Future[Option[UserSettings]] = {
-    getAllSettings(userId) map { all =>
-      if (all.isEmpty) None
-      else all.sortWith((s1, s2) => s1.createdAt.isAfter(s2.createdAt)).headOption
+      Future.successful {
+        settingsStore.findLatestUntil(activity.startedAt, activity.userId)
+          .orElse(settingsStore.findEarliestAfter(activity.startedAt, activity.userId))
+      }
     }
   }
 

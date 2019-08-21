@@ -1,8 +1,8 @@
 package services
 
 import fixtures.PowerEffortFixture
-import models.{PowerEffort, UserSettings}
-import repositories.{ActivityStatsStore, PowerEffortStore, StravaStreamStore}
+import models.{ActivityStats, PowerEffort, UserSettings}
+import repositories.{ActivityStatsStore, PowerEffortStore, StravaActivityStore, StravaStreamStore, UserSettingsStore}
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
@@ -10,6 +10,7 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{Matchers, WordSpec}
 
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
@@ -85,8 +86,8 @@ class PowerAnalysisServiceSpec extends WordSpec with Matchers with MockitoSugar 
         PowerEffort(sampleActivity.id, 3600, Instant.now, 150, 200, Some(210))
       )
 
-      when(mockUserService.getSettingsFor(sampleActivity))
-        .thenReturn(Future.successful(Some(settings)))
+      when(mockUserSettingsStore.findLatestUntil(sampleActivity.startedAt, sampleActivity.userId))
+        .thenReturn(Some(settings))
       when(mockPowerEffortStore.findByActivityId(sampleActivity.id)).thenReturn(efforts)
 
       val stats = Await.result(service.createActivityStats(sampleActivity), 3 seconds)
@@ -94,14 +95,37 @@ class PowerAnalysisServiceSpec extends WordSpec with Matchers with MockitoSugar 
       stats map (_.intensityFactor shouldEqual 0.78d)
     }
 
+//    "recalculate activity stats" in new Fixture {
+//      val todaySettings = UserSettings("todaySettings", sampleActivity.userId, 155, 270, 200)
+//      val lastWeekSettings = UserSettings(
+//        "lastWeekSettings",
+//        sampleActivity.userId,
+//        155,
+//        250,
+//        200,
+//        todaySettings.createdAt.minus(7, ChronoUnit.DAYS)
+//      )
+//
+//      when(mockUserSettingsStore.findEarliestAfter(lastWeekSettings.createdAt, lastWeekSettings.userId))
+//          .thenReturn(Some(todaySettings))
+//      when(mockActivityStore.findBetween(lastWeekSettings.createdAt, todaySettings.createdAt, todaySettings.userId))
+//          .thenReturn(Seq(sampleActivity, oneDayOldActivity, oneWeekOldActivity))
+//
+//      service.recalculateActivityStats(lastWeekSettings)
+//
+//      val invocations = 3
+//      verify(mockStatsStore, times(invocations)).update(any[ActivityStats])
+//    }
+
   }
 
   trait Fixture extends PowerEffortFixture {
     val mockStreamStore = mock[StravaStreamStore]
     val mockPowerEffortStore = mock[PowerEffortStore]
-    val mockUserService = mock[UserService]
+    val mockUserSettingsStore = mock[UserSettingsStore]
     val mockStatsStore = mock[ActivityStatsStore]
-    val service = new PowerAnalysisService(mockUserService, mockStreamStore, mockPowerEffortStore, mockStatsStore)
+    val mockActivityStore = mock[StravaActivityStore]
+    val service = new PowerAnalysisService(mockUserSettingsStore, mockStreamStore, mockPowerEffortStore, mockStatsStore, mockActivityStore)
   }
 
 }

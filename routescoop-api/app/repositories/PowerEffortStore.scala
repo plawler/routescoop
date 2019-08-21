@@ -21,6 +21,7 @@ trait PowerEffortStore {
   def insertBatch(efforts: Seq[PowerEffort]): Int
 
   def findByActivityId(activityId: String): Seq[PowerEffort]
+
   def getMaximalEfforts(userId: String, lookBackInDays: Int, intervals: Seq[Int]): Seq[PowerEffort]
 
 }

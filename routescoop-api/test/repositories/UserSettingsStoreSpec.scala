@@ -36,7 +36,7 @@ class UserSettingsStoreSpec extends WordSpec with Matchers with UserFixture {
       settingsList shouldEqual Seq(userSettings)
     }
 
-    "retrieve the latest settings for a user by date" in {
+    "retrieve the latest user settings" in {
       val userId = userSettings.userId
       val today = userSettings.createdAt
       val settingsList = Seq(
@@ -45,10 +45,18 @@ class UserSettingsStoreSpec extends WordSpec with Matchers with UserFixture {
         userSettings.copy(id = "minusThree", createdAt = today.minus(3, ChronoUnit.DAYS))
       )
       settingsList.foreach(userSettingsStore.insert)
-      userSettingsStore.findLatestFor(userId, today.minus(2, ChronoUnit.DAYS)) map {
+      userSettingsStore.findLatestUntil(today.minus(2, ChronoUnit.DAYS), userId) map {
         _.id shouldEqual "minusTwo"
       }
-      userSettingsStore.findLatestFor(userId, today) map (_.id shouldEqual "theSettingsId")
+      userSettingsStore.findLatestUntil(today, userId) map (_.id shouldEqual "theSettingsId")
+
+      userSettingsStore.findEarliestAfter(today.minus(3, ChronoUnit.DAYS), userId) map {
+        _.id shouldEqual "minusTwo"
+      }
+
+      userSettingsStore.findEarliestAfter(today.minus(2, ChronoUnit.DAYS), userId) map {
+        _.id shouldEqual "minusOne"
+      }
     }
 
     "delete a user settings" in {

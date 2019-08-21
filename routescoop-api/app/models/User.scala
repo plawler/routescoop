@@ -59,3 +59,5 @@ object UserSettings {
     )
 
 }
+
+case class UserSettingsCreated(settings: UserSettings)

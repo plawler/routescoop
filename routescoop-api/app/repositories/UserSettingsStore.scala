@@ -20,7 +20,8 @@ trait UserSettingsStore {
   def destroy(): Unit
   def findById(id: String): Option[UserSettings]
   def findByUserId(userId: String): Seq[UserSettings]
-  def findLatestFor(userId: String, date: Instant): Option[UserSettings]
+  def findLatestUntil(date: Instant, userId: String): Option[UserSettings]
+  def findEarliestAfter(date: Instant, userId: String): Option[UserSettings]
   def delete(id: String): Unit
 
 }
@@ -67,7 +68,7 @@ class UserSettingsSqlStore @Inject()(db: Database)(implicit @BlockingContext ec:
       """.as(UserSettings.parser.*)
   }
 
-  override def findLatestFor(userId: String, date: Instant): Option[UserSettings] = db.withConnection { implicit conn =>
+  override def findLatestUntil(date: Instant, userId: String) = db.withConnection { implicit conn =>
     SQL"""
           SELECT *
           FROM #$UserSettingsTable us1
@@ -78,4 +79,17 @@ class UserSettingsSqlStore @Inject()(db: Database)(implicit @BlockingContext ec:
             AND us1.userId = $userId
       """.as(UserSettings.parser.singleOpt)
   }
+
+  override def findEarliestAfter(date: Instant, userId: String) =
+    db.withConnection { implicit conn =>
+      SQL"""
+            SELECT us.*
+            FROM #$UserSettingsTable us
+            WHERE us.createdAt > $date
+              AND us.userId = $userId
+            ORDER BY us.createdAt
+            LIMIT 1
+        """.as(UserSettings.parser.singleOpt)
+    }
+
 }

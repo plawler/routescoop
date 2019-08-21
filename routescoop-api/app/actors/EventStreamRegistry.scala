@@ -19,4 +19,5 @@ class EventStreamRegistry @Inject()(
 
   actorSystem.eventStream.subscribe(analyticsProcessor, classOf[StravaDataSyncCompleted])
   actorSystem.eventStream.subscribe(analyticsProcessor, classOf[PowerEffortsCreated])
+  actorSystem.eventStream.subscribe(analyticsProcessor, classOf[UserSettingsCreated])
 }

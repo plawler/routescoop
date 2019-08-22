@@ -101,8 +101,12 @@ object PowerMetrics {
     * @return double value of variability index
     */
   def variabilityIndex(normalizedPower: Int, avgPower: Int): Double = {
-    val vi = normalizedPower.toDouble / avgPower.toDouble
-    formatter.format(vi).toDouble
+    if (avgPower == 0 || normalizedPower == 0) {
+      0.0
+    } else {
+      val vi = normalizedPower.toDouble / avgPower.toDouble
+      formatter.format(vi).toDouble
+    }
   }
 
 

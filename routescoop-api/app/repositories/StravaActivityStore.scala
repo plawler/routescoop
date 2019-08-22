@@ -4,9 +4,11 @@ package repositories
 import anorm._
 import models.{StravaActivity, Summary}
 import modules.BlockingContext
+
 import play.api.db.Database
 import javax.inject.{Inject, Singleton}
 
+import java.time.Instant
 import scala.concurrent.ExecutionContext
 
 trait StravaActivityStore {
@@ -21,6 +23,7 @@ trait StravaActivityStore {
   def findById(id: String): Option[StravaActivity]
   def findByUserId(userId: String): Seq[StravaActivity]
   def findBySyncId(syncId: String): Seq[StravaActivity]
+  def findBetween(start: Instant, end: Instant, userId: String): Seq[StravaActivity]
 
   def fetchPaged(userId: String, offset: Int, rows: Int): Seq[Summary]
 }
@@ -146,4 +149,14 @@ class StravaActivityStoreImpl @Inject()(db: Database)(implicit @BlockingContext 
       """.as(Summary.parser.*)
   }
 
+  override def findBetween(start: Instant, end: Instant, userId: String): Seq[StravaActivity] =
+    db.withConnection { implicit conn =>
+    SQL"""
+        SELECT a.*
+        FROM #$StravaActivitiesTable a
+        WHERE a.userId = $userId
+          AND (a.startedAt BETWEEN $start AND $end)
+        ORDER BY a.startedAt;
+      """.as(StravaActivity.parser.*)
+  }
 }

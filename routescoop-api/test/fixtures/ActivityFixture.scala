@@ -35,4 +35,6 @@ trait ActivityFixture extends UserFixture {
   val yearOldActivity = sampleActivity.copy(startedAt = activityStartedAt.minus(365, ChronoUnit.DAYS))
   val twoYearOldActivity = sampleActivity.copy(startedAt = activityStartedAt.minus(730, ChronoUnit.DAYS))
   val oneDayOldActivity = sampleActivity.copy(startedAt = activityStartedAt.minus(1, ChronoUnit.DAYS))
+  val oneWeekOldActivity = sampleActivity.copy(startedAt = activityStartedAt.minus(7, ChronoUnit.DAYS))
+
 }

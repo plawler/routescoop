@@ -16,6 +16,7 @@ trait ActivityStatsStore {
   val DaysTable = "days"
 
   def insert(activityStats: ActivityStats): Unit
+  def update(activityStats: ActivityStats): Unit
   def destroy(): Unit
   def findByActivityId(activityId: String): Option[ActivityStats]
   def getDailyStress(userId: String, numberOfDays: Int): Seq[DailyStress]
@@ -48,6 +49,19 @@ class ActivityStatsStoreSql @Inject()(db: Database)
             ${stats.variabilityIndex}
           )
       """.executeInsert()
+  }
+
+  override def update(stats: ActivityStats): Unit = db.withTransaction { implicit conn =>
+    SQL"""
+          UPDATE #$ActivityStatsTable
+          SET userSettingsId = ${stats.userSettingsId},
+            averagePower = ${stats.averagePower},
+            normalizedPower = ${stats.normalizedPower},
+            stressScore = ${stats.stressScore},
+            intensityFactor = ${stats.intensityFactor},
+            variabilityIndex = ${stats.variabilityIndex}
+          WHERE activityId = ${stats.activityId};
+      """.executeUpdate()
   }
 
   override def destroy(): Unit = db.withTransaction { implicit conn =>
@@ -98,4 +112,5 @@ class ActivityStatsStoreSql @Inject()(db: Database)
          order by d.dt
       """.as(DailyStress.parser.*)
   }
+
 }

@@ -1,10 +1,10 @@
 package models
 
-import java.time.{Instant, LocalDate}
-import java.util.Date
-
 import anorm.{Macro, RowParser}
+
 import play.api.libs.json.Json
+
+import java.time.LocalDate
 
 sealed trait Stats
 
@@ -16,9 +16,6 @@ case class ActivityStats(
   stressScore: Int,
   intensityFactor: Double,
   variabilityIndex: Double
-//  ,
-//  cogganZoneOne: Int,
-//  seilerZoneOne: Int
 ) extends Stats
 
 object ActivityStats {

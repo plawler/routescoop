@@ -26,16 +26,24 @@ class ActivityStatsStoreSpec extends WordSpec with Matchers with ActivityStatsFi
       userStore.destroy()
     }
 
-    "should insert activity stats" in {
+    "insert activity stats" in {
       userStore.insert(testUser)
       userSettingsStore.insert(testSettings)
       activityStore.insert(testActivity)
       activityStatsStore.insert(testStats)
     }
 
-    "should find activity stats by activity id" in {
+    "find activity stats by activity id" in {
       val result = activityStatsStore.findByActivityId(testActivity.id)
       result map (_ shouldEqual testStats)
+    }
+
+    "update activity stats" in {
+      val updated = testStats.copy(averagePower = 200)
+      activityStatsStore.update(updated)
+      activityStatsStore.findByActivityId(updated.activityId) map { activity =>
+        activity.averagePower shouldBe 200
+      }
     }
 
 //    "should collect the daily stress records for n days" in {
@@ -45,7 +53,7 @@ class ActivityStatsStoreSpec extends WordSpec with Matchers with ActivityStatsFi
 //      result.size shouldEqual days
 //    }
 
-    "should collect the daily stress records for all time" in {
+    "collect the daily stress records for all time" in {
       val result = activityStatsStore.getDailyStress(testUser.id)
       result.size shouldEqual 1
     }

@@ -1,14 +1,15 @@
 package actors
 
 import javax.inject.Inject
-import models.{PowerEffortsCreated, StravaDataSyncCompleted, UserSettings, UserSettingsCreated}
+import models.{PowerEffortsCreated, StravaDataSyncCompleted, UserSettingsCreated}
 import modules.NonBlockingContext
-import services.{ActivityService, PowerAnalysisService, UserService}
+import services.{ActivityService, PowerAnalysisService}
 
 import akka.actor.{Actor, ActorLogging}
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext
+import scala.util.control.NonFatal
 
 class AnalyticsProcessor @Inject()(
   activityService: ActivityService,
@@ -24,8 +25,7 @@ class AnalyticsProcessor @Inject()(
           analysisService.savePowerEfforts(efforts)
           context.system.eventStream.publish(PowerEffortsCreated(activity))
         }
-      }
-      log.info("Completed power effort calculations")
+      } map (_ => log.info("Completed power effort calculations"))
     case msg: PowerEffortsCreated =>
       log.info(s"Creating activity stats for activity ${msg.activity.id}")
       analysisService.createActivityStats(msg.activity) map {
@@ -34,18 +34,8 @@ class AnalyticsProcessor @Inject()(
       }
     case msg: UserSettingsCreated =>
       log.info(s"new user settings created for ${msg.settings.userId}, reprocessing activity stats...")
-      val newSettings = msg.settings
-      val userId = newSettings.userId
-      val start = newSettings.createdAt
-      val end = analysisService.getEarliestSettingsAfter(start, userId) map (_.createdAt)
-      log.info(s"start: $start, end: $end")
-      activityService.findBetween(start, end.getOrElse(Instant.now), userId) map { activities =>
-        activities foreach { activity =>
-          log.info(s"reprocessing $activity")
-          val stats = analysisService.calculateActivityStats(activity, newSettings)
-          log.info(s"stats to be saved $stats")
-          analysisService.updateActivityStats(stats)
-        }
+      analysisService.recalculateActivityStats(msg.settings) recover {
+        case NonFatal(e) => log.error(s"activity stats recalculation failed with $e")
       }
     case msg => log.error(s"Cannot process message $msg")
   }

@@ -2,7 +2,7 @@ package services
 
 import fixtures.{LapFixture, StreamFixture}
 import models._
-import repositories.{StravaActivityStore, StravaLapStore, StravaStreamStore}
+import repositories.{ActivityStatsStore, StravaActivityStore, StravaLapStore, StravaStreamStore}
 
 import akka.actor.ActorSystem
 import akka.testkit.{TestKit, TestProbe}
@@ -25,10 +25,12 @@ class ActivityServiceSpec extends TestKit(ActorSystem("actvity-service-test"))
   with ActivityServiceFixture {
 
   val mockActivityStore: StravaActivityStore = mock[StravaActivityStore]
+  val mockActivityStatsStore: ActivityStatsStore = mock[ActivityStatsStore]
   val mockLapStore: StravaLapStore = mock[StravaLapStore]
   val mockStreamStore = mock[StravaStreamStore]
   val mockUserService: UserService = mock[UserService]
   val mockStravaWebService: StravaWebService = mock[StravaWebService]
+
   val service = new StravaActivityService(
     mockStravaWebService,
     mockActivityStore,

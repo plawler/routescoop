@@ -19,18 +19,19 @@ class PowerAnalysisService @Inject()(
   userSettingsStore: UserSettingsStore,
   streamStore: StravaStreamStore,
   effortStore: PowerEffortStore,
-  activityStatsStore: ActivityStatsStore
+  activityStatsStore: ActivityStatsStore,
+  actorSystem: ActorSystem
 )(implicit @NonBlockingContext ec: ExecutionContext) extends LazyLogging {
 
-//  def createPowerEfforts(dataSyncId: String): Future[Unit] = {
-//    activityService.getActivitiesBySync(dataSyncId) map { activities =>
-//      activities.foreach { activity =>
-//        val efforts = calculatePowerEfforts(activity)
-//        savePowerEfforts(efforts)
-//        actorSystem.eventStream.publish(PowerEffortsCreated(activity))
-//      }
-//    }
-//  }
+  def createPowerEfforts(dataSyncId: String): Future[Unit] = {
+    activityService.getActivitiesBySync(dataSyncId) map { activities =>
+      activities.foreach { activity =>
+        val efforts = calculatePowerEfforts(activity)
+        savePowerEfforts(efforts)
+        actorSystem.eventStream.publish(PowerEffortsCreated(activity))
+      }
+    }
+  }
 
   def calculatePowerEfforts(activity: Activity): Seq[PowerEffort] = {
     val (times, watts, heartRates) = streamStore.findByActivityId(activity.id).map { stream =>
@@ -47,14 +48,10 @@ class PowerAnalysisService @Inject()(
     effortStore.findByActivityId(activityId)
   }
 
-  def createActivityStats(activity: Activity): Future[Option[ActivityStats]] = Future {
-    getSettingsFor(activity) match {
-      case Some(settings) =>
-        Some(calculateActivityStats(activity, settings))
-      case None =>
-        logger.warn(s"No user settings found to support power stats for activity ${activity.id}")
-        None
-    }
+  def createActivityStats(activity: Activity): Future[Unit] = Future {
+    getSettingsFor(activity) map { settings =>
+      saveActivityStats(calculateActivityStats(activity, settings))
+    } getOrElse logger.warn(s"No user settings found to support power stats for activity ${activity.id}")
   }
 
   def recalculateActivityStats(newSettings: UserSettings): Future[Unit] = {

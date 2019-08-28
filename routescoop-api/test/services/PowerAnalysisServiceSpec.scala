@@ -1,13 +1,15 @@
 package services
 
 import fixtures.PowerEffortFixture
-import models.{ActivityStats, PowerEffort, UserSettings}
+import models.{ActivityStats, Effort, PowerEffort, PowerEffortsCreated, UserSettings}
 import repositories.{ActivityStatsStore, PowerEffortStore, StravaStreamStore, UserSettingsStore}
 
+import akka.actor.ActorSystem
+import akka.testkit.{TestKit, TestProbe}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{Matchers, WordSpecLike}
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -15,7 +17,13 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class PowerAnalysisServiceSpec extends WordSpec with Matchers with MockitoSugar {
+class PowerAnalysisServiceSpec extends TestKit(ActorSystem("power-analysis-service-test"))
+  with WordSpecLike
+  with Matchers
+  with MockitoSugar {
+
+  val listener = TestProbe()
+  system.eventStream.subscribe(listener.ref, classOf[PowerEffortsCreated])
 
   "The Power Analysis Service" should {
 
@@ -59,11 +67,22 @@ class PowerAnalysisServiceSpec extends WordSpec with Matchers with MockitoSugar 
       efforts.last.intervalLengthInSeconds shouldEqual 13320 // the last interval using the 30 second step
     }
 
+    "create power efforts" in new Fixture {
+      val dataSyncId = "theDataSyncId"
+      when(mockActivityService.getActivitiesBySync(dataSyncId)).thenReturn(Future.successful(Seq(sampleActivity)))
+      when(mockStreamStore.findByActivityId(sampleActivity.id)).thenReturn(streams)
+//      mockPowerEffortStore.insert(any(classOf[PowerEffort]))
+
+      service.createPowerEfforts(dataSyncId)
+
+      listener.expectMsgClass(10 seconds, classOf[PowerEffortsCreated])
+    }
+
     "save power efforts" in new Fixture {
       when(mockStreamStore.findByActivityId(sampleActivity.id)).thenReturn(streams)
       val efforts = service.calculatePowerEfforts(sampleActivity)
       service.savePowerEfforts(efforts)
-      verify(mockPowerEffortStore, times(40)).insert(any(classOf[PowerEffort]))
+      verify(mockPowerEffortStore, times(streams.size)).insert(any(classOf[PowerEffort]))
     }
 
     "find longest effort" in new Fixture {
@@ -77,7 +96,23 @@ class PowerAnalysisServiceSpec extends WordSpec with Matchers with MockitoSugar 
       longest.normalizedPower map (_ shouldBe 210)
     }
 
-    "create activity stats for an activity" in new Fixture {
+    "calculate activity stats" in new Fixture {
+      val settings = UserSettings("theSettingsId", sampleActivity.userId, 155, 270, 200)
+      val efforts = Seq(
+        PowerEffort(sampleActivity.id, 900, Instant.now, 150, 220, Some(240)),
+        PowerEffort(sampleActivity.id, 1800, Instant.now, 150, 210, Some(220)),
+        PowerEffort(sampleActivity.id, 3600, Instant.now, 150, 200, Some(210))
+      )
+
+      when(mockPowerEffortStore.findByActivityId(sampleActivity.id)).thenReturn(efforts)
+
+      val stats = service.calculateActivityStats(sampleActivity, settings)
+
+      stats.stressScore shouldBe 60
+      stats.intensityFactor shouldEqual 0.78d
+    }
+
+    "create activity stats" in new Fixture {
       val settings = UserSettings("theSettingsId", sampleActivity.userId, 155, 270, 200)
       val efforts = Seq(
         PowerEffort(sampleActivity.id, 900, Instant.now, 150, 220, Some(240)),
@@ -89,9 +124,9 @@ class PowerAnalysisServiceSpec extends WordSpec with Matchers with MockitoSugar 
         .thenReturn(Some(settings))
       when(mockPowerEffortStore.findByActivityId(sampleActivity.id)).thenReturn(efforts)
 
-      val stats = Await.result(service.createActivityStats(sampleActivity), 3 seconds)
-      stats map (_.stressScore shouldBe 60)
-      stats map (_.intensityFactor shouldEqual 0.78d)
+      Await.result(service.createActivityStats(sampleActivity), 3 seconds)
+
+      verify(mockStatsStore).insert(any(classOf[ActivityStats]))
     }
 
     "recalculate activity stats" in new Fixture {
@@ -129,7 +164,8 @@ class PowerAnalysisServiceSpec extends WordSpec with Matchers with MockitoSugar 
       mockUserSettingsStore,
       mockStreamStore,
       mockPowerEffortStore,
-      mockStatsStore)
+      mockStatsStore,
+      system)
   }
 
 }

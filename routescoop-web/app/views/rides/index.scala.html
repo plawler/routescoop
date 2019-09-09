@@ -1,9 +1,24 @@
 @import org.joda.time.DateTimeUtils
 @import helper._
-@(hasSettings: Boolean, summaries: Seq[RideSummary], url: Call, form: Form[FetchRidesForm.Data])(implicit request: RequestHeader, messages: Messages)
+@(hasSettings: Boolean, summaries: Seq[RideSummary], url: Call, form: Form[FetchRidesForm.Data])(implicit request: RequestHeader, messages: Messages, flash: Flash)
 @helper.base {
     @Html("")
 } {
+
+    @if(!flash.isEmpty) {
+        <p></p>
+        @if(flash.get("success").isDefined) {
+            <div class="alert alert-success" role="alert">
+                @flash.get("success")
+            </div>
+        }
+        @if(flash.get("error").isDefined) {
+            <div class="alert alert-danger" role="alert">
+                @flash.get("error")
+            </div>
+        }
+    }
+
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h1 class="h2">Rides</h1>
     </div>

@@ -34,8 +34,12 @@ class Rides @Inject()(
       },
       data => {
         rideService.syncStrava(request.profile.toUser, data.fetchOlderRides) map {
-          case RideSyncResultStarted(sync) => Ok(s"Sync started : $sync")
-          case default => Ok(s"Sync error: $default")
+          case RideSyncResultStarted(sync) =>
+            Logger.info(s"activity sync started: $sync")
+            Redirect(routes.Rides.index()).flashing("success" -> s"Sync started : ${sync.id}")
+          case default =>
+            Logger.info(s"activity sync error: $default")
+            Redirect(routes.Rides.index()).flashing("error" -> s"Sync error: $default")
         }
       }
     )

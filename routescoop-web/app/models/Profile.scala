@@ -1,6 +1,5 @@
 package models
 
-
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
@@ -10,7 +9,8 @@ case class Profile(
   email: String,
   picture: String,
   stravaToken: Option[String] = None,
-  stravaId: Option[Int] = None
+  stravaId: Option[Int] = None,
+  stravaOauthToken: Option[StravaOauthToken] = None
 ) {
   def toUser = User(id, name, email, picture, stravaToken, stravaId)
 }
@@ -23,7 +23,8 @@ object Profile {
       (JsPath \ "email").read[String] and
       (JsPath \ "picture").read[String] and
       (JsPath \ "stravaToken").readNullable[String] and
-      (JsPath \ "stravaId").readNullable[Int]
+      (JsPath \ "stravaId").readNullable[Int] and
+      (JsPath \ "stravaAccessToken").readNullable[StravaOauthToken]
     ) (Profile.apply _)
 
   implicit val profileWrites: Writes[Profile] = Json.writes[Profile]

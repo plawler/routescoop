@@ -8,9 +8,10 @@ case class User(
   email: String,
   picture: String,
   stravaToken: Option[String] = None,
-  stravaId: Option[Int] = None
+  stravaId: Option[Int] = None,
+  stravaOauthToken: Option[StravaOauthToken] = None
 ) {
-  def toProfile = Profile(id, name, email, picture, stravaToken, stravaId)
+  def toProfile = Profile(id, name, email, picture, stravaToken, stravaId, stravaOauthToken)
 }
 
 object User {

@@ -3,7 +3,7 @@ package services
 import javax.inject.{Inject, Singleton}
 import models._
 import modules.NonBlockingContext
-import repositories.{UserDataSyncStore, UserSettingsStore, UserStore}
+import repositories.{StravaOauthTokenStore, UserDataSyncStore, UserSettingsStore, UserStore}
 
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future, blocking}
@@ -34,6 +34,7 @@ class UserServiceImpl @Inject()(
   userStore: UserStore,
   dataSyncStore: UserDataSyncStore,
   settingsStore: UserSettingsStore,
+  tokenStore: StravaOauthTokenStore,
   publisher: Publisher
 )(implicit @NonBlockingContext ec: ExecutionContext) extends UserService {
 
@@ -49,10 +50,13 @@ class UserServiceImpl @Inject()(
     }
   }
 
-
   override def getUser(userId: String): Future[Option[User]] = Future {
     blocking {
-      userStore.select(userId)
+      userStore.select(userId) flatMap { user =>
+        tokenStore.findByUserId(userId).headOption map { token =>
+          user.copy(stravaToken = Some(token.accessToken))
+        }
+      }
     }
   }
 

@@ -19,7 +19,10 @@ class UserService @Inject()(ws: WSClient, config: AppConfig)(implicit ec: Execut
   def saveOrUpdate(profile: Profile): Future[UserResult] = {
     get(profile.id) flatMap {
       case UserResultSuccess(user) =>
-        val updated = user.copy(name = profile.name, email = profile.email, picture = profile.picture)
+        val updated = user.copy(
+          name = profile.name,
+          email = profile.email,
+          picture = profile.picture)
         update(updated)
       case UserResultNotFound => create(profile.toUser)
       case error: UserResultError => Future.successful(error)

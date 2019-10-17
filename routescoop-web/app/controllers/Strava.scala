@@ -3,7 +3,7 @@ package controllers
 import config.StravaConfig
 import io.lemonlabs.uri.dsl._
 import javax.inject.{Inject, Singleton}
-import models.{Profile, UserResultSuccess}
+import models.{Profile, UserResultSuccess, StravaOauthToken}
 import services.UserService
 
 import play.api.Logger
@@ -16,6 +16,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class Strava @Inject()(
+  authenticated: AuthenticatedAction,
+  stravaRefreshed: StravaTokenRefreshAction,
   userService: UserService,
   config: StravaConfig,
   ws: WSClient,
@@ -58,17 +60,32 @@ class Strava @Inject()(
     }
   }
 
+  def tokenStatus = Action { implicit request =>
+    Ok("Some shit about your access token is weird.")
+  }
+
+  def check = authenticated.andThen(stravaRefreshed) { implicit request =>
+    getProfile(request) map { profile =>
+      Ok(Json.toJson(profile.stravaOauthToken))
+    } getOrElse Ok("Could not locate the profile...which is scary. Check the logs.")
+  }
+
   private def getProfile(request: Request[Any]): Option[Profile] = {
     for {
-      sessionId <- request.session.get("idToken")
-      profile <- cache.get[Profile](sessionId + "profile")
+      authId <- request.session.get("idToken")
+      profile <- cache.get[Profile](authId + "profile")
     } yield {
       profile
     }
   }
 
   private def forTokenExchange(code: String): Map[String, Seq[String]] = {
-    Map("client_id" -> Seq(config.clientId), "client_secret" -> Seq(config.clientSecret), "code" -> Seq(code))
+    Map(
+      "client_id" -> Seq(config.clientId),
+      "client_secret" -> Seq(config.clientSecret),
+      "code" -> Seq(code),
+      "grant_type" -> Seq("authorization_code")
+    )
   }
 
   private def extractStravaBits(response: WSResponse) = {

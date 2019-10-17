@@ -11,6 +11,8 @@ GET         /authzero/callback          controllers.Auth.callback(code: Option[S
 
 GET         /strava/callback            controllers.Strava.callback(code: Option[String])
 GET         /strava/authorize           controllers.Strava.authorize
+GET         /strava/token/status        controllers.Strava.tokenStatus
+GET         /strava/token/check         controllers.Strava.check
 
 GET         /rides                      controllers.Rides.index(page: Int ?= 1)
 POST        /rides/sync                 controllers.Rides.sync

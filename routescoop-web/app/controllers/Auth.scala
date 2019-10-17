@@ -1,22 +1,20 @@
 package controllers
 
-
-import java.util.UUID
 import config.AuthConfig
 import io.lemonlabs.uri.dsl._
 import javax.inject.{Inject, Singleton}
-import models.{Profile, UserResultError, UserResultNotFound, UserResultSuccess}
-import modules.NonBlockingContext
-
-import play.api.Logger
-import play.api.cache.{CacheApi, SyncCacheApi}
-import play.api.http.{HeaderNames, MimeTypes}
-import play.api.libs.json.{JsValue, Json}
-import play.api.libs.ws.{WSClient, WSResponse}
-import play.api.mvc.{Action, BaseController, Controller, ControllerComponents, Cookie, DiscardingCookie}
+import models.{Profile, UserResultError, UserResultSuccess}
 import services.UserService
 import util.RandomUtil
 
+import play.api.Logger
+import play.api.cache.SyncCacheApi
+import play.api.http.{HeaderNames, MimeTypes}
+import play.api.libs.json.Json
+import play.api.libs.ws.WSClient
+import play.api.mvc.{BaseController, ControllerComponents}
+
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 

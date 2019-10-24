@@ -12,7 +12,7 @@ case class Profile(
   stravaId: Option[Int] = None,
   stravaOauthToken: Option[StravaOauthToken] = None
 ) {
-  def toUser = User(id, name, email, picture, stravaToken, stravaId)
+  def toUser = User(id, name, email, picture, stravaToken, stravaId, stravaOauthToken)
 }
 
 object Profile {

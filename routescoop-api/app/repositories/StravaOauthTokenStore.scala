@@ -27,12 +27,13 @@ class StravaOauthTokenSqlStore @Inject()(db: Database)(implicit @BlockingContext
 
   override def insert(token: StravaOauthToken): Unit = db.withTransaction { implicit conn =>
     SQL"""
-        INSERT INTO #$StravaTokensTable (userId, accessToken, expiresAt, refreshToken)
+        INSERT INTO #$StravaTokensTable (userId, accessToken, expiresAt, refreshToken, athleteId)
         VALUES (
           ${token.userId},
           ${token.accessToken},
           ${token.expiresAt},
-          ${token.refreshToken}
+          ${token.refreshToken},
+          ${token.athleteId}
         )
       """.executeInsert()
   }

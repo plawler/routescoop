@@ -1,12 +1,13 @@
 package controllers
 
 import config.StravaConfig
-import models.{Profile, UserResultSuccess}
-import services.UserService
+import models.{Profile, StravaOauthToken, UserResultSuccess}
+import services.{StravaOauthService, UserService}
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import org.mockito.Mockito._
+import org.mockito.ArgumentMatchers.any
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.OneAppPerSuite
@@ -14,8 +15,8 @@ import play.api.cache.SyncCacheApi
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
-import play.api.mvc.{Action, DefaultActionBuilder, PlayBodyParsers}
 import play.api.mvc.Results._
+import play.api.mvc.{DefaultActionBuilder, PlayBodyParsers}
 import play.api.routing.sird._
 import play.api.test.{FakeRequest, StubControllerComponentsFactory, WsTestClient}
 import play.core.server.Server
@@ -28,7 +29,7 @@ import scala.concurrent.{Await, Future}
 class StravaSpec extends WordSpec with Matchers with MockitoSugar with OneAppPerSuite with StubControllerComponentsFactory {
 
   val mockCache = mock[SyncCacheApi]
-  val mockUserService = mock[UserService]
+  val mockStravaOauthService = mock[StravaOauthService]
 
   implicit val as = ActorSystem()
   implicit val materializer = ActorMaterializer()
@@ -37,7 +38,7 @@ class StravaSpec extends WordSpec with Matchers with MockitoSugar with OneAppPer
 
   override lazy val app: play.api.Application = new GuiceApplicationBuilder()
     .overrides(bind[SyncCacheApi].toInstance(mockCache))
-    .overrides(bind[UserService].toInstance(mockUserService))
+    .overrides(bind[StravaOauthService].toInstance(mockStravaOauthService))
     .build()
 
   "The Strava controller" should {
@@ -49,13 +50,13 @@ class StravaSpec extends WordSpec with Matchers with MockitoSugar with OneAppPer
         }
       } { implicit port =>
         WsTestClient.withClient { client =>
-          val controller = new Strava(mockUserService, config, client, mockCache, stubControllerComponents())
+          val controller = new Strava(mockStravaOauthService, config, client, mockCache, stubControllerComponents())
           val request = FakeRequest(play.api.http.HttpVerbs.GET, "/strava/callback").withSession("idToken" -> sessionId)
           val result = controller.callback(Some("abcdef123456")).apply(request)
 
           Await.result(result, 1 second)
 
-          verify(mockUserService).update(stravaUser)
+          verify(mockStravaOauthService).saveToken(any(classOf[Profile]), any(classOf[StravaOauthToken]))
         }
       }
     }
@@ -75,15 +76,18 @@ class StravaSpec extends WordSpec with Matchers with MockitoSugar with OneAppPer
     val stravaId = 123456
     val stravaToken = "aaaabbbb"
     val stravaProfile = profile.copy(stravaId = Some(stravaId), stravaToken = Some(stravaToken))
-    val stravaUser = stravaProfile.toUser
 
     val tokenExchangeJson = Json.parse(
       s"""
          |{
-         | "access_token": "$stravaToken",
-         | "athlete": {
-         |   "id": $stravaId
-         | }
+         |  "token_type": "Bearer",
+         |  "expires_at": 1568775134,
+         |  "expires_in": 21600,
+         |  "refresh_token": "e5n567567",
+         |  "access_token": "$stravaToken",
+         |  "athlete": {
+         |    "id": $stravaId
+         |  }
          |}
         """.stripMargin
     )
@@ -97,7 +101,8 @@ class StravaSpec extends WordSpec with Matchers with MockitoSugar with OneAppPer
     )
 
     when(mockCache.get[Profile](profileKey)).thenReturn(Some(profile))
-    when(mockUserService.update(stravaUser)).thenReturn(Future.successful(UserResultSuccess(stravaUser)))
+    when(mockStravaOauthService.saveToken(any(classOf[Profile]), any(classOf[StravaOauthToken])))
+      .thenReturn(Future.successful(stravaProfile))
   }
 
 }

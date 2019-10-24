@@ -6,7 +6,13 @@ import play.api.libs.json.Json
 
 import java.time.Instant
 
-case class StravaOauthToken(userId: String, accessToken: String, expiresAt: Instant, refreshToken: String)
+case class StravaOauthToken(
+  userId: String,
+  accessToken: String,
+  expiresAt: Instant,
+  refreshToken: String,
+  athleteId: Int
+)
 
 object StravaOauthToken {
   implicit val format = Json.format[StravaOauthToken]

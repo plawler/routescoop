@@ -16,7 +16,8 @@ case class OauthTokenResponse(
   access_token: String,
   expires_at: Long,
   expires_in: Int,
-  refresh_token: String
+  refresh_token: String,
+  athlete_id: Int
 )
 
 object OauthTokenResponse {
@@ -48,7 +49,7 @@ class StravaOauthService @Inject()(ws: WSClient, stravaConfig: StravaConfig, app
     }
   }
 
-  private def saveToken(profile: Profile, token: StravaOauthToken): Future[Profile] = {
+  def saveToken(profile: Profile, token: StravaOauthToken): Future[Profile] = {
     val url = s"${appConfig.baseApiUrl}/users/${profile.id}/strava/tokens"
     ws.url(url).post(Json.toJson(token)) map { response =>
       response.status match {

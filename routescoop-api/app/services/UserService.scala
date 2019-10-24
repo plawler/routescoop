@@ -54,7 +54,7 @@ class UserServiceImpl @Inject()(
     blocking {
       userStore.select(userId) flatMap { user =>
         tokenStore.findByUserId(userId).headOption map { token =>
-          user.copy(stravaToken = Some(token.accessToken))
+          user.copy(stravaToken = Some(token.accessToken), stravaId = Some(token.athleteId))
         }
       }
     }

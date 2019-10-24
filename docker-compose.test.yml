@@ -1,7 +1,7 @@
 version: '3'
 services:
   routescoop-web:
-    image: play26-docker-test
+    image: pelawler/play26-sbt
     command: sbt test
     restart: "no"
     volumes:
@@ -10,7 +10,7 @@ services:
     env_file:
       - routescoop.env
   routescoop-api:
-    image: play26-docker-test
+    image: pelawler/play26-sbt
     command: sbt test
     depends_on:
       - mysqldb

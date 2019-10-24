@@ -1,7 +1,7 @@
 package services
 
 import fixtures.PowerEffortFixture
-import models.{ActivityStats, Effort, PowerEffort, PowerEffortsCreated, UserSettings}
+import models.{ActivityStats, PowerEffort, PowerEffortsCreated, UserSettings}
 import repositories.{ActivityStatsStore, PowerEffortStore, StravaStreamStore, UserSettingsStore}
 
 import akka.actor.ActorSystem

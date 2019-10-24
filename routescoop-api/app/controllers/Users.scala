@@ -7,7 +7,7 @@ import repositories.StravaOauthTokenStore
 import services.UserService
 
 import play.api.Logger
-import play.api.libs.json.{JsError, JsValue, Json}
+import play.api.libs.json.{JsError, Json}
 import play.api.mvc.{BaseController, ControllerComponents}
 
 import scala.concurrent.{ExecutionContext, Future}

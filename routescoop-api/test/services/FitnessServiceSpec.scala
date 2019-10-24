@@ -1,7 +1,7 @@
 package services
 
 import fixtures.{CriticalPowerFixture, StressScoreFixture}
-import models.{CP, CriticalPowerPrediction, DailyTrainingLoad, Simulation}
+import models.{CriticalPowerPrediction, DailyTrainingLoad}
 import repositories.{ActivityStatsStore, PowerEffortStore}
 
 import org.mockito.Mockito._

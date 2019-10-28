@@ -1,6 +1,6 @@
 package models
 
-import services.OauthTokenResponse
+import services.RefreshTokenResponse
 
 import play.api.libs.json.Json
 
@@ -13,12 +13,11 @@ case class StravaOauthToken(accessToken: String, expiresAt: Instant, refreshToke
 object StravaOauthToken {
   implicit val stravaTokenFormat = Json.format[StravaOauthToken]
 
-  def apply(tokenResponse: OauthTokenResponse): StravaOauthToken = {
-    StravaOauthToken(
-      tokenResponse.access_token,
-      Instant.ofEpochSecond(tokenResponse.expires_at),
-      tokenResponse.refresh_token,
-      tokenResponse.athlete_id
-    )
-  }
+//  def apply(tokenResponse: RefreshTokenResponse): StravaOauthToken = {
+//    StravaOauthToken(
+//      tokenResponse.access_token,
+//      Instant.ofEpochSecond(tokenResponse.expires_at),
+//      tokenResponse.refresh_token
+//    )
+//  }
 }

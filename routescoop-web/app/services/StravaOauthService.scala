@@ -9,19 +9,19 @@ import play.api.http.Status
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.libs.ws.WSClient
 
+import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
-case class OauthTokenResponse(
+case class RefreshTokenResponse(
   token_type: String,
   access_token: String,
   expires_at: Long,
   expires_in: Int,
-  refresh_token: String,
-  athlete_id: Int
+  refresh_token: String
 )
 
-object OauthTokenResponse {
-  implicit val oauthTokenResponseFormat = Json.format[OauthTokenResponse]
+object RefreshTokenResponse {
+  implicit val format = Json.format[RefreshTokenResponse]
 }
 
 @Singleton
@@ -33,9 +33,10 @@ class StravaOauthService @Inject()(ws: WSClient, stravaConfig: StravaConfig, app
       if (current.isExpired) {
         Logger.info("Gonna be refreshing this Strava token as soon as Paul fixes his shit...")
         exchangeToken(current.refreshToken) flatMap {
-          case Some(response) =>
+          case Some(rtr) =>
             Logger.info(s"saving new token to ${profile.email} account")
-            saveToken(profile, StravaOauthToken(response)).map(p => p)
+            val sot = StravaOauthToken(rtr.access_token, Instant.ofEpochSecond(rtr.expires_at), rtr.refresh_token, profile.stravaId.getOrElse(0))
+            saveToken(profile, sot).map(p => p)
           case None =>
             Logger.info("token not expired. no change to profile")
             Future.successful(profile)
@@ -63,12 +64,12 @@ class StravaOauthService @Inject()(ws: WSClient, stravaConfig: StravaConfig, app
     }
   }
 
-  private def exchangeToken(refreshToken: String): Future[Option[OauthTokenResponse]] = {
+  private def exchangeToken(refreshToken: String): Future[Option[RefreshTokenResponse]] = {
     ws.url(stravaConfig.oauthUrl).post(forTokenExchange(refreshToken)) map { response =>
       response.status match {
         case Status.OK =>
-          response.json.validate[OauthTokenResponse] match {
-            case success: JsSuccess[OauthTokenResponse] =>
+          response.json.validate[RefreshTokenResponse] match {
+            case success: JsSuccess[RefreshTokenResponse] =>
               Logger.info(s"Strava oauth response: $response")
               Some(success.get)
             case error: JsError =>

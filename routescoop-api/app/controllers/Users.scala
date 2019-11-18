@@ -1,11 +1,12 @@
 package controllers
 
 import javax.inject.Inject
-import models.{CreateUserSettings, User, UserSettings}
+import models.{CreateUserSettings, StravaOauthToken, User, UserSettings}
 import modules.NonBlockingContext
+import repositories.StravaOauthTokenStore
 import services.UserService
 
-import akka.actor.ActorSystem
+import play.api.Logger
 import play.api.libs.json.{JsError, Json}
 import play.api.mvc.{BaseController, ControllerComponents}
 
@@ -14,7 +15,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class Users @Inject()(
   userService: UserService,
-  actorSystem: ActorSystem,
+  tokenStore: StravaOauthTokenStore,
   val controllerComponents: ControllerComponents
 ) (implicit @NonBlockingContext ec: ExecutionContext) extends BaseController {
 
@@ -33,9 +34,13 @@ class Users @Inject()(
   }
 
   def get(id: String) = Action.async { implicit request =>
-    userService.getUser(id).map { user =>
-      if (user.isEmpty) NotFound
-      else Ok(Json.toJson(user))
+    userService.getUser(id).map { maybeUser =>
+      maybeUser map { user =>
+        val maybeToken = tokenStore.findByUserId(user.id).headOption
+        val theJson = makeUserJson(user, maybeToken)
+        Logger.info(s"outgoing user json is: ${Json.prettyPrint(theJson)}")
+        Ok(theJson)
+      } getOrElse NotFound
     }
   }
 
@@ -53,6 +58,19 @@ class Users @Inject()(
     userService.getAllSettings(userId) map { settingsList =>
       Ok(Json.toJson(settingsList))
     }
+  }
+
+  private def makeUserJson(user: User, maybeToken: Option[StravaOauthToken]) = {
+    val userJsObject = Json.toJsObject(user).fieldSet map ( x => Tuple2(x._1, Json.toJsFieldJsValueWrapper(x._2)))
+    val fields = maybeToken match {
+      case Some(token) => userJsObject.toSeq :+ ("stravaOauthToken" -> makeTokenJson(token))
+      case None => userJsObject.toSeq
+    }
+    Json.obj(fields:_*)
+  }
+
+  private def makeTokenJson(token: StravaOauthToken) = {
+    Json.toJsFieldJsValueWrapper(Json.toJsObject(token).-("userId"))
   }
 
 }

@@ -34,6 +34,7 @@ class ApplicationModule extends AbstractModule with AkkaGuiceSupport {
     bind(classOf[PowerAnalysisService])
 
     bind(classOf[StravaWebService]).to(classOf[StravaWebServiceImpl])
+    bind(classOf[StravaOauthTokenStore]).to(classOf[StravaOauthTokenSqlStore])
   }
 
   @Provides

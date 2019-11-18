@@ -3,8 +3,8 @@ package controllers
 import config.StravaConfig
 import io.lemonlabs.uri.dsl._
 import javax.inject.{Inject, Singleton}
-import models.{Profile, UserResultSuccess}
-import services.UserService
+import models.{Profile, StravaOauthToken}
+import services.StravaOauthService
 
 import play.api.Logger
 import play.api.cache.SyncCacheApi
@@ -12,11 +12,13 @@ import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.mvc.{BaseController, ControllerComponents, Request}
 
+import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 @Singleton
 class Strava @Inject()(
-  userService: UserService,
+  stravaOauthService: StravaOauthService,
   config: StravaConfig,
   ws: WSClient,
   cache: SyncCacheApi,
@@ -27,7 +29,8 @@ class Strava @Inject()(
     val url = config.authorizationUrl ?
       ("client_id" -> config.clientId) &
       ("response_type" -> "code") &
-      ("redirect_uri" -> config.redirectUri)
+      ("redirect_uri" -> config.redirectUri) &
+      ("scope" -> "read,activity:read")
     Redirect(url) // redirect user to authorize page on strava
   }
 
@@ -37,14 +40,14 @@ class Strava @Inject()(
         maybeCode match {
           case Some(code) =>
             ws.url(config.oauthUrl).post(forTokenExchange(code)) flatMap { response =>
-              val (token, id) = extractStravaBits(response)
-              val withStrava = profile.copy(stravaId = Some(id), stravaToken = Some(token)).toUser
-              userService.update(withStrava) map {
-                case UserResultSuccess(user) =>
-                  request.session.get("idToken") foreach (id => cache.set(id + "profile", user.toProfile))
-                  Redirect(routes.User.profile()).flashing("success" -> "Connected to Strava")
-                case _ =>
-                  Logger.error(s"Update failed for user: $withStrava")
+              val token = extractStravaOauthToken(response)
+              val withStrava = profile.copy(stravaId = Some(token.athleteId), stravaToken = Some(token.accessToken))
+              stravaOauthService.saveToken(withStrava, token) map { updated =>
+                request.session.get("idToken") foreach (id => cache.set(id + "profile", updated))
+                Redirect(routes.User.profile()).flashing("success" -> "Connected to Strava")
+              } recover {
+                case NonFatal(e) =>
+                  Logger.error(s"Update failed for user: $withStrava with error $e")
                   Redirect(routes.User.profile()).flashing("error" -> "Profile update failed")
               }
             }
@@ -58,24 +61,36 @@ class Strava @Inject()(
     }
   }
 
+  def tokenStatus = Action { implicit request =>
+    Ok("Some shit about your access token is weird.")
+  }
+
   private def getProfile(request: Request[Any]): Option[Profile] = {
     for {
-      sessionId <- request.session.get("idToken")
-      profile <- cache.get[Profile](sessionId + "profile")
+      authId <- request.session.get("idToken")
+      profile <- cache.get[Profile](authId + "profile")
     } yield {
       profile
     }
   }
 
   private def forTokenExchange(code: String): Map[String, Seq[String]] = {
-    Map("client_id" -> Seq(config.clientId), "client_secret" -> Seq(config.clientSecret), "code" -> Seq(code))
+    Map(
+      "client_id" -> Seq(config.clientId),
+      "client_secret" -> Seq(config.clientSecret),
+      "code" -> Seq(code),
+      "grant_type" -> Seq("authorization_code")
+    )
   }
 
-  private def extractStravaBits(response: WSResponse) = {
+  private def extractStravaOauthToken(response: WSResponse) = {
     val json = Json.parse(response.body)
-    val token = (json \ "access_token").as[String]
+    val accessToken = (json \ "access_token").as[String]
+    val expiry = (json \ "expires_at").as[Long]
+    val refreshToken = (json \ "refresh_token").as[String]
     val athleteId = (json \ "athlete" \ "id").as[Int]
-    (token, athleteId)
+
+    StravaOauthToken(accessToken, Instant.ofEpochSecond(expiry), refreshToken, athleteId)
   }
 
 }

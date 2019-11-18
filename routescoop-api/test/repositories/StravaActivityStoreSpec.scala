@@ -7,6 +7,8 @@ import org.scalatest.{Matchers, WordSpec}
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 class StravaActivityStoreSpec extends WordSpec with Matchers with ActivityStoreFixture {
@@ -39,6 +41,12 @@ class StravaActivityStoreSpec extends WordSpec with Matchers with ActivityStoreF
 
       activityStore.fetchPaged(testUser.id, 0, 1).size shouldEqual 1 // page 1 is an offset of zero
       activityStore.fetchPaged(testUser.id, 0, 2).size shouldEqual 2
+    }
+
+    "retrieve activities between a start and end timestamp" in {
+      val yesterday = Instant.now().minus(1, ChronoUnit.DAYS)
+      val tomorrow = Instant.now().plus(1, ChronoUnit.DAYS)
+      activityStore.findBetween(yesterday, tomorrow, testUser.id) should have length 10
     }
 
   }

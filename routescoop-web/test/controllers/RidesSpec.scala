@@ -36,8 +36,8 @@ class RidesSpec extends WordSpec with Matchers with MockitoSugar with OneAppPerS
           .withFormUrlEncodedBody("fetchOlderRides" -> "false")
           .withSession(session)
       ).get
-      status(result) shouldBe OK
-      contentAsString(result) should startWith("Sync started")
+      status(result) shouldBe SEE_OTHER
+      flash(result).get("success").get should startWith("Sync started")
     }
 
     "initiate ride sync for older activities" in new RidesTesting {
@@ -49,14 +49,15 @@ class RidesSpec extends WordSpec with Matchers with MockitoSugar with OneAppPerS
           .withFormUrlEncodedBody("fetchOlderRides" -> "true")
           .withSession(session)
       ).get
-      status(result) shouldBe OK
+      status(result) shouldBe SEE_OTHER
+      flash(result).get("success").get should startWith("Sync started")
     }
 
     "error if no user is found" in new RidesTesting {
       when(mockRideService.syncStrava(stravaUser)).thenReturn(Future.successful(RideSyncResultError("user not found")))
       val result = route(app, FakeRequest(POST, "/rides/sync").withSession(session)).get
-      status(result) shouldBe OK
-      contentAsString(result) should startWith("Sync error")
+      status(result) shouldBe SEE_OTHER
+      flash(result).get("error").get should startWith("Sync error")
     }
 
   }

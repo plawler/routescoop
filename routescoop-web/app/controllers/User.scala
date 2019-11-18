@@ -1,6 +1,7 @@
 package controllers
 
 import javax.inject.{Inject, Singleton}
+import models.Profile
 
 import play.api.cache.SyncCacheApi
 import play.api.i18n.I18nSupport
@@ -17,7 +18,12 @@ class User @Inject()(
 )(implicit ec: ExecutionContext) extends BaseController with I18nSupport {
 
   def profile = authenticated { implicit request =>
-    Ok(views.html.user.profile(request.profile))
+    request.session.get("idToken") map { idToken =>
+      cache.get[Profile](idToken + "profile") match {
+        case Some(profile) => Ok(views.html.user.profile(profile))
+        case None => Redirect(routes.Auth.logout())
+      }
+    } getOrElse Redirect(routes.Auth.logout())
   }
 
 }

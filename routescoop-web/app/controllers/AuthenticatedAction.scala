@@ -2,14 +2,12 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 import models.Profile
-import modules.NonBlockingContext
 
 import play.api.cache.SyncCacheApi
 import play.api.mvc.Results._
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
-
 
 case class AuthenticatedRequest[A](profile: Profile, request: Request[A]) extends WrappedRequest[A](request)
 

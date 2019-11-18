@@ -17,6 +17,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class Rides @Inject()(
   authenticated: AuthenticatedAction,
+  stravaRefreshed: StravaTokenRefreshAction,
   rideService: RideService,
   settingsService: SettingsService,
   ws: WSClient,
@@ -27,15 +28,19 @@ class Rides @Inject()(
   val syncRidesUrl = routes.Rides.sync()
   val createSettingsUrl = routes.Settings.create()
 
-  def sync = authenticated.async { implicit request =>
+  def sync = authenticated.andThen(stravaRefreshed).async { implicit request =>
     FetchRidesForm.form.bindFromRequest.fold(
       formWithErrors => {
         Future.successful(Redirect(routes.Rides.index()).flashing("error" -> "Fetch rides form invalid"))
       },
       data => {
         rideService.syncStrava(request.profile.toUser, data.fetchOlderRides) map {
-          case RideSyncResultStarted(sync) => Ok(s"Sync started : $sync")
-          case default => Ok(s"Sync error: $default")
+          case RideSyncResultStarted(sync) =>
+            Logger.info(s"activity sync started: $sync")
+            Redirect(routes.Rides.index()).flashing("success" -> s"Sync started : ${sync.id}")
+          case default =>
+            Logger.info(s"activity sync error: $default")
+            Redirect(routes.Rides.index()).flashing("error" -> s"Sync error: $default")
         }
       }
     )

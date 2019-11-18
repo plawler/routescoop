@@ -56,6 +56,12 @@ class PowerMetricsSpec extends FlatSpec with Matchers with Fixture {
     trainingLoad(startingAtl, stressScores.head, 7) shouldEqual 67.6
   }
 
+  it should "calculate variability index" in {
+    variabilityIndex(0, 0)
+    variabilityIndex(1, 0)
+    variabilityIndex(0, 1)
+  }
+
 }
 
 trait Fixture extends StressScoreFixture {

@@ -2,23 +2,36 @@ package services
 
 import javax.inject.{Inject, Singleton}
 import metrics.PowerMetrics._
-import models.{Activity, ActivityStats, PowerEffort, UserSettings}
+import models.{Activity, ActivityStats, Interval, PowerEffort, PowerEffortsCreated, UserSettings}
 import modules.NonBlockingContext
-import repositories.{ActivityStatsStore, PowerEffortStore, StravaStreamStore}
+import repositories.{ActivityStatsStore, PowerEffortStore, StravaStreamStore, UserSettingsStore}
 import utils.IntervalUtils
 
+import akka.actor.ActorSystem
 import com.typesafe.scalalogging.LazyLogging
 
+import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
-
 
 @Singleton
 class PowerAnalysisService @Inject()(
-  userService: UserService,
+  activityService: StravaActivityService,
+  userSettingsStore: UserSettingsStore,
   streamStore: StravaStreamStore,
   effortStore: PowerEffortStore,
-  activityStatsStore: ActivityStatsStore
+  activityStatsStore: ActivityStatsStore,
+  actorSystem: ActorSystem
 )(implicit @NonBlockingContext ec: ExecutionContext) extends LazyLogging {
+
+  def createPowerEfforts(dataSyncId: String): Future[Unit] = {
+    activityService.getActivitiesBySync(dataSyncId) map { activities =>
+      activities.foreach { activity =>
+        val efforts = calculatePowerEfforts(activity)
+        savePowerEfforts(efforts)
+        actorSystem.eventStream.publish(PowerEffortsCreated(activity))
+      }
+    }
+  }
 
   def calculatePowerEfforts(activity: Activity): Seq[PowerEffort] = {
     val (times, watts, heartRates) = streamStore.findByActivityId(activity.id).map { stream =>
@@ -35,13 +48,20 @@ class PowerAnalysisService @Inject()(
     effortStore.findByActivityId(activityId)
   }
 
-  def createActivityStats(activity: Activity): Future[Option[ActivityStats]] = {
-    userService.getSettingsFor(activity) map {
-      case Some(settings) =>
-        Some(calculateActivityStats(activity, settings))
-      case None =>
-        logger.warn(s"No user settings found to support power stats for activity ${activity.id}")
-        None
+  def createActivityStats(activity: Activity): Future[Unit] = Future {
+    getSettingsFor(activity) map { settings =>
+      saveActivityStats(calculateActivityStats(activity, settings))
+    } getOrElse logger.warn(s"No user settings found to support power stats for activity ${activity.id}")
+  }
+
+  def recalculateActivityStats(newSettings: UserSettings): Future[Unit] = {
+    val userId = newSettings.userId
+    val start = newSettings.createdAt
+    val end = (getEarliestSettingsAfter(newSettings.createdAt, userId) map (_.createdAt)) getOrElse Instant.now
+    activityService.findBetween(start, end, userId) map { activities =>
+      activities.foreach { activity =>
+        updateActivityStats(calculateActivityStats(activity, newSettings))
+      }
     }
   }
 
@@ -50,9 +70,33 @@ class PowerAnalysisService @Inject()(
     activityStatsStore.insert(stats)
   }
 
+  def updateActivityStats(stats: ActivityStats): Unit = {
+    activityStatsStore.findByActivityId(stats.activityId) match {
+      case Some(_) =>
+        logger.info(s"updating the activity stats $stats")
+        activityStatsStore.update(stats)
+      case None => saveActivityStats(stats)
+    }
+  }
+
   def longestEffort(activity: Activity): PowerEffort = {
     val efforts = getEffortsByActivityId(activity.id)
     efforts.sortWith(_.intervalLengthInSeconds > _.intervalLengthInSeconds).head
+  }
+
+  def getEarliestSettingsAfter(timestamp: Instant, userId: String): Option[UserSettings] = {
+    userSettingsStore.findEarliestAfter(timestamp, userId)
+  }
+
+  def getNextSettingsAfter(settings: UserSettings): Option[UserSettings] = {
+    val userId = settings.userId
+    val start = settings.createdAt
+    getEarliestSettingsAfter(start, userId)
+  }
+
+  private def getSettingsFor(activity: Activity): Option[UserSettings] = {
+    userSettingsStore.findLatestUntil(activity.startedAt, activity.userId)
+      .orElse(userSettingsStore.findEarliestAfter(activity.startedAt, activity.userId))
   }
 
   private def buildIntervalIndices(times: Seq[Int]): List[Int] = IntervalUtils.calculateProcessingIntervals(times.max)
@@ -86,7 +130,7 @@ class PowerAnalysisService @Inject()(
     Interval(length, start, cp, hr, np)
   }
 
-  private def calculateActivityStats(activity: Activity, settings: UserSettings): ActivityStats = {
+  def calculateActivityStats(activity: Activity, settings: UserSettings): ActivityStats = {
     val effort = longestEffort(activity) // the entire activity
     val np = effort.normalizedPower.getOrElse(0)
     val intensity = intensityFactor(np, settings.ftp)
@@ -97,12 +141,6 @@ class PowerAnalysisService @Inject()(
 
 }
 
-case class Interval(
-  lengthInSeconds: Int,
-  startSecond: Int, // the second in the stream that calculated maximum effort was found
-  criticalPower: Int,
-  avgHeartRate: Int,
-  normalizedPower: Option[Int]
-)
+
 
 

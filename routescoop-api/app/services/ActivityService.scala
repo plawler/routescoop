@@ -24,6 +24,9 @@ trait ActivityService {
   def getActivitiesBySync(syncId: String): Future[Seq[Activity]]
 
   def fetchActivities(userId: String, page: Int, itemsPerPage: Int): Future[Seq[Summary]]
+
+  def findBetween(start: Instant, end: Instant, userId: String): Future[Seq[Activity]]
+
 }
 
 @Singleton
@@ -89,7 +92,11 @@ class StravaActivityService @Inject()(
     }
   }
 
-  private def saveActivity(activity: StravaActivity) = {
+  override def findBetween(start: Instant, end: Instant, userId: String): Future[Seq[StravaActivity]] = Future {
+    blocking(activityStore.findBetween(start, end, userId))
+  }
+
+  private def saveActivity(activity: StravaActivity): Unit = {
     activityStore.insert(activity)
     actorSystem.eventStream.publish(StravaActivityCreated(activity))
   }

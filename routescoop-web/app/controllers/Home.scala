@@ -28,7 +28,7 @@ class Home @Inject()(
     * a path of `/`.
     */
   def index = authenticated.async { implicit request =>
-    fitnessService.fitnessTrend(request.profile.toUser, 180) map {
+    fitnessService.fitnessTrend(request.profile.toUser, 90) map {
       case FitnessTrendResultSuccess(trend) =>
         Ok(views.html.index(trend))
       case FitnessTrendResultError(message) =>

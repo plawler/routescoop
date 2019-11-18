@@ -1,15 +1,15 @@
 package services
 
 import java.time.Instant
-
 import akka.actor.ActorSystem
 import akka.testkit.TestKit
 import fixtures.ActivityFixture
 import models.UserDataSync
+
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{Matchers, WordSpecLike}
-import repositories.{StoredUserDataSync, UserDataSyncStore, UserSettingsStore, UserStore}
+import repositories.{StoredUserDataSync, StravaOauthTokenStore, UserDataSyncStore, UserSettingsStore, UserStore}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -23,14 +23,14 @@ class UserServiceSpec extends TestKit(ActorSystem("user-service-test"))
   "The User Service" should {
 
     "get the latest user settings relative to an activity" in new UserServiceTesting {
-      when(mockSettingsStore.findLatestFor(userId, sampleActivity.startedAt)).thenReturn(Some(userSettings))
+      when(mockSettingsStore.findLatestUntil(sampleActivity.startedAt, userId)).thenReturn(Some(userSettings))
       Await.result(service.getSettingsFor(sampleActivity), 1 second) shouldNot be(None)
     }
 
     "get most recent settings when none prior to activity" in new UserServiceTesting {
       val activity = twoYearOldActivity
-      when(mockSettingsStore.findLatestFor(activity.userId, activity.startedAt)).thenReturn(None)
-      when(mockSettingsStore.findByUserId(userId)).thenReturn(Seq(userSettings))
+      when(mockSettingsStore.findLatestUntil(activity.startedAt, activity.userId)).thenReturn(None)
+      when(mockSettingsStore.findEarliestAfter(activity.startedAt, userId)).thenReturn(Some(userSettings))
       Await.result(service.getSettingsFor(activity), 1 second) shouldNot be(None)
     }
 
@@ -58,8 +58,16 @@ class UserServiceSpec extends TestKit(ActorSystem("user-service-test"))
     val mockUserStore = mock[UserStore]
     val mockDataSyncStore = mock[UserDataSyncStore]
     val mockSettingsStore = mock[UserSettingsStore]
+    val mockTokenStore = mock[StravaOauthTokenStore]
+    val mockPublisher = mock[Publisher]
     val userId = sampleActivity.userId
-    val service = new UserServiceImpl(mockUserStore, mockDataSyncStore, mockSettingsStore, system)
+    val service = new UserServiceImpl(
+      mockUserStore,
+      mockDataSyncStore,
+      mockSettingsStore,
+      mockTokenStore,
+      mockPublisher
+    )
   }
 
 }

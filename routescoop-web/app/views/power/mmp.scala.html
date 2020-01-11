@@ -1,0 +1,49 @@
+@import play.api.libs.json.Json
+
+@(chartData: Seq[ChartXandY])(implicit request: RequestHeader, messages: Messages)
+
+@scripts = {
+    <script type="text/javascript">
+            var ctx = document.getElementById('mmp').getContext('2d');
+            var chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: "Mean max power",
+                            borderColor: '#4289f4',
+                            radius: 0,
+                            data: @Html(Json.stringify(Json.toJson(chartData)))
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        xAxes: [{
+                            type: 'logarithmic',
+                            positiion: 'bottom',
+                            ticks: {
+                                min: 1,
+                                max: 18000,
+                                userCallback: function (tick) {
+                                    if (tick < 60) {
+                                        return tick.toString() + 'sec';
+                                    } else if (tick % 60 === 0) {
+                                        return (tick / 60).toString() + 'min';
+                                    } else return '';
+                                }
+                            }
+                        }]
+                    }
+                }
+            });
+    </script>
+}
+
+@helper.base(scripts = scripts) {
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Power Curve</h1>
+    </div>
+
+    <canvas id="mmp" width="1000" height="400"></canvas>
+}

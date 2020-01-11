@@ -16,8 +16,8 @@ GET         /strava/token/status        controllers.Strava.tokenStatus
 GET         /rides                      controllers.Rides.index(page: Int ?= 1)
 POST        /rides/sync                 controllers.Rides.sync
 
-GET         /power                      controllers.PowerProfile.index(days: Option[Int])
-GET         /power2                     controllers.PowerProfile.profile(days: Option[Int])
+GET         /power                      controllers.PowerProfile.powerCurve(days: Option[Int])
+GET         /power2                     controllers.PowerProfile.index(days: Option[Int])
 
 GET         /settings                   controllers.Settings.list
 GET         /settings/new               controllers.Settings.create

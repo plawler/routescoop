@@ -1,6 +1,6 @@
 @import play.api.libs.json.Json
 
-@(chartData: Seq[ChartXandY])(implicit request: RequestHeader, messages: Messages)
+@(chartData: Seq[ChartXY])(implicit request: RequestHeader, messages: Messages)
 
 @scripts = {
     <script type="text/javascript">
@@ -30,13 +30,35 @@
                                         return tick.toString() + 'sec';
                                     } else if (tick % 60 === 0) {
                                         return (tick / 60).toString() + 'min';
-                                    } else return '';
+                                    }
+                                    return '';
                                 }
                             }
                         }]
+                    },
+                    tooltips: {
+                        callbacks: {
+                            title: function(tooltipItems, data) {
+                                var duration = tooltipItems[0].xLabel;
+                                return formatDuration(duration);
+                            }
+                        }
                     }
                 }
             });
+
+            function formatDuration(timeInSeconds) {
+                var hours = Math.floor(timeInSeconds / 3600);
+                var secsLeft = timeInSeconds - hours * 3600;
+                var minutes = Math.floor(secsLeft / 60);
+                var seconds = secsLeft - minutes * 60;
+
+                var formattedDuration = '';
+                if (hours > 0) formattedDuration += hours + 'h';
+                if (minutes > 0) formattedDuration += minutes + 'm';
+                if (seconds > 0) formattedDuration += seconds + 's';
+                return formattedDuration;
+            }
     </script>
 }
 

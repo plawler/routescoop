@@ -11,12 +11,6 @@ import play.api.mvc.{BaseController, ControllerComponents}
 
 import scala.concurrent.ExecutionContext
 
-case class ChartXandY(x: Int, y: Int)
-
-object ChartXandY {
-  implicit val format = Json.format[ChartXandY]
-}
-
 
 @Singleton
 class PowerProfile @Inject()(
@@ -51,7 +45,7 @@ class PowerProfile @Inject()(
   def powerCurve(days: Option[Int]) = authenticated.async { implicit request =>
     fitnessService.powerProfile(request.profile.toUser, days.getOrElse(LOOKBACK_DAYS), CP_DURATIONS) map {
       case PowerProfileResultSuccess(pp) =>
-        val chartData = pp.mmp.efforts map (effort => ChartXandY(effort.duration, effort.watts))
+        val chartData = pp.mmp.efforts map (effort => ChartXY(effort.duration, effort.watts))
         Ok(views.html.power.mmp(chartData))
       case PowerProfileResultError(message) =>
         Logger.error(message)

@@ -47,7 +47,7 @@ class PowerProfile @Inject()(
       case PowerProfileResultSuccess(pp) =>
         val mmpData = pp.mmp.efforts map (effort => ChartXY(effort.duration, effort.watts))
         val cpData = pp.cp.predictions map (effort => ChartXY(effort.duration, effort.watts))
-        Ok(views.html.power.mmp(mmpData, cpData))
+        Ok(views.html.power.mmp(mmpData, cpData, pp.cp))
       case PowerProfileResultError(message) =>
         Logger.error(message)
         Ok(message)

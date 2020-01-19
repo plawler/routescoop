@@ -1,6 +1,6 @@
 @import play.api.libs.json.Json
 
-@(mmpData: Seq[ChartXY], cpData: Seq[ChartXY])(implicit request: RequestHeader, messages: Messages)
+@(mmpData: Seq[ChartXY], cpData: Seq[ChartXY], cp: CriticalPower)(implicit request: RequestHeader, messages: Messages)
 
 @scripts = {
     <script type="text/javascript">
@@ -76,4 +76,5 @@
     </div>
 
     <canvas id="mmp" width="1000" height="400"></canvas>
+    <p>Critical power = @cp.cp, W' = @cp.wPrime kj</p>
 }

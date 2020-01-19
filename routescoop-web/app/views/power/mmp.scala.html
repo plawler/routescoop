@@ -1,6 +1,6 @@
 @import play.api.libs.json.Json
 
-@(chartData: Seq[ChartXY])(implicit request: RequestHeader, messages: Messages)
+@(mmpData: Seq[ChartXY], cpData: Seq[ChartXY])(implicit request: RequestHeader, messages: Messages)
 
 @scripts = {
     <script type="text/javascript">
@@ -13,7 +13,15 @@
                             label: "Mean max power",
                             borderColor: '#4289f4',
                             radius: 0,
-                            data: @Html(Json.stringify(Json.toJson(chartData)))
+                            data: @Html(Json.stringify(Json.toJson(mmpData)))
+                        },
+                        {
+                            label: "Critical power",
+                            fill: false,
+                            borderColor: 'grey',
+                            borderDash: [3, 3],
+                            radius: 0,
+                            data: @Html(Json.stringify(Json.toJson(cpData)))
                         }
                     ]
                 },

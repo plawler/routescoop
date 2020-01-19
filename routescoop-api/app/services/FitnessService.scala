@@ -20,7 +20,7 @@ class FitnessService @Inject()(
   powerEffortsStore: PowerEffortStore) (implicit @NonBlockingContext ec: ExecutionContext) extends LazyLogging {
 
   val f = new DecimalFormat("#.#")
-  val DURATIONS = Seq(60, 120, 180, 240, 300, 480, 600, 900, 1200, 2400, 3600)
+  val DURATIONS = Seq(15, 30, 60, 120, 180, 240, 300, 480, 600, 900, 1200, 2400, 3600, 7200, 9800)
   val LONGEST_INTERVAL = 14400 // 4 hours
 
   def getTrainingLoad(userId: String, numberOfDays: Int): Seq[DailyTrainingLoad] = {

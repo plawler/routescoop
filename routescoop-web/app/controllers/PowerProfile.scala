@@ -45,8 +45,9 @@ class PowerProfile @Inject()(
   def powerCurve(days: Option[Int]) = authenticated.async { implicit request =>
     fitnessService.powerProfile(request.profile.toUser, days.getOrElse(LOOKBACK_DAYS), CP_DURATIONS) map {
       case PowerProfileResultSuccess(pp) =>
-        val chartData = pp.mmp.efforts map (effort => ChartXY(effort.duration, effort.watts))
-        Ok(views.html.power.mmp(chartData))
+        val mmpData = pp.mmp.efforts map (effort => ChartXY(effort.duration, effort.watts))
+        val cpData = pp.cp.predictions map (effort => ChartXY(effort.duration, effort.watts))
+        Ok(views.html.power.mmp(mmpData, cpData))
       case PowerProfileResultError(message) =>
         Logger.error(message)
         Ok(message)

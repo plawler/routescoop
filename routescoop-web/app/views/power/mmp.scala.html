@@ -12,7 +12,7 @@
                         {
                             label: "Mean max power",
                             borderColor: '#4289f4',
-                            radius: 0,
+                            pointRadius: 0,
                             data: @Html(Json.stringify(Json.toJson(mmpData)))
                         },
                         {
@@ -20,7 +20,7 @@
                             fill: false,
                             borderColor: 'grey',
                             borderDash: [3, 3],
-                            radius: 0,
+                            pointRadius: 0,
                             data: @Html(Json.stringify(Json.toJson(cpData)))
                         }
                     ]
@@ -49,6 +49,13 @@
                             title: function(tooltipItems, data) {
                                 var duration = tooltipItems[0].xLabel;
                                 return formatDuration(duration);
+                            }
+                        }
+                    },
+                    plugins: {
+                        crosshair: {
+                            sync: {
+                              enabled: false
                             }
                         }
                     }

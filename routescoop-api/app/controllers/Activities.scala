@@ -8,7 +8,7 @@ import com.typesafe.scalalogging.LazyLogging
 import play.api.libs.json.Json
 import play.api.mvc.{BaseController, ControllerComponents}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class Activities @Inject()(
@@ -21,6 +21,10 @@ class Activities @Inject()(
     activityService.fetchActivities(userId, page, config.pageSize) map { summaries =>
       Ok(Json.toJson(summaries))
     }
+  }
+
+  def getPowerDistribution(activityId: String) = Action.async { implicit request =>
+    Future.successful(Ok("activity power distribution"))
   }
 
 }

@@ -287,6 +287,12 @@ case class ActivityStream(
     transposed map (each => (streamTypes zip each).toMap)
   }
 
+  def toInternalStreams(activity: StravaActivity): Seq[StravaStream] = {
+    this.pivot map { row =>
+      StravaStream.create(activity, row)
+    }
+  }
+
 }
 
 object ActivityStream {

@@ -4,7 +4,7 @@ import javax.inject.{Inject, Singleton}
 import metrics.PowerMetrics._
 import models.{Activity, ActivityStats, Interval, PowerEffort, PowerEffortsCreated, UserSettings}
 import modules.NonBlockingContext
-import repositories.{ActivityStatsStore, PowerEffortStore, StravaStreamStore, UserSettingsStore}
+import repositories.{ActivityStatsStore, PowerEffortStore, StravaStreamStore, TimeInZoneStore, UserSettingsStore}
 import utils.IntervalUtils
 
 import akka.actor.ActorSystem
@@ -20,6 +20,7 @@ class PowerAnalysisService @Inject()(
   streamStore: StravaStreamStore,
   effortStore: PowerEffortStore,
   activityStatsStore: ActivityStatsStore,
+  timeInZoneStore: TimeInZoneStore,
   actorSystem: ActorSystem
 )(implicit @NonBlockingContext ec: ExecutionContext) extends LazyLogging {
 
@@ -51,7 +52,13 @@ class PowerAnalysisService @Inject()(
   def createActivityStats(activity: Activity): Future[Unit] = Future {
     getSettingsFor(activity) map { settings =>
       saveActivityStats(calculateActivityStats(activity, settings))
+      createTimeInZoneStats(activity, settings)
     } getOrElse logger.warn(s"No user settings found to support power stats for activity ${activity.id}")
+  }
+
+  def createTimeInZoneStats(activity: Activity, settings: UserSettings): Unit = {
+    timeInZoneStore.findByActivityId(activity.id) foreach (iz => timeInZoneStore.delete(iz.activityId))
+    timeInZoneStore.insertPowerInZone(activity.id, settings.ftp)
   }
 
   def recalculateActivityStats(newSettings: UserSettings): Future[Unit] = {
@@ -61,6 +68,7 @@ class PowerAnalysisService @Inject()(
     activityService.findBetween(start, end, userId) map { activities =>
       activities.foreach { activity =>
         updateActivityStats(calculateActivityStats(activity, newSettings))
+        createTimeInZoneStats(activity, newSettings)
       }
     }
   }

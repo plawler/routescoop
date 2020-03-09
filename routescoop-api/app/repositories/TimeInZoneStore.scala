@@ -17,6 +17,7 @@ trait TimeInZoneStore {
   def findByActivityId(activityId: String): Seq[InZone]
   def findPowerInZone(activityId: String, ftp: Int): Seq[InZone]
   def insertPowerInZone(activityId: String, ftp: Int): Unit
+  def delete(activityId: String): Unit
   def destroy(): Unit
 
 }
@@ -116,11 +117,16 @@ class TimeInZoneStoreSql @Inject()(db: Database) (implicit @BlockingContext ec: 
       """.executeInsert()
   }
 
+  override def delete(activityId: String): Unit = db.withTransaction { implicit conn =>
+    SQL"""
+          DELETE from #$InZoneStatsTable WHERE activityId = $activityId
+      """.execute()
+  }
+
   override def destroy(): Unit = db.withTransaction { implicit conn =>
     SQL"""
           DELETE from #$InZoneStatsTable
       """.execute()
-
   }
 
 }

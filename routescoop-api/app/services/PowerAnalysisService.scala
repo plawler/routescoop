@@ -4,7 +4,7 @@ import javax.inject.{Inject, Singleton}
 import metrics.PowerMetrics._
 import models.{Activity, ActivityStats, Interval, PowerEffort, PowerEffortsCreated, UserSettings}
 import modules.NonBlockingContext
-import repositories.{ActivityStatsStore, PowerEffortStore, StravaStreamStore, TimeInZoneStore, UserSettingsStore}
+import repositories.{ActivityStatsStore, InZone, PowerEffortStore, StravaStreamStore, TimeInZoneStore, UserSettingsStore}
 import utils.IntervalUtils
 
 import akka.actor.ActorSystem
@@ -34,6 +34,41 @@ class PowerAnalysisService @Inject()(
     }
   }
 
+  def createActivityStats(activity: Activity): Future[Unit] = Future {
+    getSettingsFor(activity) map { settings =>
+      saveActivityStats(calculateActivityStats(activity, settings))
+      createTimeInZoneStats(activity, settings)
+    } getOrElse logger.warn(s"No user settings found to support power stats for activity ${activity.id}")
+  }
+
+  def recalculateActivityStats(newSettings: UserSettings): Future[Unit] = {
+    val userId = newSettings.userId
+    val start = newSettings.createdAt
+    val end = (getEarliestSettingsAfter(newSettings.createdAt, userId) map (_.createdAt)) getOrElse Instant.now
+    activityService.findBetween(start, end, userId) map { activities =>
+      activities.foreach { activity =>
+        updateActivityStats(calculateActivityStats(activity, newSettings))
+        createTimeInZoneStats(activity, newSettings)
+      }
+    }
+  }
+
+  def generateTimeInZoneStats(activityId: String): Future[Seq[InZone]] = {
+    activityService.getActivity(activityId) map {
+      case Some(activity) => {
+        getSettingsFor(activity) match {
+          case Some(settings) => createTimeInZoneStats(activity, settings)
+          case None =>
+            logger.error(s"User settings not found for $activity. Could not create zone stats.")
+            Seq.empty[InZone]
+        }
+      }
+      case None =>
+        logger.error(s"Activity not found for id $activityId. Could not create zone stats")
+        Seq.empty[InZone]
+    }
+  }
+
   def calculatePowerEfforts(activity: Activity): Seq[PowerEffort] = {
     val (times, watts, heartRates) = streamStore.findByActivityId(activity.id).map { stream =>
       (stream.timeIndexInSeconds, stream.watts.getOrElse(0), stream.heartRate.getOrElse(0))
@@ -49,28 +84,10 @@ class PowerAnalysisService @Inject()(
     effortStore.findByActivityId(activityId)
   }
 
-  def createActivityStats(activity: Activity): Future[Unit] = Future {
-    getSettingsFor(activity) map { settings =>
-      saveActivityStats(calculateActivityStats(activity, settings))
-      createTimeInZoneStats(activity, settings)
-    } getOrElse logger.warn(s"No user settings found to support power stats for activity ${activity.id}")
-  }
-
-  def createTimeInZoneStats(activity: Activity, settings: UserSettings): Unit = {
+  def createTimeInZoneStats(activity: Activity, settings: UserSettings): Seq[InZone] = {
     timeInZoneStore.findByActivityId(activity.id) foreach (iz => timeInZoneStore.delete(iz.activityId))
     timeInZoneStore.insertPowerInZone(activity.id, settings.ftp)
-  }
-
-  def recalculateActivityStats(newSettings: UserSettings): Future[Unit] = {
-    val userId = newSettings.userId
-    val start = newSettings.createdAt
-    val end = (getEarliestSettingsAfter(newSettings.createdAt, userId) map (_.createdAt)) getOrElse Instant.now
-    activityService.findBetween(start, end, userId) map { activities =>
-      activities.foreach { activity =>
-        updateActivityStats(calculateActivityStats(activity, newSettings))
-        createTimeInZoneStats(activity, newSettings)
-      }
-    }
+    timeInZoneStore.findByActivityId(activity.id)
   }
 
   def saveActivityStats(stats: ActivityStats): Unit = {

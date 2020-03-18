@@ -5,7 +5,9 @@ import modules.BlockingContext
 
 import com.typesafe.scalalogging.LazyLogging
 import anorm._
+
 import play.api.db.Database
+import play.api.libs.json.Json
 
 import scala.concurrent.ExecutionContext
 
@@ -26,6 +28,7 @@ case class InZone(activityId: String, zone: String, avgInZone: Double, secondsIn
 
 object InZone {
   implicit val parser = Macro.namedParser[InZone]
+  implicit val format = Json.format[InZone]
 }
 
 class TimeInZoneStoreSql @Inject()(db: Database) (implicit @BlockingContext ec: ExecutionContext)

@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 import modules.{AppConfig, NonBlockingContext}
-import services.ActivityService
+import services.{ActivityService, PowerAnalysisService}
 
 import com.typesafe.scalalogging.LazyLogging
 import play.api.libs.json.Json
@@ -13,6 +13,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class Activities @Inject()(
   activityService: ActivityService,
+  powerAnalysisService: PowerAnalysisService,
   config: AppConfig,
   val controllerComponents: ControllerComponents
 ) (implicit @NonBlockingContext ec: ExecutionContext) extends BaseController with LazyLogging {
@@ -25,6 +26,10 @@ class Activities @Inject()(
 
   def getPowerDistribution(activityId: String) = Action.async { implicit request =>
     Future.successful(Ok("activity power distribution"))
+  }
+
+  def generateInZoneStats(activityId: String) = Action.async { implicit request =>
+    powerAnalysisService.generateTimeInZoneStats(activityId) map (stats => Ok(Json.toJson(stats)))
   }
 
 }

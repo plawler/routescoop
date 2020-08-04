@@ -26,6 +26,7 @@ trait StravaActivityStore {
   def findBetween(start: Instant, end: Instant, userId: String): Seq[StravaActivity]
 
   def fetchPaged(userId: String, offset: Int, rows: Int): Seq[Summary]
+
 }
 
 @Singleton

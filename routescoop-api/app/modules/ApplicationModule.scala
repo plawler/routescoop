@@ -31,6 +31,7 @@ class ApplicationModule extends AbstractModule with AkkaGuiceSupport {
 
     bind(classOf[PowerEffortStore]).to(classOf[PowerEffortStoreImpl])
     bind(classOf[ActivityStatsStore]).to(classOf[ActivityStatsStoreSql])
+    bind(classOf[TimeInZoneStore]).to(classOf[TimeInZoneStoreSql])
     bind(classOf[PowerAnalysisService])
 
     bind(classOf[StravaWebService]).to(classOf[StravaWebServiceImpl])

@@ -2,7 +2,7 @@ package services
 
 import fixtures.PowerEffortFixture
 import models.{ActivityStats, PowerEffort, PowerEffortsCreated, UserSettings}
-import repositories.{ActivityStatsStore, PowerEffortStore, StravaStreamStore, UserSettingsStore}
+import repositories.{ActivityStatsStore, InZone, PowerEffortStore, StravaStreamStore, TimeInZoneStore, UserSettingsStore}
 
 import akka.actor.ActorSystem
 import akka.testkit.{TestKit, TestProbe}
@@ -123,10 +123,12 @@ class PowerAnalysisServiceSpec extends TestKit(ActorSystem("power-analysis-servi
       when(mockUserSettingsStore.findLatestUntil(sampleActivity.startedAt, sampleActivity.userId))
         .thenReturn(Some(settings))
       when(mockPowerEffortStore.findByActivityId(sampleActivity.id)).thenReturn(efforts)
+      when(mockZoneStore.findByActivityId(sampleActivity.id)).thenReturn(Seq()) // no in-zone calculations exist yet
 
       Await.result(service.createActivityStats(sampleActivity), 3 seconds)
 
       verify(mockStatsStore).insert(any(classOf[ActivityStats]))
+      verify(mockZoneStore).insertPowerInZone(sampleActivity.id, settings.ftp)
     }
 
     "recalculate activity stats" in new Fixture {
@@ -143,11 +145,14 @@ class PowerAnalysisServiceSpec extends TestKit(ActorSystem("power-analysis-servi
           .thenReturn(Seq(PowerEffort(activity.id, 3600, Instant.now, 150, 200, Some(210))))
         when(mockStatsStore.findByActivityId(activity.id))
           .thenReturn(Some(ActivityStats(activity.id, yearOldSettings.id, 200, 225, 100, 0.80, 1.3)))
+        when(mockZoneStore.findByActivityId(sampleActivity.id))
+          .thenReturn(Seq(InZone(activity.id, "z2", 200.0d, 3600, 100.0d))) // no in-zone calculations exist yet
       }
 
       Await.result(service.recalculateActivityStats(yearOldSettings), 3 seconds)
 
-      verify(mockStatsStore, times(3)).update(any(classOf[ActivityStats]))
+      verify(mockStatsStore, times(activities.size)).update(any(classOf[ActivityStats]))
+      verify(mockZoneStore, times(activities.size)).insertPowerInZone(sampleActivity.id, yearOldSettings.ftp)
     }
 
   }
@@ -158,6 +163,7 @@ class PowerAnalysisServiceSpec extends TestKit(ActorSystem("power-analysis-servi
     val mockPowerEffortStore = mock[PowerEffortStore]
     val mockUserSettingsStore = mock[UserSettingsStore]
     val mockStatsStore = mock[ActivityStatsStore]
+    val mockZoneStore = mock[TimeInZoneStore]
 
     val service = new PowerAnalysisService(
       mockActivityService,
@@ -165,6 +171,7 @@ class PowerAnalysisServiceSpec extends TestKit(ActorSystem("power-analysis-servi
       mockStreamStore,
       mockPowerEffortStore,
       mockStatsStore,
+      mockZoneStore,
       system)
   }
 

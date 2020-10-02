@@ -51,4 +51,6 @@ class RideService @Inject()(config: AppConfig, ws: WSClient)(implicit ec: Execut
     }
   }
 
+  def getRideDetails(rideId: String): Future[RideDetailsResult] = ???
+
 }

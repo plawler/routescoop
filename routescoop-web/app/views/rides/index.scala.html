@@ -44,7 +44,7 @@
             <tbody>
                 @for(s <- summaries) {
                     <tr>
-                        <td>@s.name</td>
+                        <td><a class="nav-link" href="@routes.Rides.get(s.id)">@s.name</a></td>
                         <td>@s.startedAt</td>
                         <td>@metersToMiles(s.distance)</td>
                         <td>@formattedTime(s.movingTime)</td>

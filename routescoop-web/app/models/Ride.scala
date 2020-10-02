@@ -27,3 +27,7 @@ object RideSummary { implicit val format = Json.format[RideSummary] }
 sealed trait RideSummaryResult
 case class RideSummaryResultSuccess(summaries: Seq[RideSummary]) extends RideSummaryResult
 case class RideSummaryResultError(message: String) extends RideSummaryResult
+
+case class RideDetailsResult(
+
+)

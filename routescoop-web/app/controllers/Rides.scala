@@ -62,6 +62,11 @@ class Rides @Inject()(
     }
   }
 
+  def get(rideId: String) = authenticated.async { implicit request =>
+//    Future.successful(Ok(views.html.rides.ride()))
+    Future.successful(Ok(s"I'm ride ${rideId}"))
+  }
+
   private def hasSettings(userId: String): Future[Boolean] = {
     settingsService.list(userId) map {
       case SettingsResultSuccess(settings) => settings.nonEmpty

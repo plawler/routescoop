@@ -14,6 +14,7 @@ GET         /strava/authorize           controllers.Strava.authorize
 GET         /strava/token/status        controllers.Strava.tokenStatus
 
 GET         /rides                      controllers.Rides.index(page: Int ?= 1)
+GET         /rides/:rideId              controllers.Rides.get(rideId: String)
 POST        /rides/sync                 controllers.Rides.sync
 
 GET         /power                      controllers.PowerProfile.powerCurve(days: Option[Int])

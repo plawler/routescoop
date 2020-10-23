@@ -2,8 +2,9 @@ package models
 
 import java.time.Instant
 import java.util.{Date, UUID}
-
 import anorm.{Macro, RowParser}
+import scathlete.models.StravaSummaryActivity
+
 import play.api.libs.json.Json
 import services.SummaryActivity
 
@@ -92,6 +93,43 @@ object StravaActivity {
       sa.performance.device_watts,
       sa.performance.average_heartrate,
       sa.performance.max_heartrate
+    )
+  }
+
+  def create(userId: String, summary: StravaSummaryActivity): StravaActivity = {
+    StravaActivity(
+      UUID.randomUUID().toString,
+      userId,
+      summary.info.id,
+      summary.athlete.id.toInt,
+      summary.info.name,
+      summary.info.distance,
+      summary.info.moving_time,
+      summary.info.elapsed_time,
+      summary.info.total_elevation_gain,
+      summary.info.`type`,
+      summary.info.start_date,
+      summary.info.timezone,
+      summary.location.start_latitude.getOrElse(0.0),
+      summary.location.start_longitude.getOrElse(0.0),
+      summary.info.trainer,
+      summary.info.commute,
+      summary.info.manual,
+      summary.performance.average_speed,
+      summary.performance.max_speed,
+      summary.info.external_id,
+      endLat = None,
+      endLong = None,
+      mapPolyLine = None,
+      summary.map.summary_polyline,
+      summary.performance.average_cadence,
+      averageTemp = None,
+      summary.performance.average_watts,
+      summary.performance.weighted_average_watts,
+      summary.performance.kilojoules,
+      summary.performance.device_watts,
+      summary.performance.average_heartrate,
+      summary.performance.max_heartrate
     )
   }
 }

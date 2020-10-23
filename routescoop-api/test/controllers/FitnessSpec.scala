@@ -5,9 +5,9 @@ import models._
 import services.FitnessService
 
 import org.mockito.Mockito._
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.{Matchers, WordSpec}
-import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.{HeaderNames, MimeTypes}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.{FakeHeaders, FakeRequest}
@@ -18,7 +18,7 @@ import play.api.libs.json.Json
 import java.time.Instant
 import scala.util.Random
 
-class FitnessSpec extends WordSpec with Matchers with MockitoSugar with OneAppPerSuite with CriticalPowerFixture {
+class FitnessSpec extends WordSpec with Matchers with MockitoSugar with GuiceOneAppPerSuite with CriticalPowerFixture {
 
   val mockFitnessService = mock[FitnessService]
 

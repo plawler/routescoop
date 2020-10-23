@@ -3,7 +3,7 @@ package services
 import fixtures.LapFixture
 
 import org.scalatest.{Matchers, WordSpec}
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.Json
 
 class StravaLapJsonParsingSpec extends WordSpec with Matchers with MockitoSugar with LapFixture {

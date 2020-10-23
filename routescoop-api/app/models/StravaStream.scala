@@ -1,8 +1,8 @@
 package models
 
 import java.util.UUID
-
 import anorm.{Macro, RowParser}
+import scathlete.models.StravaStreamRecord
 
 
 case class StravaStream (
@@ -62,6 +62,25 @@ object StravaStream {
       rawStream.get("cadence") map (_.asInstanceOf[Int]),
       rawStream.get("watts") map (_.asInstanceOf[Int]),
       rawStream.get("moving") map (_.asInstanceOf[Boolean])
+    )
+  }
+
+  def from(streamRecord: StravaStreamRecord): StravaStream = {
+    StravaStream(
+      UUID.randomUUID().toString,
+      streamRecord.stravaObjectId.toString,
+      streamRecord.timeIndexInSeconds,
+      streamRecord.latitude,
+      streamRecord.longitude,
+      streamRecord.distanceMeters,
+      streamRecord.altitudeMeters,
+      streamRecord.temperatureCelsius,
+      streamRecord.grade,
+      streamRecord.velocityMetersPerSecond,
+      streamRecord.heartRate,
+      streamRecord.cadence,
+      streamRecord.watts,
+      streamRecord.moving
     )
   }
 

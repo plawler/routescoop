@@ -1,10 +1,10 @@
 package services
 
 import fixtures.ActivityFixture
-import models.{StravaActivity, UserDataSync}
+import models.StravaActivity
 
 import org.mockito.Mockito._
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.{Matchers, WordSpec}
 import play.api.inject._
 import play.api.inject.guice.GuiceApplicationBuilder

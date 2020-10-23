@@ -5,7 +5,7 @@ import models.{CriticalPowerPrediction, DailyTrainingLoad}
 import repositories.{ActivityStatsStore, PowerEffortStore}
 
 import org.mockito.Mockito._
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json.Json
 

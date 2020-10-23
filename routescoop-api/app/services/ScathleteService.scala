@@ -1,7 +1,7 @@
 package services
 
 import javax.inject.{Inject, Singleton}
-import models.{StravaActivity, StravaLap}
+import models.{StravaActivity, StravaLap, StravaStream}
 import modules.NonBlockingContext
 import scathlete.clients.StravaClient
 import scathlete.models.StravaAccessToken
@@ -37,17 +37,35 @@ class ScathleteService @Inject()(userService: UserService)
     }
   }
 
-  override def getLaps(activity: StravaActivity) = {
+  override def getLaps(activity: StravaActivity): Future[Seq[StravaLap]] = {
     getToken(activity.userId) flatMap {
-      case Some(accessToken) =>
-      val client = new StravaClient(StravaAccessToken(accessToken))
-      client.getLaps(activity.stravaId) map { laps =>
-        laps map (l => StravaLap.create())
+      case Some(accessToken) => {
+        val client = new StravaClient(StravaAccessToken(accessToken))
+        client.getLaps(activity.stravaId) map {
+          case Some(laps) => laps map (lap => StravaLap.fromScathleteLap(activity, lap))
+          case None => Nil
+        } andThen { case _ => client.close() }
       }
+      case None =>
+        logger.info(s"No laps found for Strava activity: ${activity.stravaId}")
+        Future.successful(Nil)
     }
   }
 
-  override def getStreams(activity: StravaActivity) = ???
+  override def getStreams(activity: StravaActivity): Future[Seq[StravaStream]] = {
+    getToken(activity.userId) flatMap {
+      case Some(accessToken) => {
+        val client = new StravaClient(StravaAccessToken(accessToken))
+        client.getActivityStreams(activity.stravaId) map {
+          case Some(streams) => streams map (stream => StravaStream.from(stream))
+          case None => Nil
+        } andThen { case _ => client.close() }
+      }
+      case None =>
+        logger.info(s"No streams fond for Strava activity: ${activity.stravaId}")
+        Future.successful(Nil)
+    }
+  }
 
   private def getUser(userId: String) = userService.getUser(userId)
 

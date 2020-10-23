@@ -1,14 +1,13 @@
 package actors
 
 import fixtures.PowerEffortFixture
-import models.{ActivityStats, PowerEffortsCreated, StravaDataSyncCompleted, UserSettingsCreated}
+import models.{PowerEffortsCreated, StravaDataSyncCompleted, UserSettingsCreated}
 import services.PowerAnalysisService
 
 import akka.actor.ActorSystem
 import akka.testkit.{TestActorRef, TestKit}
 import org.mockito.Mockito._
-import org.mockito.ArgumentMatchers.any
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.ExecutionContext.Implicits.global

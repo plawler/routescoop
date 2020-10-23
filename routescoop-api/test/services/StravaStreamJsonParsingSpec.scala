@@ -2,7 +2,7 @@ package services
 
 import fixtures.StravaStreamJsonFixture
 import org.scalatest.{Matchers, WordSpec}
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.Json
 
 class StravaStreamJsonParsingSpec extends WordSpec with Matchers with MockitoSugar with StravaStreamJsonFixture {

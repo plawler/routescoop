@@ -2,9 +2,9 @@ package controllers
 
 import fixtures.UserFixture
 import models.CreateUserSettings
-import org.scalatest.mockito.MockitoSugar
+
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
-import org.scalatestplus.play.OneAppPerSuite
 import play.api.http.{HeaderNames, MimeTypes}
 import play.api.libs.json.Json
 import play.api.test.Helpers._
@@ -12,13 +12,15 @@ import play.api.test.{FakeHeaders, FakeRequest}
 import repositories.UserStore
 import services.UserService
 
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+
 /**
   * Created by paullawler on 1/22/17.
   */
 class UserSpec extends WordSpec
   with Matchers
   with MockitoSugar
-  with OneAppPerSuite
+  with GuiceOneAppPerSuite
   with BeforeAndAfterAll
   with UserSpecFixture {
 

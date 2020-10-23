@@ -7,7 +7,7 @@ import repositories.{ActivityStatsStore, StravaActivityStore, StravaLapStore, St
 import akka.actor.ActorSystem
 import akka.testkit.{TestKit, TestProbe}
 import org.mockito.Mockito._
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import java.time.Instant

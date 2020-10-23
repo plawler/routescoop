@@ -4,7 +4,7 @@ version := "1.0-SNAPSHOT"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
-scalaVersion := "2.11.12"
+scalaVersion := "2.12.12"
 
 resolvers ++= Seq(
   "Sonatype Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
@@ -22,9 +22,8 @@ libraryDependencies ++= Seq(
   "mysql" % "mysql-connector-java" % "6.0.6",
   "com.typesafe.play" %% "play-json" % "2.6.8",
   "org.playframework.anorm" %% "anorm" % "2.6.0",
-  "org.scala-saddle" %% "saddle-core" % "1.3.+",
-  "org.mockito" % "mockito-core" % "2.2.29" % Test,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.1" % Test,
+  "org.mockito" % "mockito-core" % "3.5.15" % Test,
+  "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.3" % Test,
   "com.typesafe.akka" %% "akka-testkit" % "2.4.16" % Test
 )
 

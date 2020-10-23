@@ -42,7 +42,7 @@ class ScathleteService @Inject()(userService: UserService)
       case Some(accessToken) => {
         val client = new StravaClient(StravaAccessToken(accessToken))
         client.getLaps(activity.stravaId) map {
-          case Some(laps) => laps map (lap => StravaLap.fromScathleteLap(activity, lap))
+          case Some(laps) => laps map (lap => StravaLap.from(activity, lap))
           case None => Nil
         } andThen { case _ => client.close() }
       }

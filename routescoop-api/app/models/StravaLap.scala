@@ -63,7 +63,7 @@ object StravaLap {
     )
   }
 
-  def fromScathleteLap(activity: StravaActivity, lap: scathlete.models.StravaLap) = {
+  def from(activity: StravaActivity, lap: scathlete.models.StravaLap) = {
     StravaLap(
       UUID.randomUUID().toString,
       activity.id,

@@ -34,7 +34,6 @@ project/plugins/project/
 bin/
 /db
 .eclipse
-/lib/
 /logs/
 /modules
 /project/target

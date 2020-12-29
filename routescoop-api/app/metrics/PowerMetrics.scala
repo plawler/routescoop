@@ -131,7 +131,7 @@ object PowerMetrics {
   /**
     * VO2max estimator which uses the ACSM protocol. Appropriate for a cycling ergometer.
     * Maximum aerobic power is based on a ramp test. 5-6 minute max power.
-    * Vertical and resting constant are the values of O2 used against resistance and at rest.
+    * Vertical and resting constants are the values of O2 used against resistance and at rest.
     *
     * @param maxAerobicPower
     * @param weightInKg

@@ -128,6 +128,21 @@ object PowerMetrics {
     formatterSingle.format(tl).toDouble
   }
 
+  /**
+    * VO2max estimator which uses the ACSM protocol. Appropriate for a cycling ergometer.
+    * Maximum aerobic power is based on a ramp test. 5-6 minute max power.
+    * Vertical and resting constant are the values of O2 used against resistance and at rest.
+    *
+    * @param maxAerobicPower
+    * @param weightInKg
+    * @param verticalConstant
+    * @param restingConstant
+    * @return
+    */
+  def estimateVO2max(maxAerobicPower: Int, weightInKg: Double, verticalConstant: Double, restingConstant: Double): Double = {
+    verticalConstant * (maxAerobicPower / weightInKg) + restingConstant
+  }
+
   def rollingAverage(values: Seq[Int], interval: Int): Seq[Double] = {
     if (interval == 0) throw new IllegalArgumentException("Cannot calculate with zero interval")
     val first = (values take interval).sum.toDouble / interval

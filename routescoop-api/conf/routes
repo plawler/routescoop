@@ -22,6 +22,7 @@ GET     /api/v1/users/:id/mmp           controllers.Fitness.meanMaximalPower(id:
 POST    /api/v1/syncs                   controllers.Syncs.sync
 
 POST    /api/v1/simulations             controllers.Fitness.simulation
+GET     /api/v1/vo2                     controllers.Fitness.estimateVO2Max(maxPower: Int, weightInKg: Double)
 
 POST    /api/v1/activities/:id/stats    controllers.Activities.generateInZoneStats(id: String)
 

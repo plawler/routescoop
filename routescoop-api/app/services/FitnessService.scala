@@ -22,6 +22,8 @@ class FitnessService @Inject()(
   val f = new DecimalFormat("#.#")
   val DURATIONS = Seq(15, 30, 60, 120, 180, 240, 300, 480, 600, 900, 1200, 2400, 3600, 7200, 9800)
   val LONGEST_INTERVAL = 14400 // 4 hours
+  val VerticalConstant = 10.8d
+  val RestingConstant = 7.0d
 
   def getTrainingLoad(userId: String, numberOfDays: Int): Seq[DailyTrainingLoad] = {
     val stresses = activityStatsStore.getDailyStress(userId)
@@ -80,6 +82,10 @@ class FitnessService @Inject()(
         f.format(fitness - fatigue).toDouble
       )
     }
+  }
+
+  def estimateVO2Max(maxPower: Int, weightInKg: Double): Double = {
+    metrics.PowerMetrics.estimateVO2max(maxPower, weightInKg, VerticalConstant, RestingConstant)
   }
 
   def weeklyRampRate(dailyStresses: Seq[DailyStress]): RampRate = {

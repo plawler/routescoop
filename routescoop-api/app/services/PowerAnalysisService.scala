@@ -47,7 +47,7 @@ class PowerAnalysisService @Inject()(
     val end = (getEarliestSettingsAfter(newSettings.createdAt, userId) map (_.createdAt)) getOrElse Instant.now
     activityService.findBetween(start, end, userId) map { activities =>
       activities.foreach { activity =>
-        updateActivityStats(calculateActivityStats(activity, newSettings))
+        saveOrUpdateActivityStats(calculateActivityStats(activity, newSettings))
         createTimeInZoneStats(activity, newSettings)
       }
     }
@@ -90,18 +90,21 @@ class PowerAnalysisService @Inject()(
     timeInZoneStore.findByActivityId(activity.id)
   }
 
+  def saveOrUpdateActivityStats(stats: ActivityStats): Unit = {
+    activityStatsStore.findByActivityId(stats.activityId) match {
+      case Some(_) => updateActivityStats(stats)
+      case None => saveActivityStats(stats)
+    }
+  }
+
   def saveActivityStats(stats: ActivityStats): Unit = {
     logger.info(s"Saving the activity stats $stats")
     activityStatsStore.insert(stats)
   }
 
   def updateActivityStats(stats: ActivityStats): Unit = {
-    activityStatsStore.findByActivityId(stats.activityId) match {
-      case Some(_) =>
-        logger.info(s"updating the activity stats $stats")
-        activityStatsStore.update(stats)
-      case None => saveActivityStats(stats)
-    }
+    logger.info(s"updating the activity stats $stats")
+    activityStatsStore.update(stats)
   }
 
   def longestEffort(activity: Activity): PowerEffort = {

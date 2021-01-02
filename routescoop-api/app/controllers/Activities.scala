@@ -1,6 +1,7 @@
 package controllers
 
 import javax.inject.{Inject, Singleton}
+import models.ActivityDetails
 import modules.{AppConfig, NonBlockingContext}
 import services.{ActivityService, PowerAnalysisService}
 
@@ -21,6 +22,13 @@ class Activities @Inject()(
   def list(userId: String, page: Int) = Action.async { implicit request =>
     activityService.fetchActivities(userId, page, config.pageSize) map { summaries =>
       Ok(Json.toJson(summaries))
+    }
+  }
+
+  def get(activityId: String) = Action.async { implicit request =>
+    activityService.getActivity(activityId) map {
+      case Some(activity) => Ok(Json.toJson(ActivityDetails.create(activity)))
+      case None => NotFound(s"No activity with id $activityId found")
     }
   }
 

@@ -5,7 +5,7 @@ import java.util.{Date, UUID}
 import anorm.{Macro, RowParser}
 import scathlete.models.StravaSummaryActivity
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 import services.SummaryActivity
 
 sealed trait Activity {
@@ -150,6 +150,100 @@ object Summary {
   implicit val format = Json.format[Summary]
   implicit val parser = Macro.namedParser[Summary]
 
+}
+
+case class Location(
+  timezone: String,
+  startLat: Double,
+  startLong: Double,
+  endLat: Option[Double] = None,
+  endLong: Option[Double] = None,
+  mapPolyLine: Option[String] = None,
+  mapPolyLineSummary: Option[String] = None
+)
+
+case class PowerHr(
+  averageCadence: Option[Double] = None,
+  averageWatts: Option[Double] = None,
+  weightedAverageWatts: Option[Int] = None,
+  kilojoules: Option[Double] = None,
+  deviceWatts: Option[Boolean] = None,
+  averageHeartRate: Option[Double] = None,
+  maxHeartRate: Option[Double] = None,
+  workoutType: Option[Int] = None
+)
+
+case class ActivityDetails(
+  id: String,
+  userId: String,
+  stravaId: Long,
+  athleteId: Int,
+  name: String,
+  startedAt: Instant,
+  distance: Double,
+  movingTime: Int,
+  elapsedTime: Int,
+  totalElevationGain: Double,
+  activityType: String,
+  trainer: Boolean,
+  commute: Boolean,
+  manual: Boolean,
+  averageSpeed: Double,
+  maxSpeed: Double,
+  externalId: Option[String] = None,
+  location: Location,
+  powerHr: PowerHr
+)
+
+object ActivityDetails {
+  implicit val locationWrites = Json.writes[Location]
+  implicit val powerHrWrites = Json.writes[PowerHr]
+  implicit val detailsWrites = Json.writes[ActivityDetails]
+
+  def create(activity: StravaActivity): ActivityDetails = {
+    val location = Location(
+      activity.timezone,
+      activity.startLat,
+      activity.startLong,
+      activity.endLat,
+      activity.endLong,
+      activity.mapPolyLine,
+      activity.mapPolyLineSummary
+    )
+
+    val powerHr = PowerHr(
+      activity.averageCadence,
+      activity.averageWatts,
+      activity.weightedAverageWatts,
+      activity.kilojoules,
+      activity.deviceWatts,
+      activity.averageHeartRate,
+      activity.maxHeartRate,
+      activity.workoutType
+    )
+
+    ActivityDetails(
+      activity.id,
+      activity.userId,
+      activity.stravaId,
+      activity.athleteId,
+      activity.name,
+      activity.startedAt,
+      activity.distance,
+      activity.movingTime,
+      activity.elapsedTime,
+      activity.totalElevationGain,
+      activity.activityType,
+      activity.trainer,
+      activity.commute,
+      activity.manual,
+      activity.averageSpeed,
+      activity.maxSpeed,
+      activity.externalId,
+      location,
+      powerHr
+    )
+  }
 }
 
 case class StravaActivityCreated(activity: StravaActivity, createdAt: Instant = Instant.now)

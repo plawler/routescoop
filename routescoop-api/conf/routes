@@ -13,6 +13,7 @@ GET     /api/v1/users/:id/settings      controllers.Users.getAllSettings(id: Str
 POST    /api/v1/users/:id/strava/tokens controllers.Tokens.createStravaToken(id: String)
 
 GET     /api/v1/users/:id/activities    controllers.Activities.list(id: String, page: Int ?= 1)
+GET     /api/v1/activities/:id          controllers.Activities.get(id: String)
 
 GET     /api/v1/users/:id/fitness/:days controllers.Fitness.trainingLoad(id: String, days: Int)
 GET     /api/v1/users/:id/ramp/:days    controllers.Fitness.rampRate(id: String, days: Int)

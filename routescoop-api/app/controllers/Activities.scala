@@ -2,11 +2,12 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 import models.ActivityDetails
+import models.ActivityStats
 import modules.{AppConfig, NonBlockingContext}
 import services.{ActivityService, PowerAnalysisService}
 
 import com.typesafe.scalalogging.LazyLogging
-import play.api.libs.json.Json
+import play.api.libs.json.{JsError, Json}
 import play.api.mvc.{BaseController, ControllerComponents}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -30,6 +31,20 @@ class Activities @Inject()(
       case Some(activity) => Ok(Json.toJson(ActivityDetails.create(activity)))
       case None => NotFound(s"No activity with id $activityId found")
     }
+  }
+
+  def updateStats = Action.async(parse.json) { implicit request =>
+    request.body.validate[ActivityStats].fold(
+      errors => Future.successful(BadRequest(JsError.toJson(errors))),
+      stats => {
+        activityService.getActivity(stats.activityId) map {
+          case Some(_) =>
+            powerAnalysisService.updateActivityStats(stats)
+            NoContent
+          case None => BadRequest(s"Invalid activity stats ${Json.toJson(stats)}")
+        }
+      }
+    )
   }
 
   def getPowerDistribution(activityId: String) = Action.async { implicit request =>

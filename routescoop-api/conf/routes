@@ -13,6 +13,7 @@ GET     /api/v1/users/:id/settings      controllers.Users.getAllSettings(id: Str
 POST    /api/v1/users/:id/strava/tokens controllers.Tokens.createStravaToken(id: String)
 
 GET     /api/v1/users/:id/activities    controllers.Activities.list(id: String, page: Int ?= 1)
+GET     /api/v1/activities/:id          controllers.Activities.get(id: String)
 
 PUT     /api/v1/activities/stats        controllers.Activities.updateStats
 

@@ -1,6 +1,7 @@
 package controllers
 
 import javax.inject.{Inject, Singleton}
+import models.ActivityDetails
 import models.ActivityStats
 import modules.{AppConfig, NonBlockingContext}
 import services.{ActivityService, PowerAnalysisService}
@@ -9,9 +10,7 @@ import com.typesafe.scalalogging.LazyLogging
 import play.api.libs.json.{JsError, Json}
 import play.api.mvc.{BaseController, ControllerComponents}
 
-import java.sql.{SQLException, SQLIntegrityConstraintViolationException}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Success
 
 @Singleton
 class Activities @Inject()(
@@ -24,6 +23,13 @@ class Activities @Inject()(
   def list(userId: String, page: Int) = Action.async { implicit request =>
     activityService.fetchActivities(userId, page, config.pageSize) map { summaries =>
       Ok(Json.toJson(summaries))
+    }
+  }
+
+  def get(activityId: String) = Action.async { implicit request =>
+    activityService.getActivity(activityId) map {
+      case Some(activity) => Ok(Json.toJson(ActivityDetails.create(activity)))
+      case None => NotFound(s"No activity with id $activityId found")
     }
   }
 

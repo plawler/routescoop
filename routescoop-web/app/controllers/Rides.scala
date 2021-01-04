@@ -63,8 +63,12 @@ class Rides @Inject()(
   }
 
   def get(rideId: String) = authenticated.async { implicit request =>
-//    Future.successful(Ok(views.html.rides.ride()))
-    Future.successful(Ok(s"I'm ride ${rideId}"))
+    rideService.getRideDetails(rideId) map {
+      case RideDetailsResultSuccess(ride) =>
+        Ok(views.html.rides.ride(ride))
+      case RideDetailsResultError(_) =>
+        Redirect(routes.Rides.index()).flashing("error" -> s"Failed to retrieve ride $rideId")
+    }
   }
 
   private def hasSettings(userId: String): Future[Boolean] = {

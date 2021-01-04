@@ -51,6 +51,20 @@ class RideService @Inject()(config: AppConfig, ws: WSClient)(implicit ec: Execut
     }
   }
 
-  def getRideDetails(rideId: String): Future[RideDetailsResult] = ???
+  def getRideDetails(rideId: String): Future[RideDetailsResult] = {
+    val detailsUrl = s"$url/activities/$rideId"
+    ws.url(detailsUrl).get() map { response =>
+      response.status match {
+        case Status.OK =>
+          response.json.validate[Ride] match {
+            case success: JsSuccess[Ride] => RideDetailsResultSuccess(success.get)
+            case error: JsError =>
+              Logger.error(s"api response error: $error")
+              RideDetailsResultError("Fetching ride details failed")
+          }
+        case _ => RideDetailsResultError(s"Fetching ride details failed: $response")
+      }
+    }
+  }
 
 }

@@ -1,10 +1,56 @@
 package models
 
 import java.time.Instant
-
 import play.api.libs.json.Json
 
-case class Ride()
+case class Ride(
+  id: String,
+  userId: String,
+  stravaId: Long,
+  athleteId: Int,
+  name: String,
+  startedAt: Instant,
+  distance: Double,
+  movingTime: Int,
+  elapsedTime: Int,
+  totalElevationGain: Double,
+  activityType: String,
+  trainer: Boolean,
+  commute: Boolean,
+  manual: Boolean,
+  averageSpeed: Double,
+  maxSpeed: Double,
+  externalId: Option[String] = None,
+  location: RideLocation,
+  powerHr: RidePowerHr
+)
+
+case class RideLocation(
+  timezone: String,
+  startLat: Double,
+  startLong: Double,
+  endLat: Option[Double] = None,
+  endLong: Option[Double] = None,
+  mapPolyLine: Option[String] = None,
+  mapPolyLineSummary: Option[String] = None
+)
+
+case class RidePowerHr(
+  averageCadence: Option[Double] = None,
+  averageWatts: Option[Double] = None,
+  weightedAverageWatts: Option[Int] = None,
+  kilojoules: Option[Double] = None,
+  deviceWatts: Option[Boolean] = None,
+  averageHeartRate: Option[Double] = None,
+  maxHeartRate: Option[Double] = None,
+  workoutType: Option[Int] = None
+)
+
+object Ride {
+  implicit val locationReads = Json.reads[RideLocation]
+  implicit val powerHrReads = Json.reads[RidePowerHr]
+  implicit val rideReads = Json.reads[Ride]
+}
 
 case class RideSync(id: String, userId: String, startedAt: Instant, completedAt: Option[Instant] = None)
 object RideSync { implicit val format = Json.format[RideSync] }
@@ -28,6 +74,6 @@ sealed trait RideSummaryResult
 case class RideSummaryResultSuccess(summaries: Seq[RideSummary]) extends RideSummaryResult
 case class RideSummaryResultError(message: String) extends RideSummaryResult
 
-case class RideDetailsResult(
-
-)
+sealed trait RideDetailsResult
+case class RideDetailsResultSuccess(ride: Ride) extends RideDetailsResult
+case class RideDetailsResultError(message: String) extends RideDetailsResult

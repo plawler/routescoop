@@ -15,6 +15,8 @@ POST    /api/v1/users/:id/strava/tokens controllers.Tokens.createStravaToken(id:
 GET     /api/v1/users/:id/activities    controllers.Activities.list(id: String, page: Int ?= 1)
 GET     /api/v1/activities/:id          controllers.Activities.get(id: String)
 
+GET     /api/v1/activities/:id/stats    controllers.Activities.getStats(id: String)
+POST    /api/v1/activities/:id/stats    controllers.Activities.generateInZoneStats(id: String)
 PUT     /api/v1/activities/stats        controllers.Activities.updateStats
 
 GET     /api/v1/users/:id/fitness/:days controllers.Fitness.trainingLoad(id: String, days: Int)
@@ -26,8 +28,6 @@ POST    /api/v1/syncs                   controllers.Syncs.sync
 
 POST    /api/v1/simulations             controllers.Fitness.simulation
 GET     /api/v1/vo2                     controllers.Fitness.estimateVO2Max(maxPower: Int, weightInKg: Double)
-
-POST    /api/v1/activities/:id/stats    controllers.Activities.generateInZoneStats(id: String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                   controllers.Assets.versioned(path="/public", file: Asset)

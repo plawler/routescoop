@@ -11,7 +11,7 @@ import akka.actor.ActorSystem
 import com.typesafe.scalalogging.LazyLogging
 
 import java.time.Instant
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future, blocking}
 
 @Singleton
 class PowerAnalysisService @Inject()(
@@ -39,6 +39,10 @@ class PowerAnalysisService @Inject()(
       saveActivityStats(calculateActivityStats(activity, settings))
       createTimeInZoneStats(activity, settings)
     } getOrElse logger.warn(s"No user settings found to support power stats for activity ${activity.id}")
+  }
+
+  def getActivityStats(activityId: String): Future[Option[ActivityStats]] = Future {
+    activityStatsStore.findByActivityId(activityId)
   }
 
   def recalculateActivityStats(newSettings: UserSettings): Future[Unit] = {

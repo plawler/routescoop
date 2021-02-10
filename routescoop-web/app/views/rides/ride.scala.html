@@ -4,9 +4,47 @@
 } {
 
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">Ride Name</h1>
+        <h1 class="h2">@ride.name</h1>
     </div>
 
-    <p>@ride.name</p>
+    <p>at @ride.startedAt</p>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <h4>Details</h4>
+            <p>Elapsed time @ride.elapsedTime</p>
+            <p>Speed @ride.averageSpeed (avg)</p>
+            <p>Distance @ride.distance</p>
+            <p>Elevation gain @ride.totalElevationGain</p>
+            <hr/>
+            @ride.analysis.map { analysis =>
+                <p>Training load @analysis.stressScore</p>
+                <p>Intensity @analysis.intensityFactor</p>
+                <p>Average power @analysis.averagePower</p>
+                <p>Normalized power @analysis.normalizedPower</p>
+                <p>Variability index @analysis.variabilityIndex</p>
+            }
+            <hr>
+            <p>Kilojoules @ride.powerHr.kilojoules</p>
+            <p>Cadence @ride.powerHr.averageCadence</p>
+            <p>Heart rate (avg) @ride.powerHr.averageHeartRate</p>
+            <p>Heart rate (max) @ride.powerHr.maxHeartRate</p>
+            @ride.analysis.map { analysis =>
+                <p>@Html(s"Efficiency ${analysis.normalizedPower / ride.powerHr.averageHeartRate.getOrElse(1.0)}")</p>
+            }
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <h4>Location</h4>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <h4>Analysis</h4>
+        </div>
+    </div>
 
 }

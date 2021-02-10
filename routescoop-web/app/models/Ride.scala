@@ -22,7 +22,8 @@ case class Ride(
   maxSpeed: Double,
   externalId: Option[String] = None,
   location: RideLocation,
-  powerHr: RidePowerHr
+  powerHr: RidePowerHr,
+  analysis: Option[RideAnalysis] = None
 )
 
 case class RideLocation(
@@ -46,19 +47,25 @@ case class RidePowerHr(
   workoutType: Option[Int] = None
 )
 
+case class RideAnalysis(
+  activityId: String,
+  userSettingsId: String, // settings used at time of activity
+  averagePower: Int,
+  normalizedPower: Int,
+  stressScore: Int,
+  intensityFactor: Double,
+  variabilityIndex: Double
+)
+
 object Ride {
   implicit val locationReads = Json.reads[RideLocation]
   implicit val powerHrReads = Json.reads[RidePowerHr]
+  implicit val analysisReads = Json.reads[RideAnalysis]
   implicit val rideReads = Json.reads[Ride]
 }
 
 case class RideSync(id: String, userId: String, startedAt: Instant, completedAt: Option[Instant] = None)
 object RideSync { implicit val format = Json.format[RideSync] }
-
-sealed trait RideSyncResult
-case class RideSyncResultStarted(sync: RideSync) extends RideSyncResult
-case class RideSyncResultCompleted(sync: RideSync) extends RideSyncResult
-case class RideSyncResultError(message: String) extends RideSyncResult
 
 case class RideSummary(
   id: String,
@@ -70,6 +77,11 @@ case class RideSummary(
 )
 object RideSummary { implicit val format = Json.format[RideSummary] }
 
+sealed trait RideSyncResult
+case class RideSyncResultStarted(sync: RideSync) extends RideSyncResult
+case class RideSyncResultCompleted(sync: RideSync) extends RideSyncResult
+case class RideSyncResultError(message: String) extends RideSyncResult
+
 sealed trait RideSummaryResult
 case class RideSummaryResultSuccess(summaries: Seq[RideSummary]) extends RideSummaryResult
 case class RideSummaryResultError(message: String) extends RideSummaryResult
@@ -77,3 +89,4 @@ case class RideSummaryResultError(message: String) extends RideSummaryResult
 sealed trait RideDetailsResult
 case class RideDetailsResultSuccess(ride: Ride) extends RideDetailsResult
 case class RideDetailsResultError(message: String) extends RideDetailsResult
+

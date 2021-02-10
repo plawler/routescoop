@@ -19,10 +19,8 @@ case class ActivityStats(
 ) extends Stats
 
 object ActivityStats {
-
   implicit val activityStatsFormat = Json.format[ActivityStats]
   implicit val parser: RowParser[ActivityStats] = Macro.namedParser[ActivityStats]
-
 }
 
 case class DailyStress(day: LocalDate, stressScore: Int, week: Int = -1)

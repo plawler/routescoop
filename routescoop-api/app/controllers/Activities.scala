@@ -27,9 +27,21 @@ class Activities @Inject()(
   }
 
   def get(activityId: String) = Action.async { implicit request =>
-    activityService.getActivity(activityId) map {
-      case Some(activity) => Ok(Json.toJson(ActivityDetails.create(activity)))
-      case None => NotFound(s"No activity with id $activityId found")
+    for {
+      activity <- activityService.getActivity(activityId)
+      stats <- powerAnalysisService.getActivityStats(activityId)
+    } yield {
+      activity match {
+        case Some(a) => Ok(Json.toJson(ActivityDetails.create(a, stats)))
+        case None => NotFound(s"No activity with id $activityId found")
+      }
+    }
+  }
+
+  def getStats(activityId: String) = Action.async { implicit request =>
+    powerAnalysisService.getActivityStats(activityId) map {
+      case Some(stats) => Ok(Json.toJson(stats))
+      case None => NotFound(s"No activity stats for activity $activityId")
     }
   }
 

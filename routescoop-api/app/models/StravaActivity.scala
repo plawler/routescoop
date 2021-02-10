@@ -192,7 +192,8 @@ case class ActivityDetails(
   maxSpeed: Double,
   externalId: Option[String] = None,
   location: Location,
-  powerHr: PowerHr
+  powerHr: PowerHr,
+  analysis: Option[ActivityStats] = None
 )
 
 object ActivityDetails {
@@ -200,7 +201,7 @@ object ActivityDetails {
   implicit val powerHrWrites = Json.writes[PowerHr]
   implicit val detailsWrites = Json.writes[ActivityDetails]
 
-  def create(activity: StravaActivity): ActivityDetails = {
+  def create(activity: StravaActivity, stats: Option[ActivityStats] = None): ActivityDetails = {
     val location = Location(
       activity.timezone,
       activity.startLat,
@@ -241,7 +242,8 @@ object ActivityDetails {
       activity.maxSpeed,
       activity.externalId,
       location,
-      powerHr
+      powerHr,
+      stats
     )
   }
 }

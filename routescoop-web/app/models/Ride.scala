@@ -57,10 +57,13 @@ case class RideAnalysis(
   variabilityIndex: Double
 )
 
+object RideAnalysis {
+  implicit val analysisFormat = Json.format[RideAnalysis]
+}
+
 object Ride {
   implicit val locationReads = Json.reads[RideLocation]
   implicit val powerHrReads = Json.reads[RidePowerHr]
-  implicit val analysisReads = Json.reads[RideAnalysis]
   implicit val rideReads = Json.reads[Ride]
 }
 

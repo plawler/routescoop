@@ -1,5 +1,6 @@
 package controllers
 
+import config.AppConfig
 import javax.inject.{Inject, Singleton}
 import models._
 import services.{RideService, SettingsService}
@@ -20,8 +21,7 @@ class Rides @Inject()(
   stravaRefreshed: StravaTokenRefreshAction,
   rideService: RideService,
   settingsService: SettingsService,
-  ws: WSClient,
-  cache: SyncCacheApi,
+  config: AppConfig,
   val controllerComponents: ControllerComponents
 )(implicit ec: ExecutionContext) extends BaseController with I18nSupport {
 
@@ -65,7 +65,7 @@ class Rides @Inject()(
   def get(rideId: String) = authenticated.async { implicit request =>
     rideService.getRideDetails(rideId) map {
       case RideDetailsResultSuccess(ride) =>
-        Ok(views.html.rides.ride(ride))
+        Ok(views.html.rides.ride(ride, config))
       case RideDetailsResultError(_) =>
         Redirect(routes.Rides.index()).flashing("error" -> s"Failed to retrieve ride $rideId")
     }

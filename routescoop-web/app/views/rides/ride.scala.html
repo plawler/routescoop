@@ -1,7 +1,37 @@
-@(ride: Ride)(implicit request: RequestHeader, messages: Messages, flash: Flash)
-@helper.base {
-    @Html("")
-} {
+@import play.api.libs.json.Json
+
+@import config.AppConfig
+
+@(ride: Ride, config: AppConfig)(implicit request: RequestHeader, messages: Messages, flash: Flash)
+
+@scripts = {
+    <script type="application/javascript">
+        const app = new Vue({
+            el: '#app',
+            data: {
+                analysis: @Html(Json.stringify(Json.toJson(ride.analysis.get))),
+                edit: false
+            },
+            methods: {
+                say: function(message) {
+                    alert(message)
+                },
+                postAnalysis: function() {
+                    const request = {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(this.analysis)
+                    };
+                    fetch(@Html("'" + config.baseApiUrl + "/activities/stats'"), request)
+                        .then(response => console.log(response))
+                        .then(_ => (this.edit = false))
+                }
+            }
+        })
+    </script>
+}
+
+@helper.base(scripts = scripts) {
 
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h1 class="h2">@ride.name</h1>
@@ -18,11 +48,25 @@
             <p>Elevation gain @ride.totalElevationGain</p>
             <hr/>
             @ride.analysis.map { analysis =>
-                <p>Training load @analysis.stressScore</p>
-                <p>Intensity @analysis.intensityFactor</p>
-                <p>Average power @analysis.averagePower</p>
-                <p>Normalized power @analysis.normalizedPower</p>
-                <p>Variability index @analysis.variabilityIndex</p>
+                <div id="app">
+                    <template v-if="edit">
+                        <p>
+                            Training load <input v-model.number="analysis.stressScore">
+                            <button v-on:click="postAnalysis">Update</button>
+                            <a href="#" v-on:click="edit = !edit">Cancel</a>
+                        </p>
+                    </template>
+                    <template v-else>
+                        <p>
+                            Training load {{ analysis.stressScore }}
+                            <a href="#" v-on:click="edit = !edit">Edit</a>
+                        </p>
+                    </template>
+                    <p>Intensity @analysis.intensityFactor</p>
+                    <p>Average power @analysis.averagePower</p>
+                    <p>Normalized power @analysis.normalizedPower</p>
+                    <p>Variability index @analysis.variabilityIndex</p>
+                </div>
             }
             <hr>
             <p>Kilojoules @ride.powerHr.kilojoules</p>
